@@ -105,11 +105,11 @@ export default function Projects() {
         >
           <h2 className="text-4xl md:text-5xl font-bold mb-4">
             <span className="bg-gradient-to-r from-primary-600 to-primary-400 bg-clip-text text-transparent">
-              Meine Projekte
+              Unsere Projekte
             </span>
           </h2>
           <p className="text-xl text-gray-600 dark:text-gray-400">
-            Eine Auswahl meiner aktuellen Arbeiten
+            Eine Auswahl unserer erfolgreichen Projekte
           </p>
         </motion.div>
 

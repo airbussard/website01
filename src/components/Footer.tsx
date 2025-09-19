@@ -13,15 +13,15 @@ export default function Footer() {
           {/* Branding */}
           <div className="md:col-span-2">
             <h3 className="text-2xl font-bold mb-4 bg-gradient-to-r from-primary-400 to-primary-600 bg-clip-text text-transparent">
-              Oscar Knabe
+              dev.tech
             </h3>
             <p className="text-gray-400 mb-4">
-              Full-Stack Developer & iOS Experte aus Deutschland.
-              Spezialisiert auf moderne Webanwendungen und native iOS Apps.
+              Ihr Partner für digitale Lösungen.
+              Spezialisiert auf moderne Webanwendungen, komplexe Systeme und native iOS Apps.
             </p>
             <div className="flex space-x-4">
               <Link
-                href="https://github.com/airbussard"
+                href="https://github.com"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-gray-400 hover:text-primary-400 transition-colors"
@@ -37,7 +37,7 @@ export default function Footer() {
                 <Linkedin className="h-6 w-6" />
               </Link>
               <Link
-                href="mailto:contact@oscarknabe.de"
+                href="mailto:hello@dev.tech"
                 className="text-gray-400 hover:text-primary-400 transition-colors"
               >
                 <Mail className="h-6 w-6" />
@@ -100,7 +100,7 @@ export default function Footer() {
         <div className="pt-8 border-t border-gray-800">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <p className="text-gray-400 text-sm mb-4 md:mb-0">
-              © {currentYear} Oscar Knabe. Alle Rechte vorbehalten.
+              © {currentYear} dev.tech. Alle Rechte vorbehalten.
             </p>
             <div className="flex items-center space-x-4 text-sm">
               <Link href="/impressum" className="text-gray-400 hover:text-primary-400 transition-colors">

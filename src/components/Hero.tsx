@@ -33,11 +33,11 @@ export default function Hero() {
           >
             <h1 className="text-5xl md:text-7xl font-bold mb-6">
               <span className="bg-gradient-to-r from-primary-600 to-primary-400 bg-clip-text text-transparent">
-                Full-Stack Developer
+                Digital Excellence
               </span>
               <br />
               <span className="text-gray-800 dark:text-white">
-                & iOS Experte
+                Modern Solutions
               </span>
             </h1>
           </motion.div>
@@ -48,8 +48,8 @@ export default function Hero() {
             transition={{ duration: 0.5, delay: 0.1 }}
             className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-8"
           >
-            Ich entwickle moderne Websites, komplexe Websysteme und native iOS Apps.
-            Von der Konzeption bis zur Umsetzung – alles aus einer Hand.
+            Wir entwickeln moderne Websites, komplexe Websysteme und native iOS Apps.
+            Von der Konzeption bis zur Umsetzung – Ihre digitale Transformation aus einer Hand.
           </motion.p>
 
           <motion.div
@@ -79,7 +79,7 @@ export default function Hero() {
             className="flex items-center justify-center space-x-6"
           >
             <Link
-              href="https://github.com/airbussard"
+              href="https://github.com"
               target="_blank"
               rel="noopener noreferrer"
               className="text-gray-600 hover:text-primary-600 dark:text-gray-400 dark:hover:text-primary-400 transition-colors"
@@ -95,7 +95,7 @@ export default function Hero() {
               <Linkedin className="h-6 w-6" />
             </Link>
             <Link
-              href="mailto:contact@oscarknabe.de"
+              href="mailto:hello@dev.tech"
               className="text-gray-600 hover:text-primary-600 dark:text-gray-400 dark:hover:text-primary-400 transition-colors"
             >
               <Mail className="h-6 w-6" />

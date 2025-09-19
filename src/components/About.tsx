@@ -4,10 +4,10 @@ import { motion } from 'framer-motion';
 import { Code, Briefcase, Award, Users } from 'lucide-react';
 
 const stats = [
-  { number: '5+', label: 'Jahre Erfahrung' },
-  { number: '50+', label: 'Projekte' },
-  { number: '30+', label: 'Zufriedene Kunden' },
-  { number: '100%', label: 'Leidenschaft' },
+  { number: '10+', label: 'Jahre Erfahrung' },
+  { number: '100+', label: 'Erfolgreiche Projekte' },
+  { number: '50+', label: 'Zufriedene Kunden' },
+  { number: '24/7', label: 'Support' },
 ];
 
 const highlights = [
@@ -46,11 +46,11 @@ export default function About() {
         >
           <h2 className="text-4xl md:text-5xl font-bold mb-4">
             <span className="bg-gradient-to-r from-primary-600 to-primary-400 bg-clip-text text-transparent">
-              Über mich
+              Über uns
             </span>
           </h2>
           <p className="text-xl text-gray-600 dark:text-gray-400">
-            Leidenschaft für digitale Lösungen
+            Ihr Partner für digitale Innovation
           </p>
         </motion.div>
 
@@ -62,24 +62,24 @@ export default function About() {
             viewport={{ once: true }}
           >
             <h3 className="text-3xl font-bold mb-4 text-gray-800 dark:text-white">
-              Hallo, ich bin Oscar
+              Innovation durch Technologie
             </h3>
             <p className="text-gray-600 dark:text-gray-400 mb-4">
-              Als Full-Stack Developer und iOS Experte bringe ich Ihre digitalen Ideen zum Leben.
-              Mit über 5 Jahren Erfahrung in der Softwareentwicklung habe ich ein breites Spektrum
-              an Projekten erfolgreich umgesetzt – von komplexen Websystemen bis zu intuitiven
-              mobilen Anwendungen.
+              dev.tech ist Ihr vertrauenswürdiger Partner für digitale Transformation.
+              Unser erfahrenes Team aus Full-Stack Entwicklern und iOS Experten bringt Ihre
+              digitalen Visionen zum Leben. Mit über einem Jahrzehnt Erfahrung haben wir
+              erfolgreich Lösungen für Unternehmen jeder Größe entwickelt.
             </p>
             <p className="text-gray-600 dark:text-gray-400 mb-4">
-              Meine Expertise liegt nicht nur in der technischen Umsetzung, sondern auch im
-              Verständnis für Geschäftsprozesse und Nutzeranforderungen. Ich glaube daran,
-              dass großartige Software entsteht, wenn Technologie und User Experience
-              perfekt harmonieren.
+              Unsere Stärke liegt in der perfekten Verbindung von technischer Exzellenz
+              und tiefem Verständnis für Geschäftsprozesse. Wir entwickeln nicht nur Software –
+              wir schaffen digitale Erlebnisse, die Ihre Nutzer begeistern und Ihr Business
+              voranbringen.
             </p>
             <p className="text-gray-600 dark:text-gray-400">
-              Ob Start-up oder etabliertes Unternehmen – ich unterstütze Sie dabei, Ihre
-              Vision in eine funktionale, skalierbare und benutzerfreundliche Lösung zu
-              verwandeln.
+              Von Start-ups bis zu etablierten Unternehmen – wir sind der Partner, der Ihre
+              digitalen Herausforderungen in erfolgreiche Lösungen verwandelt. Technologie
+              ist unsere Leidenschaft, Ihr Erfolg unser Ziel.
             </p>
           </motion.div>
 

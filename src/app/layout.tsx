@@ -8,24 +8,24 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Oscar Knabe - Full-Stack Developer & iOS Experte",
-  description: "Full-Stack Developer und iOS Experte aus Deutschland. Spezialisiert auf moderne Webanwendungen, komplexe Websysteme und native iOS Apps.",
-  keywords: "Web Development, iOS Development, Full-Stack Developer, React, Next.js, Swift, SwiftUI, Deutschland",
-  authors: [{ name: "Oscar Knabe" }],
-  creator: "Oscar Knabe",
+  title: "dev.tech - Digital Solutions & Software Development",
+  description: "Ihr Partner für digitale Transformation. Spezialisiert auf moderne Webanwendungen, komplexe Systeme und native iOS Apps.",
+  keywords: "Digital Solutions, Web Development, iOS Development, Software Development, React, Next.js, Swift, Digital Transformation",
+  authors: [{ name: "dev.tech" }],
+  creator: "dev.tech",
   openGraph: {
     type: "website",
     locale: "de_DE",
-    url: "https://oscarknabe.de",
-    title: "Oscar Knabe - Full-Stack Developer & iOS Experte",
-    description: "Entwicklung moderner Websites, komplexer Websysteme und nativer iOS Apps",
-    siteName: "Oscar Knabe Portfolio",
+    url: "https://dev.tech",
+    title: "dev.tech - Digital Solutions & Software Development",
+    description: "Moderne Websites, komplexe Systeme und native Apps für Ihr Unternehmen",
+    siteName: "dev.tech",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Oscar Knabe - Full-Stack Developer & iOS Experte",
-    description: "Entwicklung moderner Websites, komplexer Websysteme und nativer iOS Apps",
-    creator: "@oscarknabe",
+    title: "dev.tech - Digital Solutions & Software Development",
+    description: "Moderne Websites, komplexe Systeme und native Apps für Ihr Unternehmen",
+    creator: "@devtech",
   },
   robots: {
     index: true,

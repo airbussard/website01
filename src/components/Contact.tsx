@@ -60,7 +60,7 @@ export default function Contact() {
             </span>
           </h2>
           <p className="text-xl text-gray-600 dark:text-gray-400">
-            Lassen Sie uns über Ihr nächstes Projekt sprechen
+            Starten Sie Ihre digitale Transformation mit uns
           </p>
         </motion.div>
 

@@ -95,7 +95,7 @@ export default function Technologies() {
             ... und viele weitere Technologien, je nach Projektanforderung.
           </p>
           <p className="text-gray-600 dark:text-gray-400 mt-2">
-            Ich lerne ständig dazu und passe mich neuen Technologien an.
+            Wir bleiben stets auf dem neuesten Stand der Technologie.
           </p>
         </motion.div>
       </div>

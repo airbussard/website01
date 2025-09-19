@@ -54,9 +54,14 @@ export default function Header() {
               <Code2 className="h-8 w-8 text-primary-600" />
               <div className="absolute -top-1 -right-1 h-3 w-3 bg-primary-500 rounded-full animate-pulse" />
             </div>
-            <span className="text-xl font-bold bg-gradient-to-r from-primary-600 to-primary-400 bg-clip-text text-transparent">
-              Oscar Knabe
-            </span>
+            <div className="flex flex-col">
+              <span className="text-xl font-bold bg-gradient-to-r from-primary-600 to-primary-400 bg-clip-text text-transparent">
+                dev.tech
+              </span>
+              <span className="text-xs text-gray-500 dark:text-gray-400 -mt-1">
+                Digital Solutions
+              </span>
+            </div>
           </Link>
 
           {/* Desktop Navigation */}
