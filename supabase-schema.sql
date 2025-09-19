@@ -52,3 +52,63 @@ ALTER TABLE projects ENABLE ROW LEVEL SECURITY;
 -- Create policy for reading projects (public access)
 CREATE POLICY "Enable read access for all users" ON projects
   FOR SELECT USING (true);
+
+-- Create project_images table for multiple images per project
+CREATE TABLE IF NOT EXISTS project_images (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  image_url VARCHAR(500) NOT NULL,
+  thumbnail_url VARCHAR(500),
+  caption TEXT,
+  alt_text VARCHAR(255),
+  is_primary BOOLEAN DEFAULT false,
+  display_order INTEGER DEFAULT 0,
+  width INTEGER,
+  height INTEGER,
+  file_size INTEGER,
+  mime_type VARCHAR(50),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Create indexes for project_images
+CREATE INDEX idx_project_images_project_id ON project_images(project_id);
+CREATE INDEX idx_project_images_is_primary ON project_images(is_primary);
+CREATE INDEX idx_project_images_display_order ON project_images(display_order);
+
+-- Add RLS for project_images
+ALTER TABLE project_images ENABLE ROW LEVEL SECURITY;
+
+-- Create policy for reading project images (public access)
+CREATE POLICY "Enable read access for all users" ON project_images
+  FOR SELECT USING (true);
+
+-- Create storage bucket for project images
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('project-images', 'project-images', true)
+ON CONFLICT (id) DO NOTHING;
+
+-- Create policy for public access to project images
+CREATE POLICY "Public Access" ON storage.objects
+  FOR SELECT USING (bucket_id = 'project-images');
+
+-- Create policy for authenticated users to upload images
+CREATE POLICY "Authenticated users can upload images" ON storage.objects
+  FOR INSERT WITH CHECK (
+    bucket_id = 'project-images'
+    AND auth.role() = 'authenticated'
+  );
+
+-- Create policy for authenticated users to update images
+CREATE POLICY "Authenticated users can update images" ON storage.objects
+  FOR UPDATE USING (
+    bucket_id = 'project-images'
+    AND auth.role() = 'authenticated'
+  );
+
+-- Create policy for authenticated users to delete images
+CREATE POLICY "Authenticated users can delete images" ON storage.objects
+  FOR DELETE USING (
+    bucket_id = 'project-images'
+    AND auth.role() = 'authenticated'
+  );
