@@ -9,6 +9,9 @@ import ProjectForm from '@/components/admin/ProjectForm';
 import ImageUploader from '@/components/admin/ImageUploader';
 import { ProjectWithImages } from '@/lib/hooks/useSupabase';
 
+// This forces dynamic rendering to avoid prerendering issues with Supabase client
+export const dynamic = 'force-dynamic';
+
 export default function AdminProjectsPage() {
   const [projects, setProjects] = useState<ProjectWithImages[]>([]);
   const [loading, setLoading] = useState(true);

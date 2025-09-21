@@ -10,6 +10,7 @@ export interface Project {
   githubUrl?: string;
   featured: boolean;
   createdAt: string;
+  display_order?: number;
 }
 
 export interface ContactForm {

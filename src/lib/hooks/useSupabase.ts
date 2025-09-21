@@ -52,7 +52,7 @@ export function useProjects() {
       const transformedData = (data || []).map(project => ({
         ...project,
         technologies: project.technologies || [],
-        imageUrl: project.project_images?.find(img => img.is_primary)?.image_url || project.image_url || '',
+        imageUrl: project.project_images?.find((img: any) => img.is_primary)?.image_url || project.image_url || '',
       }));
 
       setProjects(transformedData);

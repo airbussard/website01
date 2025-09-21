@@ -6,7 +6,11 @@ import { useForm } from 'react-hook-form';
 import { Send, Mail, MessageSquare, Building, User, Briefcase } from 'lucide-react';
 import { ContactForm } from '@/types';
 
-export default function Contact() {
+interface ContactProps {
+  showHeading?: boolean;
+}
+
+export default function Contact({ showHeading = true }: ContactProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
@@ -47,22 +51,24 @@ export default function Contact() {
   return (
     <section id="contact" className="py-20 bg-white dark:bg-gray-800">
       <div className="container mx-auto px-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          viewport={{ once: true }}
-          className="text-center mb-12"
-        >
-          <h2 className="text-4xl md:text-5xl font-bold mb-4">
-            <span className="bg-gradient-to-r from-primary-600 to-primary-400 bg-clip-text text-transparent">
-              Projekt anfragen
-            </span>
-          </h2>
-          <p className="text-xl text-gray-600 dark:text-gray-400">
-            Starten Sie Ihre digitale Transformation mit uns
-          </p>
-        </motion.div>
+        {showHeading && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            viewport={{ once: true }}
+            className="text-center mb-12"
+          >
+            <h2 className="text-4xl md:text-5xl font-bold mb-4">
+              <span className="bg-gradient-to-r from-primary-600 to-primary-400 bg-clip-text text-transparent">
+                Projekt anfragen
+              </span>
+            </h2>
+            <p className="text-xl text-gray-600 dark:text-gray-400">
+              Starten Sie Ihre digitale Transformation mit uns
+            </p>
+          </motion.div>
+        )}
 
         <div className="max-w-4xl mx-auto">
           <motion.div
