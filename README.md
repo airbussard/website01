@@ -1,36 +1,96 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# dev.tech Portfolio Website
 
-## Getting Started
+Eine moderne, professionelle Portfolio-Website für digitale Dienstleistungen und Software-Entwicklung.
 
-First, run the development server:
+## 🚀 Quick Start
 
 ```bash
+# Dependencies installieren
+npm install
+
+# Umgebungsvariablen einrichten (optional für Supabase)
+cp .env.local.example .env.local
+
+# Development Server starten
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Öffne [http://localhost:3000](http://localhost:3000) im Browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 📋 Features
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- ✅ Responsive Design (Mobile-First)
+- ✅ Dark/Light Mode
+- ✅ Projektgalerie mit Filterung
+- ✅ Admin-Dashboard für Inhaltsverwaltung
+- ✅ Kontaktformular mit Datenbank-Speicherung
+- ✅ Bildupload und -verwaltung
+- ✅ SEO-optimiert
+- ✅ Performance-optimiert
 
-## Learn More
+## 🛠️ Tech Stack
 
-To learn more about Next.js, take a look at the following resources:
+- **Framework:** Next.js 15.5.3 (App Router)
+- **Sprache:** TypeScript
+- **Styling:** Tailwind CSS 3.4
+- **Animationen:** Framer Motion
+- **Backend:** Supabase (PostgreSQL, Auth, Storage)
+- **Deployment:** Docker, CapRover
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 📁 Projektstruktur
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+src/
+├── app/          # Next.js App Router Pages
+├── components/   # React Components
+├── lib/          # Utilities & Hooks
+└── types/        # TypeScript Types
+```
 
-## Deploy on Vercel
+## 🔧 Konfiguration
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Umgebungsvariablen
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Erstelle eine `.env.local` Datei:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=your-supabase-url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+```
+
+**Hinweis:** Die App funktioniert auch ohne Supabase-Konfiguration mit Mock-Daten.
+
+## 📦 Deployment
+
+### Production Build
+
+```bash
+npm run build
+npm start
+```
+
+### Docker
+
+```bash
+docker build -t dev-tech .
+docker run -p 3000:3000 dev-tech
+```
+
+### CapRover
+
+Push zu GitHub main branch deployed automatisch via CapRover.
+
+## 📚 Dokumentation
+
+- [CLAUDE.md](./CLAUDE.md) - Ausführliche technische Dokumentation
+- [SUPABASE_SETUP.md](./SUPABASE_SETUP.md) - Supabase Einrichtung
+
+## 👤 Kontakt
+
+**Oscar Knabe**
+Steinstraße 71, 52249 Eschweiler
+[oscarknabe.de](https://oscarknabe.de)
+
+## 📄 Lizenz
+
+© 2024 dev.tech - Alle Rechte vorbehalten
