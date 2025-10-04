@@ -2,8 +2,8 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 
 export const metadata = {
-  title: 'Impressum - dev.tech',
-  description: 'Impressum und rechtliche Informationen von dev.tech',
+  title: 'Impressum - develo.tech',
+  description: 'Impressum und rechtliche Informationen von develo.tech',
 };
 
 export default function ImpressumPage() {
@@ -35,7 +35,7 @@ export default function ImpressumPage() {
                 Kontakt
               </h2>
               <div className="space-y-2 text-gray-600 dark:text-gray-300">
-                <p>E-Mail: info@dev.tech</p>
+                <p>E-Mail: info@develo.tech</p>
               </div>
             </section>
 

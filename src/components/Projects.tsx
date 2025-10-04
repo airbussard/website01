@@ -2,10 +2,10 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ExternalLink, Github, Smartphone, Globe, Code, ArrowRight, Loader2 } from 'lucide-react';
+import { ExternalLink, Github, Smartphone, Globe, Code, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useProjects } from '@/lib/hooks/useSupabase';
+import { projects as allProjects } from '@/lib/data/projects';
 
 const categories = [
   { id: 'all', name: 'Alle', icon: null },
@@ -17,40 +17,10 @@ const categories = [
 export default function Projects() {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [hoveredProject, setHoveredProject] = useState<string | null>(null);
-  const { projects, loading, error } = useProjects();
 
   const filteredProjects = selectedCategory === 'all'
-    ? projects
-    : projects.filter(p => p.category === selectedCategory);
-
-  if (loading) {
-    return (
-      <section id="projects" className="py-20 bg-gray-50 dark:bg-gray-900">
-        <div className="container mx-auto px-6">
-          <div className="flex items-center justify-center h-64">
-            <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
-          </div>
-        </div>
-      </section>
-    );
-  }
-
-  if (error && projects.length === 0) {
-    return (
-      <section id="projects" className="py-20 bg-gray-50 dark:bg-gray-900">
-        <div className="container mx-auto px-6">
-          <div className="text-center">
-            <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-4">
-              Projekte werden geladen...
-            </h2>
-            <p className="text-gray-600 dark:text-gray-400">
-              Bitte kommen Sie später wieder.
-            </p>
-          </div>
-        </div>
-      </section>
-    );
-  }
+    ? allProjects
+    : allProjects.filter(p => p.category === selectedCategory);
 
   return (
     <section id="projects" className="py-20 bg-gray-50 dark:bg-gray-900">

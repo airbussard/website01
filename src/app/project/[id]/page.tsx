@@ -2,25 +2,17 @@
 
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, ExternalLink, Github, Loader2, Calendar, Tag } from 'lucide-react';
+import { ArrowLeft, ExternalLink, Github, Calendar, Tag } from 'lucide-react';
 import { motion } from 'framer-motion';
-import ImageGallery from '@/components/ImageGallery';
-import { useProject } from '@/lib/hooks/useSupabase';
+import { getProjectById } from '@/lib/data/projects';
+import Image from 'next/image';
 
 export default function ProjectDetailPage() {
   const params = useParams();
   const id = params?.id as string;
-  const { project, loading, error } = useProject(id);
+  const project = getProjectById(id);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
-      </div>
-    );
-  }
-
-  if (error || !project) {
+  if (!project) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -38,8 +30,6 @@ export default function ProjectDetailPage() {
       </div>
     );
   }
-
-  const images = project.project_images?.sort((a, b) => a.display_order - b.display_order) || [];
 
   return (
     <div className="min-h-screen py-20">
@@ -80,10 +70,16 @@ export default function ProjectDetailPage() {
                 {project.description}
               </p>
 
-              {/* Image Gallery */}
-              {images.length > 0 && (
-                <div className="mb-12">
-                  <ImageGallery images={images} projectTitle={project.title} />
+              {/* Project Image */}
+              {project.imageUrl && (
+                <div className="mb-12 relative aspect-video rounded-xl overflow-hidden">
+                  <Image
+                    src={project.imageUrl}
+                    alt={project.title}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 1200px) 100vw, 1200px"
+                  />
                 </div>
               )}
 

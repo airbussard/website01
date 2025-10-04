@@ -8,24 +8,24 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "dev.tech - Digital Solutions & Software Development",
+  title: "develo.tech - Digital Solutions & Software Development",
   description: "Ihr Partner für digitale Transformation. Spezialisiert auf moderne Webanwendungen, komplexe Systeme und native iOS Apps.",
   keywords: "Digital Solutions, Web Development, iOS Development, Software Development, React, Next.js, Swift, Digital Transformation",
-  authors: [{ name: "dev.tech" }],
-  creator: "dev.tech",
+  authors: [{ name: "develo.tech" }],
+  creator: "develo.tech",
   openGraph: {
     type: "website",
     locale: "de_DE",
-    url: "https://dev.tech",
-    title: "dev.tech - Digital Solutions & Software Development",
+    url: "https://develo.tech",
+    title: "develo.tech - Digital Solutions & Software Development",
     description: "Moderne Websites, komplexe Systeme und native Apps für Ihr Unternehmen",
-    siteName: "dev.tech",
+    siteName: "develo.tech",
   },
   twitter: {
     card: "summary_large_image",
-    title: "dev.tech - Digital Solutions & Software Development",
+    title: "develo.tech - Digital Solutions & Software Development",
     description: "Moderne Websites, komplexe Systeme und native Apps für Ihr Unternehmen",
-    creator: "@devtech",
+    creator: "@develotech",
   },
   robots: {
     index: true,

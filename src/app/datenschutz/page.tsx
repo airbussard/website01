@@ -2,8 +2,8 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 
 export const metadata = {
-  title: 'Datenschutzerklärung - dev.tech',
-  description: 'Datenschutzerklärung und Informationen zum Datenschutz bei dev.tech',
+  title: 'Datenschutzerklärung - develo.tech',
+  description: 'Datenschutzerklärung und Informationen zum Datenschutz bei develo.tech',
 };
 
 export default function DatenschutzPage() {
