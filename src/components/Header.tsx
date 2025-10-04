@@ -56,7 +56,7 @@ export default function Header() {
             </div>
             <div className="flex flex-col">
               <span className="text-xl font-bold bg-gradient-to-r from-primary-600 to-primary-400 bg-clip-text text-transparent">
-                develo.tech
+                emergence.tech
               </span>
               <span className="text-xs text-gray-500 dark:text-gray-400 -mt-1">
                 Digital Solutions

@@ -34,8 +34,8 @@ export default function KontaktPage() {
                   <Mail className="h-5 w-5 text-primary-600 dark:text-primary-400 mt-1" />
                   <div>
                     <p className="text-gray-900 dark:text-white font-medium">E-Mail</p>
-                    <a href="mailto:info@develo.tech" className="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400">
-                      info@develo.tech
+                    <a href="mailto:info@emergence.tech" className="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400">
+                      info@emergence.tech
                     </a>
                   </div>
                 </div>
@@ -72,7 +72,7 @@ export default function KontaktPage() {
               </h3>
               <div className="space-y-3">
                 <a
-                  href="mailto:info@develo.tech"
+                  href="mailto:info@emergence.tech"
                   className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors group"
                 >
                   <span className="flex items-center space-x-3">

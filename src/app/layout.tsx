@@ -8,24 +8,24 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "develo.tech - Digital Solutions & Software Development",
+  title: "emergence.tech - Digital Solutions & Software Development",
   description: "Ihr Partner für digitale Transformation. Spezialisiert auf moderne Webanwendungen, komplexe Systeme und native iOS Apps.",
   keywords: "Digital Solutions, Web Development, iOS Development, Software Development, React, Next.js, Swift, Digital Transformation",
-  authors: [{ name: "develo.tech" }],
-  creator: "develo.tech",
+  authors: [{ name: "emergence.tech" }],
+  creator: "emergence.tech",
   openGraph: {
     type: "website",
     locale: "de_DE",
-    url: "https://develo.tech",
-    title: "develo.tech - Digital Solutions & Software Development",
+    url: "https://emergence.tech",
+    title: "emergence.tech - Digital Solutions & Software Development",
     description: "Moderne Websites, komplexe Systeme und native Apps für Ihr Unternehmen",
-    siteName: "develo.tech",
+    siteName: "emergence.tech",
   },
   twitter: {
     card: "summary_large_image",
-    title: "develo.tech - Digital Solutions & Software Development",
+    title: "emergence.tech - Digital Solutions & Software Development",
     description: "Moderne Websites, komplexe Systeme und native Apps für Ihr Unternehmen",
-    creator: "@develotech",
+    creator: "@emergencetech",
   },
   robots: {
     index: true,
