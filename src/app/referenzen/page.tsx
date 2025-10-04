@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { projects as allProjects } from '@/lib/data/projects';
-import { Globe, Github, Filter } from 'lucide-react';
+import { Globe, Filter } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -155,17 +155,6 @@ export default function ReferenzenPage() {
                           className="text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
                         >
                           <Globe className="h-5 w-5" />
-                        </span>
-                      )}
-                      {project.githubUrl && (
-                        <span
-                          onClick={(e) => {
-                            e.preventDefault();
-                            window.open(project.githubUrl!, '_blank');
-                          }}
-                          className="text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
-                        >
-                          <Github className="h-5 w-5" />
                         </span>
                       )}
                       <span className="text-primary-600 dark:text-primary-400 text-sm font-medium ml-auto">

@@ -2,7 +2,7 @@
 
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, ExternalLink, Github, Calendar, Tag } from 'lucide-react';
+import { ArrowLeft, ExternalLink, Calendar, Tag } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { getProjectById } from '@/lib/data/projects';
 import Image from 'next/image';
@@ -151,17 +151,6 @@ export default function ProjectDetailPage() {
                     >
                       <ExternalLink className="h-4 w-4 mr-2" />
                       Live ansehen
-                    </a>
-                  )}
-                  {project.githubUrl && (
-                    <a
-                      href={project.githubUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center justify-center px-4 py-3 bg-gray-800 hover:bg-gray-900 text-white rounded-lg font-medium transition-colors"
-                    >
-                      <Github className="h-4 w-4 mr-2" />
-                      GitHub
                     </a>
                   )}
                 </div>

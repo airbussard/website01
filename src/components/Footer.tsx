@@ -1,6 +1,6 @@
 'use client';
 
-import { Github, Linkedin, Mail, Heart } from 'lucide-react';
+import { Linkedin, Mail, Heart } from 'lucide-react';
 import Link from 'next/link';
 
 export default function Footer() {
@@ -20,14 +20,6 @@ export default function Footer() {
               Spezialisiert auf moderne Webanwendungen, komplexe Systeme und native iOS Apps.
             </p>
             <div className="flex space-x-4">
-              <Link
-                href="https://github.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-gray-400 hover:text-primary-400 transition-colors"
-              >
-                <Github className="h-6 w-6" />
-              </Link>
               <Link
                 href="https://linkedin.com"
                 target="_blank"

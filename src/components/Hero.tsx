@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { ArrowDown, Github, Linkedin, Mail } from 'lucide-react';
+import { ArrowDown, Linkedin, Mail } from 'lucide-react';
 import Link from 'next/link';
 
 export default function Hero() {
@@ -78,14 +78,6 @@ export default function Hero() {
             transition={{ duration: 0.5, delay: 0.3 }}
             className="flex items-center justify-center space-x-6"
           >
-            <Link
-              href="https://github.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-gray-600 hover:text-primary-600 dark:text-gray-400 dark:hover:text-primary-400 transition-colors"
-            >
-              <Github className="h-6 w-6" />
-            </Link>
             <Link
               href="https://linkedin.com"
               target="_blank"

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ExternalLink, Github, Smartphone, Globe, Code, ArrowRight } from 'lucide-react';
+import { ExternalLink, Smartphone, Globe, Code, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { projects as allProjects } from '@/lib/data/projects';
@@ -153,17 +153,6 @@ export default function Projects() {
                         className="text-gray-600 hover:text-primary-600 dark:text-gray-400 dark:hover:text-primary-400 transition-colors"
                       >
                         <ExternalLink className="h-5 w-5" />
-                      </a>
-                    )}
-                    {project.githubUrl && (
-                      <a
-                        href={project.githubUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={(e) => e.stopPropagation()}
-                        className="text-gray-600 hover:text-primary-600 dark:text-gray-400 dark:hover:text-primary-400 transition-colors"
-                      >
-                        <Github className="h-5 w-5" />
                       </a>
                     )}
                   </div>
