@@ -2,11 +2,12 @@
 
 ## 🎯 Projektübersicht
 
-**Name:** dev.tech Portfolio Website
+**Name:** getemergence.com Portfolio Website
 **Zweck:** Professionelle Portfolio-Website für digitale Dienstleistungen und Software-Entwicklung
 **Owner:** Oscar Knabe
 **Live-URL:** oscarknabe.de (via CapRover)
 **Repository:** https://github.com/airbussard/website01
+**CapRover Webhook:** https://captain.immogear.de/api/v2/user/apps/webhooks/triggerbuild?namespace=captain&token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7InRva2VuVmVyc2lvbiI6IjQ3ODYwMDY3LTQ3MDktNDJmMS1hZDIxLTRmNWQ2ZWFjZWJmZCIsImFwcE5hbWUiOiJ3ZWJzaXRlMDFvc2NhcmtuYWJlIiwibmFtZXNwYWNlIjoiY2FwdGFpbiJ9LCJpYXQiOjE3NTgxOTUzODJ9.mhObDqR-VkgYE0JPcVGL4e5Y6oHrN0rnVeQpZCqEJ-g
 
 ### Tech-Stack
 - **Frontend:** Next.js 15.5.3 (App Router), TypeScript, Tailwind CSS 3.4, Framer Motion
