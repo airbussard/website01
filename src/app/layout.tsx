@@ -8,24 +8,24 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "emergence.tech - Digital Solutions & Software Development",
+  title: "getemergence.com - Digital Solutions & Software Development",
   description: "Ihr Partner für digitale Transformation. Spezialisiert auf moderne Webanwendungen, komplexe Systeme und native iOS Apps.",
   keywords: "Digital Solutions, Web Development, iOS Development, Software Development, React, Next.js, Swift, Digital Transformation",
-  authors: [{ name: "emergence.tech" }],
-  creator: "emergence.tech",
+  authors: [{ name: "getemergence.com" }],
+  creator: "getemergence.com",
   openGraph: {
     type: "website",
     locale: "de_DE",
-    url: "https://emergence.tech",
-    title: "emergence.tech - Digital Solutions & Software Development",
+    url: "https://getemergence.com",
+    title: "getemergence.com - Digital Solutions & Software Development",
     description: "Moderne Websites, komplexe Systeme und native Apps für Ihr Unternehmen",
-    siteName: "emergence.tech",
+    siteName: "getemergence.com",
   },
   twitter: {
     card: "summary_large_image",
-    title: "emergence.tech - Digital Solutions & Software Development",
+    title: "getemergence.com - Digital Solutions & Software Development",
     description: "Moderne Websites, komplexe Systeme und native Apps für Ihr Unternehmen",
-    creator: "@emergencetech",
+    creator: "@getemergence",
   },
   robots: {
     index: true,

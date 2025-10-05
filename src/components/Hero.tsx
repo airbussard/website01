@@ -87,7 +87,7 @@ export default function Hero() {
               <Linkedin className="h-6 w-6" />
             </Link>
             <Link
-              href="mailto:hello@emergence.tech"
+              href="mailto:hello@getemergence.com"
               className="text-gray-600 hover:text-primary-600 dark:text-gray-400 dark:hover:text-primary-400 transition-colors"
             >
               <Mail className="h-6 w-6" />

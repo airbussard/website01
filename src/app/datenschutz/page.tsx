@@ -2,8 +2,8 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 
 export const metadata = {
-  title: 'Datenschutzerklärung - emergence.tech',
-  description: 'Datenschutzerklärung und Informationen zum Datenschutz bei emergence.tech',
+  title: 'Datenschutzerklärung - getemergence.com',
+  description: 'Datenschutzerklärung und Informationen zum Datenschutz bei getemergence.com',
 };
 
 export default function DatenschutzPage() {

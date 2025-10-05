@@ -65,7 +65,7 @@ export default function About() {
               Innovation durch Technologie
             </h3>
             <p className="text-gray-600 dark:text-gray-400 mb-4">
-              emergence.tech ist Ihr vertrauenswürdiger Partner für digitale Transformation.
+              getemergence.com ist Ihr vertrauenswürdiger Partner für digitale Transformation.
               Unser erfahrenes Team aus Full-Stack Entwicklern und iOS Experten bringt Ihre
               digitalen Visionen zum Leben. Mit über einem Jahrzehnt Erfahrung haben wir
               erfolgreich Lösungen für Unternehmen jeder Größe entwickelt.

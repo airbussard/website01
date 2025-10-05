@@ -2,8 +2,8 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 
 export const metadata = {
-  title: 'Impressum - emergence.tech',
-  description: 'Impressum und rechtliche Informationen von emergence.tech',
+  title: 'Impressum - getemergence.com',
+  description: 'Impressum und rechtliche Informationen von getemergence.com',
 };
 
 export default function ImpressumPage() {
@@ -35,7 +35,7 @@ export default function ImpressumPage() {
                 Kontakt
               </h2>
               <div className="space-y-2 text-gray-600 dark:text-gray-300">
-                <p>E-Mail: info@emergence.tech</p>
+                <p>E-Mail: info@getemergence.com</p>
               </div>
             </section>
 
