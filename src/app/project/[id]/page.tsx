@@ -71,15 +71,17 @@ export default function ProjectDetailPage() {
                 {project.description}
               </p>
 
-              {/* Project Image */}
-              {project.imageUrl && (
-                <div className="mb-12 relative aspect-video rounded-xl overflow-hidden">
-                  <Image
-                    src={project.imageUrl}
-                    alt={project.title}
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 1200px) 100vw, 1200px"
+              {/* Image Gallery */}
+              {project.images && project.images.length > 0 && (
+                <div className="mb-12">
+                  <ImageGallery
+                    images={project.images.map((url, index) => ({
+                      id: `${project.id}-${index}`,
+                      image_url: url,
+                      alt_text: `${project.title} - Screenshot ${index + 1}`,
+                      display_order: index
+                    }))}
+                    projectTitle={project.title}
                   />
                 </div>
               )}
@@ -93,24 +95,6 @@ export default function ProjectDetailPage() {
                   <p className="text-gray-600 dark:text-gray-400 whitespace-pre-wrap">
                     {project.longDescription}
                   </p>
-                </div>
-              )}
-
-              {/* Image Gallery */}
-              {project.images && project.images.length > 0 && (
-                <div className="mb-12">
-                  <h2 className="text-2xl font-bold mb-6 text-gray-800 dark:text-white">
-                    Screenshots
-                  </h2>
-                  <ImageGallery
-                    images={project.images.map((url, index) => ({
-                      id: `${project.id}-${index}`,
-                      image_url: url,
-                      alt_text: `${project.title} - Screenshot ${index + 1}`,
-                      display_order: index
-                    }))}
-                    projectTitle={project.title}
-                  />
                 </div>
               )}
             </motion.div>

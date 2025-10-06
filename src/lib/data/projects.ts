@@ -38,7 +38,7 @@ Technische Highlights:
 Das System ist speziell für Berufspiloten entwickelt und erfüllt alle behördlichen Anforderungen für EASA und FAA.`,
     category: 'system',
     technologies: ['Swift', 'SwiftUI', 'PHP', 'Supabase', 'PostgreSQL', 'Apple Sign-In', 'PDF Generation', 'Responsive Web'],
-    imageUrl: '/images/projects/log-k.jpg',
+    imageUrl: '/images/projects/logk/logk_web.png',
     images: [
       '/images/projects/logk/logk_web.png',
       '/images/projects/logk/logk_web_02.png',
@@ -91,7 +91,7 @@ Besonderheit:
 Die iOS App arbeitet im Read-Only Modus für mobile Übersicht, während das Web-Portal die vollständige Verwaltung ermöglicht.`,
     category: 'system',
     technologies: ['Swift', 'SwiftUI', 'Supabase', 'PostgreSQL', 'MVVM', 'Async/Await', 'Responsive Web'],
-    imageUrl: '/images/projects/immogear.jpg',
+    imageUrl: '/images/projects/immogear/immogear_web_01.png',
     images: [
       '/images/projects/immogear/immogear_web_01.png',
       '/images/projects/immogear/immogear_web_02.png',
@@ -185,7 +185,7 @@ Technische Highlights:
 Die Plattform ist vollständig produktionsreif und skalierbar für größere Nutzermengen.`,
     category: 'web',
     technologies: ['Next.js', 'TypeScript', 'Turborepo', 'Supabase', 'PostgreSQL', 'Stripe', 'Tailwind CSS', 'Framer Motion', 'Prisma'],
-    imageUrl: '/images/projects/eventhour.jpg',
+    imageUrl: '/images/projects/eventhour/eventhour_01.png',
     images: [
       '/images/projects/eventhour/eventhour_01.png',
       '/images/projects/eventhour/eventhour_02.png',
