@@ -224,12 +224,17 @@ export default function ServicesPage() {
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
           viewport={{ once: true }}
-          className="relative bg-gradient-to-r from-primary-600 to-secondary-600 rounded-2xl overflow-hidden"
+          className="relative bg-white dark:bg-gray-900 rounded-2xl border-2 border-primary-500 overflow-hidden"
         >
-          {/* Background Pattern */}
-          <div className="absolute inset-0 opacity-10">
-            <div className="absolute top-0 left-0 w-72 h-72 bg-white rounded-full blur-3xl" />
-            <div className="absolute bottom-0 right-0 w-96 h-96 bg-white rounded-full blur-3xl" />
+          {/* Background Grid Pattern */}
+          <div className="absolute inset-0 opacity-5">
+            <div
+              className="absolute inset-0"
+              style={{
+                backgroundImage: `linear-gradient(0deg, rgb(59, 130, 246) 1px, transparent 1px), linear-gradient(90deg, rgb(59, 130, 246) 1px, transparent 1px)`,
+                backgroundSize: '40px 40px'
+              }}
+            />
           </div>
 
           <div className="relative grid md:grid-cols-2 gap-8 p-8 md:p-12">
@@ -246,8 +251,8 @@ export default function ServicesPage() {
                 }}
                 className="absolute top-0 left-0"
               >
-                <div className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
-                  <Code2 className="h-10 w-10 text-white" />
+                <div className="w-20 h-20 border-2 border-primary-500 rounded-2xl flex items-center justify-center">
+                  <Code2 className="h-10 w-10 text-primary-600 dark:text-primary-400" />
                 </div>
               </motion.div>
 
@@ -263,8 +268,8 @@ export default function ServicesPage() {
                 }}
                 className="absolute bottom-4 right-4"
               >
-                <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
-                  <Smartphone className="h-8 w-8 text-white" />
+                <div className="w-16 h-16 border-2 border-primary-500 rounded-2xl flex items-center justify-center">
+                  <Smartphone className="h-8 w-8 text-primary-600 dark:text-primary-400" />
                 </div>
               </motion.div>
 
@@ -280,28 +285,28 @@ export default function ServicesPage() {
                 }}
                 className="absolute top-1/3 right-1/4"
               >
-                <div className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
-                  <Database className="h-7 w-7 text-white" />
+                <div className="w-14 h-14 border-2 border-primary-500 rounded-xl flex items-center justify-center">
+                  <Database className="h-7 w-7 text-primary-600 dark:text-primary-400" />
                 </div>
               </motion.div>
 
-              <div className="w-32 h-32 bg-white/10 backdrop-blur-sm rounded-3xl flex items-center justify-center">
-                <Lightbulb className="h-16 w-16 text-white" />
+              <div className="w-32 h-32 border-2 border-primary-500 rounded-3xl flex items-center justify-center">
+                <Lightbulb className="h-16 w-16 text-primary-600 dark:text-primary-400" />
               </div>
             </div>
 
             {/* Right: Content */}
-            <div className="flex flex-col justify-center text-center md:text-left text-white">
-              <h2 className="text-3xl font-bold mb-4">
+            <div className="flex flex-col justify-center text-center md:text-left">
+              <h2 className="text-3xl font-bold mb-4 text-gray-900 dark:text-white">
                 Bereit für Ihr nächstes Projekt?
               </h2>
-              <p className="text-xl mb-8 opacity-90">
+              <p className="text-xl mb-8 text-gray-600 dark:text-gray-300">
                 Lassen Sie uns gemeinsam Ihre Ideen verwirklichen
               </p>
               <div>
                 <Link
                   href="/kontakt"
-                  className="inline-flex items-center px-8 py-4 bg-white text-primary-600 rounded-xl font-semibold hover:bg-gray-100 hover:scale-105 hover:shadow-2xl transition-all duration-300 text-lg"
+                  className="inline-flex items-center px-8 py-4 bg-primary-600 text-white rounded-xl font-semibold hover:bg-primary-700 hover:scale-105 hover:shadow-xl transition-all duration-300 text-lg"
                 >
                   Kontakt aufnehmen
                   <ArrowRight className="ml-2 h-5 w-5" />
