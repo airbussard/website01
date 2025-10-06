@@ -1,6 +1,6 @@
 'use client';
 
-import { Linkedin, Mail, Heart } from 'lucide-react';
+import { Linkedin, Mail, Heart, Code2 } from 'lucide-react';
 import Link from 'next/link';
 
 export default function Footer() {
@@ -12,9 +12,20 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
           {/* Branding */}
           <div className="md:col-span-2">
-            <h3 className="text-2xl font-bold mb-4 bg-gradient-to-r from-primary-400 to-primary-600 bg-clip-text text-transparent">
-              getemergence.com
-            </h3>
+            <Link href="/" className="flex items-center space-x-2 mb-4">
+              <div className="relative">
+                <Code2 className="h-8 w-8 text-primary-600" />
+                <div className="absolute -top-1 -right-1 h-3 w-3 bg-primary-500 rounded-full animate-pulse" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xl font-bold bg-gradient-to-r from-primary-400 to-primary-600 bg-clip-text text-transparent">
+                  getemergence.com
+                </span>
+                <span className="text-xs text-gray-500 dark:text-gray-400 -mt-1">
+                  Digital Solutions
+                </span>
+              </div>
+            </Link>
             <p className="text-gray-400 mb-4">
               Ihr Partner für digitale Lösungen.
               Spezialisiert auf moderne Webanwendungen, komplexe Systeme und native iOS Apps.
