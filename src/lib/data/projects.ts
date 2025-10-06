@@ -115,6 +115,55 @@ Die Plattform wurde speziell für die Anforderungen in der Luftfahrtbranche entw
     display_order: 3,
   },
   {
+    id: 'eventhour-platform',
+    title: 'EventHour - Erlebnisportal',
+    description: 'Umfassende E-Commerce-Plattform für Erlebnisse und Gutscheine mit Monorepo-Architektur',
+    longDescription: `Eine moderne, skalierbare Plattform für den Verkauf von Erlebnissen und Gutscheinen mit Multi-App-Architektur.
+
+Das System basiert auf einem Turborepo-Monorepo mit drei separaten Anwendungen und wiederverwendbaren Packages.
+
+Architektur:
+- **Kundenportal (Web)**: Hauptwebsite für Endkunden
+- **Admin-Dashboard**: Verwaltung von Erlebnissen, Partnern und Bestellungen
+- **Partner-Portal**: Selbstverwaltung für Erlebnisanbieter
+
+Shared Packages:
+- @eventhour/ui - Wiederverwendbare UI-Komponenten
+- @eventhour/database - Prisma Schema und Datenbank-Utils
+- @eventhour/auth - Zentrale Authentifizierungs-Logik
+- @eventhour/payments - Payment-Provider (Stripe Integration)
+- @eventhour/consent - DSGVO Cookie-Management
+
+Hauptfunktionen:
+- Erlebnisverwaltung mit Kategorien und Filtern
+- Gutscheinsystem mit QR-Codes
+- Bestellmanagement mit E-Mail-Benachrichtigungen
+- Bildupload mit Drag & Drop
+- Rolle-basierte Zugriffskontrolle
+- Stripe Payment Integration
+- Responsive Design mit EventHour Branding (Gelb/Schwarz)
+- E-Mail-Bestätigung bei Registrierung
+
+Technische Highlights:
+- ~26.000 Zeilen TypeScript Code
+- Turborepo für optimiertes Monorepo-Management
+- Next.js 14 mit App Router
+- Supabase Backend mit Row Level Security
+- Framer Motion für Animationen
+- ITC Avant Garde Gothic + Poppins Typography
+- Automatisiertes Deployment via Docker/CapRover
+
+Die Plattform ist vollständig produktionsreif und skalierbar für größere Nutzermengen.`,
+    category: 'web',
+    technologies: ['Next.js', 'TypeScript', 'Turborepo', 'Supabase', 'PostgreSQL', 'Stripe', 'Tailwind CSS', 'Framer Motion', 'Prisma'],
+    imageUrl: '/images/projects/eventhour.jpg',
+    liveUrl: 'https://flighthourlandingp.immogear.de',
+    githubUrl: 'https://github.com/airbussard/flighthour-landing-pages',
+    featured: true,
+    createdAt: '2024-09-11',
+    display_order: 4,
+  },
+  {
     id: 'michaelaknabe-art',
     title: 'Michaela Knabe - Künstlerportfolio',
     description: 'Elegante Portfolio-Website für Künstlerin mit Galerie und Admin-Bereich',
@@ -153,7 +202,7 @@ Die Website setzt den Fokus auf die Kunst und bietet eine störungsfreie Präsen
     githubUrl: '',
     featured: false,
     createdAt: '2024-09-06',
-    display_order: 4,
+    display_order: 5,
   },
   {
     id: 'teppichhaus-website',
@@ -195,7 +244,7 @@ Die Website ist speziell auf die Bedürfnisse eines lokalen Einzelhandelsgeschä
     githubUrl: '',
     featured: false,
     createdAt: '2024-10-05',
-    display_order: 5,
+    display_order: 6,
   },
   {
     id: 'jvc-kalender',
@@ -235,7 +284,7 @@ Die Plattform wurde speziell für die Bedürfnisse von Jugendverbänden entwicke
     githubUrl: 'https://github.com/airbussard/jvc',
     featured: false,
     createdAt: '2025-10-03',
-    display_order: 6,
+    display_order: 7,
   },
 ];
 
