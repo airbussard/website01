@@ -94,7 +94,7 @@ export default function CookieConsent({ forceShow = false }: CookieConsentProps)
             className={`fixed z-[9999] ${
               showSettings
                 ? 'inset-x-4 top-1/2 -translate-y-1/2 md:inset-x-auto md:left-1/2 md:-translate-x-1/2 md:w-full md:max-w-2xl'
-                : 'bottom-4 right-4 left-4 md:left-auto md:max-w-md'
+                : 'bottom-0 left-0 right-0'
             }`}
           >
             <div className="relative bg-white dark:bg-gray-900 rounded-2xl border-2 border-primary-500 shadow-2xl overflow-hidden">
@@ -110,7 +110,7 @@ export default function CookieConsent({ forceShow = false }: CookieConsentProps)
               </div>
 
               {/* Content */}
-              <div className="relative p-6">
+              <div className="relative p-6 container mx-auto max-w-7xl">
                 {/* Header */}
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center space-x-3">
