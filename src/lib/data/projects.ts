@@ -2,171 +2,240 @@ import { Project } from '@/types';
 
 export const projects: Project[] = [
   {
-    id: 'fintech-dashboard',
-    title: 'FinTech Analytics Dashboard',
-    description: 'Echtzeit-Analytics-Dashboard für Finanztransaktionen mit KI-gestützten Insights',
-    longDescription: `Ein hochmodernes Analytics-Dashboard für ein führendes FinTech-Unternehmen.
+    id: 'log-k-flugbuch',
+    title: 'Log-K - Digitales Pilotenflugbuch',
+    description: 'EASA/FAA konformes digitales Flugbuch als native iOS App mit Web-Dashboard',
+    longDescription: `Ein umfassendes digitales Flugbuch-System für Piloten mit vollständiger EASA/FAA Compliance.
 
-Die Plattform verarbeitet täglich über 1 Million Transaktionen in Echtzeit und bietet umfassende Einblicke in Geschäftskennzahlen, Nutzerverhalten und Markttrends.
+Das System besteht aus einer nativen iOS-App und einem modernen Web-Dashboard, die nahtlos über Supabase synchronisiert werden.
 
 Hauptmerkmale:
-- Echtzeit-Datenvisualisierung mit WebSocket-Integration
-- KI-gestützte Anomalieerkennung und Fraud Detection
-- Customizable Dashboards mit Drag & Drop Builder
-- Multi-Tenant-Architektur für verschiedene Unternehmenseinheiten
-- Advanced Filtering und Export-Funktionen (PDF, Excel, CSV)
-- Role-based Access Control (RBAC) System
-- Performance-optimiert für große Datenmengen (10M+ Datensätze)
+- Native iOS App in Swift/SwiftUI
+- EASA/FAA konformes Flugbuch mit PDF-Export
+- Flottenverwaltung mit detaillierten Flugzeugdaten
+- Crew-Verwaltung und Besatzungszuordnung
+- Dashboard mit umfangreichen Statistiken und Charts
+- Profilverwaltung mit Lizenzen und Ratings
+- Automatische Backup-Funktionen
+- Apple Sign-In Integration
+- Row Level Security (RLS) für Datenisolierung
 
-Die Lösung reduzierte die Reporting-Zeit um 75% und verbesserte die Fraud-Detection-Rate um 40%.`,
-    category: 'web',
-    technologies: ['React', 'TypeScript', 'Node.js', 'PostgreSQL', 'Redis', 'WebSocket', 'D3.js', 'Docker', 'Kubernetes'],
-    imageUrl: '/images/projects/fintech-dashboard.jpg',
-    liveUrl: 'https://demo-fintech.getemergence.com',
+Technische Highlights:
+- Native Swift/SwiftUI für iOS
+- Web-Dashboard in PHP mit Supabase Backend
+- Echtzeit-Synchronisation zwischen App und Web
+- Soft-Delete-Implementierung für Datenintegrität
+- Umfangreiche Filter- und Export-Funktionen
+- Sichere Authentifizierung über Supabase Auth
+
+Die App ist speziell für Berufspiloten entwickelt und erfüllt alle behördlichen Anforderungen.`,
+    category: 'mobile',
+    technologies: ['Swift', 'SwiftUI', 'PHP', 'Supabase', 'PostgreSQL', 'Apple Sign-In', 'PDF Generation'],
+    imageUrl: '/images/projects/log-k.jpg',
+    liveUrl: 'https://log-k.flighthour.de',
     githubUrl: '',
     featured: true,
-    createdAt: '2024-03-15',
+    createdAt: '2024-07-10',
     display_order: 1,
   },
   {
-    id: 'ecommerce-platform',
-    title: 'E-Commerce Plattform "ShopMax"',
-    description: 'Skalierbare Multi-Vendor E-Commerce Plattform mit Headless Architecture',
-    longDescription: `Eine moderne, headless E-Commerce-Plattform für einen Multi-Vendor-Marketplace mit über 500 Händlern und 100.000+ Produkten.
+    id: 'immogear-app',
+    title: 'ImmoGear - Immobilienverwaltung',
+    description: 'Native iOS App für Vermieter und Hausverwalter zur effizienten Immobilienverwaltung',
+    longDescription: `Eine professionelle iOS-App für Vermieter, Hausverwalter und Immobilieneigentümer zur Verwaltung ihrer Objekte.
 
-Die Plattform wurde als moderne, API-first Lösung entwickelt, die maximale Flexibilität und Performance bietet.
+Die App bietet einen umfassenden Überblick über alle verwalteten Immobilien mit Read-Only Zugriff auf das zentrale System.
 
-Technische Highlights:
-- Headless Commerce Architecture mit GraphQL API
-- Microservices-basierte Backend-Struktur
-- Elasticsearch für blitzschnelle Produktsuche
-- Stripe & PayPal Integration für Zahlungen
-- Automatisierte Inventory Management
-- Real-time Order Tracking
-- Admin Dashboard für Vendor Management
-- Progressive Web App (PWA) für Mobile
-- CDN-Integration für globale Performance
-- A/B Testing Framework integriert
+Features:
+- Immobilienübersicht mit allen verwalteten Objekten
+- Mieterverwaltung mit Vertragsdetails
+- Zahlungsübersicht und Mietzahlungsstatus
+- Aufgabenverwaltung für Wartungen und To-Dos
+- Dokumentenverwaltung pro Immobilie
+- Zählerstandsverwaltung für Nebenkostenabrechnungen
+- Synchronisation mit Web-Portal
 
-Ergebnisse:
-- 99.9% Uptime
-- 2s durchschnittliche Ladezeit
-- 45% Conversion-Rate-Steigerung
-- Unterstützt 10.000+ gleichzeitige Nutzer`,
-    category: 'web',
-    technologies: ['Next.js', 'GraphQL', 'Node.js', 'MongoDB', 'Elasticsearch', 'Stripe', 'AWS', 'Docker', 'Redis'],
-    imageUrl: '/images/projects/ecommerce-platform.jpg',
-    liveUrl: 'https://shopmax-demo.getemergence.com',
+Architektur:
+- Native SwiftUI für optimale Performance
+- MVVM Architecture Pattern
+- Supabase als Backend (Read-Only)
+- Async/Await für asynchrone Operationen
+- Vollständig auf Deutsch lokalisiert
+
+Besonderheit:
+Die App arbeitet im Read-Only Modus, um Datenkonflikte zu vermeiden. Alle Änderungen erfolgen über das Web-Portal.`,
+    category: 'mobile',
+    technologies: ['Swift', 'SwiftUI', 'Supabase', 'MVVM', 'Async/Await'],
+    imageUrl: '/images/projects/immogear.jpg',
+    liveUrl: 'https://immogear.de',
     githubUrl: '',
     featured: true,
-    createdAt: '2024-02-20',
+    createdAt: '2024-07-23',
     display_order: 2,
   },
   {
-    id: 'fitness-tracker-ios',
-    title: 'FitPro - iOS Fitness Tracker',
-    description: 'Native iOS App für personalisiertes Fitness-Training mit HealthKit Integration',
-    longDescription: `Eine vollständig native iOS-App für Fitness-Enthusiasten mit KI-gestützten Trainingsplänen und umfassender HealthKit-Integration.
+    id: 'flighthour-portal',
+    title: 'FLIGHTHOUR Employee Portal',
+    description: 'Umfassendes Mitarbeiterportal mit Ticketsystem, Dokumentenmanagement und Kalenderintegration',
+    longDescription: `Ein modernes Mitarbeiterportal für Luftfahrtunternehmen mit umfangreichen Management-Funktionen.
 
-Die App kombiniert modernste iOS-Technologien mit Machine Learning, um personalisierte Trainingsempfehlungen zu liefern.
+Das System existiert in zwei Implementierungen:
+- Moderne Next.js 14 Version mit TypeScript
+- Legacy PHP-Version für Strato-Hosting-Kompatibilität
 
-Features:
-- HealthKit Integration für automatisches Activity Tracking
-- Personalisierte Trainingspläne basierend auf Fitness-Level
-- Video-Tutorials für über 200 Übungen
-- Social Features: Challenge-System, Leaderboards
-- Apple Watch Companion App
-- Offline-Modus für Training ohne Internet
-- Core ML für Form-Analyse per Kamera
-- CloudKit Sync für Geräte-übergreifende Nutzung
-- Nutrition Tracking mit Barcode-Scanner
-- Integration mit Apple Music für Workout-Playlists
+Hauptfunktionen:
+- Ticket-System für Support-Anfragen
+- Dokumentenmanagement mit Berechtigungssystem
+- Google Calendar Integration
+- E-Mail-Integration mit IMAP
+- Benutzer- und Rollenverwaltung
+- Dashboard mit Statistiken
 
-Auszeichnungen:
-- App Store "App des Tages"
-- 4.8★ Rating (15.000+ Reviews)
-- Über 100.000 Downloads in 6 Monaten`,
-    category: 'mobile',
-    technologies: ['Swift', 'SwiftUI', 'Core ML', 'HealthKit', 'CloudKit', 'Core Data', 'AVFoundation', 'ARKit'],
-    imageUrl: '/images/projects/fitness-tracker.jpg',
-    liveUrl: 'https://apps.apple.com/fitpro',
+Technische Architektur:
+- Next.js 14 mit App Router
+- TypeScript, Tailwind CSS, shadcn/ui
+- Supabase Backend mit PostgreSQL
+- Row Level Security (RLS) für sichere Datenisolierung
+- Email Worker für automatische Ticket-Erstellung
+- OAuth2 für Google Calendar Sync
+
+Rollen-System:
+- Employee: Basis-Zugriff
+- Manager: Erweiterte Berechtigungen
+- Admin: Volle System-Kontrolle
+
+Die Plattform wurde speziell für die Anforderungen in der Luftfahrtbranche entwickelt.`,
+    category: 'web',
+    technologies: ['Next.js', 'TypeScript', 'PHP', 'Supabase', 'PostgreSQL', 'Tailwind CSS', 'shadcn/ui', 'Google Calendar API'],
+    imageUrl: '/images/projects/flighthour.jpg',
+    liveUrl: 'https://portal.flighthour.de',
     githubUrl: '',
     featured: true,
-    createdAt: '2024-01-10',
+    createdAt: '2024-07-29',
     display_order: 3,
   },
   {
-    id: 'cloud-infrastructure',
-    title: 'Enterprise Cloud Migration',
-    description: 'Komplette Cloud-Migration und Infrastruktur-Modernisierung für Fortune 500 Unternehmen',
-    longDescription: `Umfassende Cloud-Transformation eines traditionellen On-Premise-Systems zu einer modernen, skalierbaren Cloud-Infrastruktur.
+    id: 'michaelaknabe-art',
+    title: 'Michaela Knabe - Künstlerportfolio',
+    description: 'Elegante Portfolio-Website für Künstlerin mit Galerie und Admin-Bereich',
+    longDescription: `Eine moderne, minimalistische Portfolio-Website für die Künstlerin Michaela Knabe.
 
-Das Projekt umfasste die Migration von über 200 Services und Applikationen zu einer modernen Microservices-Architektur in der Cloud.
+Die Website präsentiert Kunstwerke in einer eleganten, benutzerfreundlichen Galerie mit vollständigem Admin-Backend.
 
-Projekt-Umfang:
-- Migration von On-Premise zu AWS Multi-Region Setup
-- Implementierung von Kubernetes-basierter Container-Orchestrierung
-- Setup von CI/CD Pipelines mit GitOps
-- Infrastructure as Code mit Terraform
-- Service Mesh mit Istio
-- Centralized Logging mit ELK Stack
-- Monitoring mit Prometheus & Grafana
-- Disaster Recovery & Backup-Strategien
-- Security Hardening & Compliance (ISO 27001, SOC 2)
-- Cost Optimization: 40% Reduktion der Infrastruktur-Kosten
+Features:
+- Responsive Hero-Section mit Künstler-Vorstellung
+- Galerie mit Grid-Layout für Kunstwerke
+- Über-Seite mit Künstler-Biografie
+- Admin-Bereich für Content-Management
+- Kontaktformular mit E-Mail-Integration
+- Google reCAPTCHA v3 für Spam-Schutz
+- Vollständig mehrsprachig (next-intl)
+- DSGVO-konforme Datenschutzseiten
 
-Technische Achievements:
-- Zero-Downtime Migration
-- 99.99% Verfügbarkeit
-- Auto-Scaling für 10x Traffic-Spikes
-- Deployment-Zeit von 4h auf 15min reduziert`,
-    category: 'system',
-    technologies: ['AWS', 'Kubernetes', 'Terraform', 'Docker', 'GitLab CI', 'Prometheus', 'Grafana', 'ELK', 'Istio'],
-    imageUrl: '/images/projects/cloud-infrastructure.jpg',
-    liveUrl: '',
+Design:
+- Minimalistisches, elegantes Design
+- Optimiert für Kunstpräsentation
+- Perfekte Darstellung auf allen Geräten
+- Schnelle Ladezeiten durch Next.js Optimierung
+
+Tech Stack:
+- Next.js 15 mit App Router
+- TypeScript für Type-Safety
+- Supabase für Backend und Bildverwaltung
+- Tailwind CSS 4 für Styling
+- Responsive Design für alle Bildschirmgrößen
+
+Die Website setzt den Fokus auf die Kunst und bietet eine störungsfreie Präsentation der Werke.`,
+    category: 'web',
+    technologies: ['Next.js', 'TypeScript', 'Supabase', 'Tailwind CSS', 'next-intl', 'reCAPTCHA', 'React Hook Form'],
+    imageUrl: '/images/projects/michaelaknabe.jpg',
+    liveUrl: 'https://michaelaknabe.de',
     githubUrl: '',
     featured: false,
-    createdAt: '2023-11-05',
+    createdAt: '2024-09-06',
     display_order: 4,
   },
   {
-    id: 'ai-chat-platform',
-    title: 'AI-Powered Customer Service Platform',
-    description: 'Intelligente Chatbot-Plattform mit Natural Language Processing für Enterprise-Kunden',
-    longDescription: `Eine KI-gestützte Customer Service Plattform, die natürliche Sprachverarbeitung nutzt, um Kundenanfragen automatisch zu beantworten.
+    id: 'teppichhaus-website',
+    title: 'Teppichhaus am Dornbusch',
+    description: 'Moderne Website für Teppichhaus mit Service-Seiten und Kontaktformular',
+    longDescription: `Eine professionelle Next.js Website für das Teppichhaus am Dornbusch in Frankfurt am Main.
 
-Die Plattform reduziert die Support-Kosten um 60% und verbessert die Kundenzufriedenheit durch 24/7 Verfügbarkeit.
+Die Website präsentiert alle Services des Unternehmens und ermöglicht einfache Kontaktaufnahme.
 
-Kernfunktionen:
-- Natural Language Understanding (NLU) mit GPT-4
-- Multi-Channel Support (Web, WhatsApp, Messenger, Slack)
-- Sentiment Analysis für automatische Eskalation
-- Live-Chat Handover zu menschlichen Agenten
-- Knowledge Base mit automatischem Learning
-- Analytics Dashboard für Performance-Tracking
-- Multi-Language Support (12 Sprachen)
-- Voice-to-Text Integration
-- Custom Branding & White-Label Option
-- GDPR-compliant Data Handling
+Features:
+- Ansprechende Homepage mit Hero-Section
+- Service-Seiten für alle Angebote:
+  - Teppich-Verkauf
+  - Teppich-Ankauf
+  - Professionelle Teppichreinigung
+  - Teppichreparatur mit Vorher/Nachher-Slider
+- Kontaktformular mit E-Mail-Integration
+- Google Maps Integration für Standort
+- DSGVO-konformes Cookie-Consent-Tool
+- Rechtliche Seiten (Impressum, Datenschutz, AGB)
 
-Erfolgsmetriken:
-- 85% Automatisierungsrate bei Anfragen
-- 30s durchschnittliche Antwortzeit
-- 92% Customer Satisfaction Score
-- Verarbeitet 50.000+ Konversationen täglich
+Technische Highlights:
+- Automatisches Deployment über GitHub Actions
+- CapRover-Integration für einfaches Hosting
+- SMTP-E-Mail-Integration für Kontaktanfragen
+- Responsive Design für alle Geräte
+- SEO-optimiert für lokale Suche
 
-Integration:
-- CRM-Systeme (Salesforce, HubSpot)
-- Helpdesk-Tools (Zendesk, Freshdesk)
-- E-Commerce-Plattformen (Shopify, WooCommerce)`,
+Deployment:
+- Automatisiertes CI/CD über GitHub Actions
+- CapRover für Container-Orchestrierung
+- Umgebungsvariablen für sichere Konfiguration
+
+Die Website ist speziell auf die Bedürfnisse eines lokalen Einzelhandelsgeschäfts zugeschnitten.`,
     category: 'web',
-    technologies: ['Python', 'FastAPI', 'React', 'OpenAI GPT-4', 'PostgreSQL', 'Redis', 'Celery', 'WebSocket', 'Docker'],
-    imageUrl: '/images/projects/ai-chat-platform.jpg',
-    liveUrl: 'https://chatbot-demo.getemergence.com',
+    technologies: ['Next.js', 'TypeScript', 'Tailwind CSS', 'Nodemailer', 'Google Maps API', 'CapRover', 'Docker'],
+    imageUrl: '/images/projects/teppichhaus.jpg',
+    liveUrl: 'https://teppichhaus-am-dornbusch.de',
     githubUrl: '',
     featured: false,
-    createdAt: '2023-10-12',
+    createdAt: '2024-10-05',
     display_order: 5,
+  },
+  {
+    id: 'jvc-kalender',
+    title: 'jVC Kalender & Verfügbarkeitsmanagement',
+    description: 'Jugendverband-Terminverwaltung mit Verfügbarkeitskalender und ICS-Export',
+    longDescription: `Ein spezialisiertes Kalendersystem für den Jugendverband jVC zur Verwaltung von Terminen und Verfügbarkeiten.
+
+Das System ermöglicht effiziente Terminplanung unter Berücksichtigung von Urlauben und Verfügbarkeiten aller Mitglieder.
+
+Hauptfunktionen:
+- Gemeinsamer Kalender für alle Termine
+- Verfügbarkeitskalender mit Overlay-Funktion
+- Urlaubsverwaltung (mehrere Zeiträume pro Person)
+- F-Tage (Freie Tage) Verwaltung
+- ICS-Export für iPhone/Mac/Google Calendar
+- Zeitraum-basierter Export von Terminen
+- Automatische Einladungsmails bei Account-Erstellung
+
+Rollen-System:
+- **Normal**: Eigene Verfügbarkeit verwalten, Termine ansehen
+- **Moderator**: Termine erstellen und verwalten
+- **Administrator**: Vollständige Nutzerverwaltung
+
+Technische Features:
+- React Big Calendar für intuitive Darstellung
+- ICS-Format-Export für Kalender-Kompatibilität
+- Realtime-Updates mit Supabase
+- E-Mail-Integration für Benachrichtigungen
+- Verfügbarkeits-Overlay im Kalender
+- Responsive Design für alle Geräte
+
+Die Plattform wurde speziell für die Bedürfnisse von Jugendverbänden entwickelt.`,
+    category: 'web',
+    technologies: ['Next.js', 'TypeScript', 'Supabase', 'PostgreSQL', 'React Big Calendar', 'ICS Export', 'Tailwind CSS'],
+    imageUrl: '/images/projects/jvc.jpg',
+    liveUrl: 'https://kalender.jvc-online.de',
+    githubUrl: 'https://github.com/airbussard/jvc',
+    featured: false,
+    createdAt: '2025-10-03',
+    display_order: 6,
   },
 ];
 
