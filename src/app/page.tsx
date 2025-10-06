@@ -2,10 +2,11 @@
 
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { ArrowRight, Code2, Smartphone, Database, Lightbulb, Code } from 'lucide-react';
+import { ArrowRight, Code2, Smartphone, Database, Lightbulb } from 'lucide-react';
 import Header from '@/components/Header';
 import Hero from '@/components/Hero';
 import Footer from '@/components/Footer';
+import ProjectCard from '@/components/ProjectCard';
 import { getFeaturedProjects } from '@/lib/data/projects';
 
 const services = [
@@ -126,43 +127,7 @@ export default function Home() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
               {featuredProjects.map((project, index) => (
-                <motion.div
-                  key={project.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                  viewport={{ once: true }}
-                  className="bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow"
-                >
-                  <div className="h-48 bg-gray-100 dark:bg-gray-900 border-b-2 border-primary-500 flex items-center justify-center">
-                    <Code className="h-20 w-20 text-primary-500 opacity-20" />
-                  </div>
-                  <div className="p-6">
-                    <h3 className="text-xl font-bold mb-2 text-gray-900 dark:text-white">
-                      {project.title}
-                    </h3>
-                    <p className="text-gray-600 dark:text-gray-400 mb-4 line-clamp-2">
-                      {project.description}
-                    </p>
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      {project.technologies.slice(0, 3).map((tech) => (
-                        <span
-                          key={tech}
-                          className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded text-xs"
-                        >
-                          {tech}
-                        </span>
-                      ))}
-                    </div>
-                    <Link
-                      href={`/project/${project.id}`}
-                      className="inline-flex items-center text-primary-600 dark:text-primary-400 font-semibold hover:underline"
-                    >
-                      Mehr erfahren
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </Link>
-                  </div>
-                </motion.div>
+                <ProjectCard key={project.id} project={project} index={index} />
               ))}
             </div>
 
