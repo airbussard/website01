@@ -7,11 +7,12 @@ import { Menu, X, Code2, Smartphone, Globe } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navigation = [
-  { name: 'Start', href: '#home' },
-  { name: 'Projekte', href: '#projects' },
-  { name: 'Über mich', href: '#about' },
-  { name: 'Technologien', href: '#tech' },
-  { name: 'Kontakt', href: '#contact' },
+  { name: 'Start', href: '/' },
+  { name: 'Services', href: '/services' },
+  { name: 'Projekte', href: '/referenzen' },
+  { name: 'Über uns', href: '/about' },
+  { name: 'Technologien', href: '/tech' },
+  { name: 'Kontakt', href: '/kontakt' },
 ];
 
 export default function Header() {
@@ -27,14 +28,8 @@ export default function Header() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const scrollToSection = (href: string) => {
-    if (href.startsWith('#')) {
-      const element = document.querySelector(href);
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
-        setMobileMenuOpen(false);
-      }
-    }
+  const handleNavClick = () => {
+    setMobileMenuOpen(false);
   };
 
   return (
@@ -67,13 +62,13 @@ export default function Header() {
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
             {navigation.map((item) => (
-              <button
+              <Link
                 key={item.name}
-                onClick={() => scrollToSection(item.href)}
+                href={item.href}
                 className="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors font-medium"
               >
                 {item.name}
-              </button>
+              </Link>
             ))}
           </div>
 
@@ -114,13 +109,14 @@ export default function Header() {
             >
               <div className="flex flex-col space-y-3">
                 {navigation.map((item) => (
-                  <button
+                  <Link
                     key={item.name}
-                    onClick={() => scrollToSection(item.href)}
+                    href={item.href}
+                    onClick={handleNavClick}
                     className="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors font-medium text-left py-2"
                   >
                     {item.name}
-                  </button>
+                  </Link>
                 ))}
                 <div className="flex items-center space-x-4 pt-4 border-t border-gray-200 dark:border-gray-700">
                   <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">

@@ -42,36 +42,52 @@ export default function Footer() {
             <h4 className="text-lg font-semibold mb-4">Quick Links</h4>
             <ul className="space-y-2">
               <li>
-                <button
-                  onClick={() => document.querySelector('#home')?.scrollIntoView({ behavior: 'smooth' })}
+                <Link
+                  href="/"
                   className="text-gray-400 hover:text-primary-400 transition-colors"
                 >
                   Start
-                </button>
+                </Link>
               </li>
               <li>
-                <button
-                  onClick={() => document.querySelector('#projects')?.scrollIntoView({ behavior: 'smooth' })}
+                <Link
+                  href="/services"
+                  className="text-gray-400 hover:text-primary-400 transition-colors"
+                >
+                  Services
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/referenzen"
                   className="text-gray-400 hover:text-primary-400 transition-colors"
                 >
                   Projekte
-                </button>
+                </Link>
               </li>
               <li>
-                <button
-                  onClick={() => document.querySelector('#about')?.scrollIntoView({ behavior: 'smooth' })}
+                <Link
+                  href="/about"
                   className="text-gray-400 hover:text-primary-400 transition-colors"
                 >
-                  Über mich
-                </button>
+                  Über uns
+                </Link>
               </li>
               <li>
-                <button
-                  onClick={() => document.querySelector('#contact')?.scrollIntoView({ behavior: 'smooth' })}
+                <Link
+                  href="/tech"
+                  className="text-gray-400 hover:text-primary-400 transition-colors"
+                >
+                  Technologien
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/kontakt"
                   className="text-gray-400 hover:text-primary-400 transition-colors"
                 >
                   Kontakt
-                </button>
+                </Link>
               </li>
             </ul>
           </div>
