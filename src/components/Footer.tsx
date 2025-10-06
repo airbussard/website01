@@ -1,10 +1,13 @@
 'use client';
 
+import { useState } from 'react';
 import { Linkedin, Mail, Heart, Code2 } from 'lucide-react';
 import Link from 'next/link';
+import CookieConsent from './CookieConsent';
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
+  const [showCookieSettings, setShowCookieSettings] = useState(false);
 
   return (
     <footer className="bg-gray-900 text-white py-12">
@@ -128,6 +131,15 @@ export default function Footer() {
               <Link href="/datenschutz" className="text-gray-400 hover:text-primary-400 transition-colors">
                 Datenschutz
               </Link>
+              <Link href="/cookie-policy" className="text-gray-400 hover:text-primary-400 transition-colors">
+                Cookie-Richtlinie
+              </Link>
+              <button
+                onClick={() => setShowCookieSettings(true)}
+                className="text-gray-400 hover:text-primary-400 transition-colors"
+              >
+                Cookie-Einstellungen
+              </button>
             </div>
           </div>
           <div className="mt-4 text-center">
@@ -137,6 +149,9 @@ export default function Footer() {
           </div>
         </div>
       </div>
+
+      {/* Cookie Settings Modal */}
+      {showCookieSettings && <CookieConsent forceShow={true} />}
     </footer>
   );
 }

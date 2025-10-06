@@ -115,7 +115,7 @@ export default function DatenschutzPage() {
                     <p>Oscar Knabe</p>
                     <p>Steinstraße 71</p>
                     <p>52249 Eschweiler</p>
-                    <p className="mt-2">E-Mail: info@dev.tech</p>
+                    <p className="mt-2">E-Mail: hello@getemergence.com</p>
                   </div>
                   <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed mt-3">
                     Verantwortliche Stelle ist die natürliche oder juristische Person, die allein oder gemeinsam mit anderen über die Zwecke und Mittel der Verarbeitung von personenbezogenen Daten (z.B. Namen, E-Mail-Adressen o. Ä.) entscheidet.
@@ -176,7 +176,35 @@ export default function DatenschutzPage() {
 
             <section>
               <h2 className="text-2xl font-semibold text-gray-800 dark:text-white mb-4">
-                5. Verwendung von Supabase
+                5. Cookies
+              </h2>
+              <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed mb-4">
+                Unsere Website verwendet Cookies. Cookies sind kleine Textdateien, die auf Ihrem Endgerät gespeichert werden und die Ihr Browser speichert. Sie richten keinen Schaden an.
+              </p>
+              <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed mb-4">
+                Einige Cookies sind erforderlich, um die Funktionsfähigkeit unserer Website zu gewährleisten (essentielle Cookies). Andere Cookies helfen uns dabei, diese Website und Ihre Nutzererfahrung zu verbessern (analytische Cookies) oder ermöglichen es uns, Ihnen relevante Werbung anzuzeigen (Marketing-Cookies).
+              </p>
+              <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed mb-4">
+                Sie können Ihre Cookie-Einstellungen jederzeit anpassen. Weitere Informationen zu den von uns verwendeten Cookies und Ihren Wahlmöglichkeiten finden Sie in unserer{' '}
+                <a href="/cookie-policy" className="text-primary-600 dark:text-primary-400 hover:underline">
+                  Cookie-Richtlinie
+                </a>
+                .
+              </p>
+
+              <div className="mt-4">
+                <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-2">
+                  Rechtsgrundlage
+                </h3>
+                <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
+                  Die Verwendung von essentiellen Cookies erfolgt auf Grundlage von Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an der Funktionsfähigkeit der Website). Alle anderen Cookies werden nur nach Ihrer ausdrücklichen Einwilligung gemäß Art. 6 Abs. 1 lit. a DSGVO gesetzt.
+                </p>
+              </div>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-semibold text-gray-800 dark:text-white mb-4">
+                6. Verwendung von Supabase
               </h2>
               <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
                 Diese Website nutzt Supabase als Backend-Service für die Datenverwaltung und -speicherung. Supabase ist ein Open-Source-Backend-as-a-Service-Anbieter, der Datenbankfunktionalitäten, Authentifizierung und Echtzeit-Funktionen bereitstellt.
@@ -194,7 +222,7 @@ export default function DatenschutzPage() {
 
             <section>
               <h2 className="text-2xl font-semibold text-gray-800 dark:text-white mb-4">
-                6. Ihre Rechte
+                7. Ihre Rechte
               </h2>
               <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed mb-4">
                 Sie haben folgende Rechte hinsichtlich der Sie betreffenden personenbezogenen Daten:
@@ -213,7 +241,7 @@ export default function DatenschutzPage() {
 
             <section>
               <h2 className="text-2xl font-semibold text-gray-800 dark:text-white mb-4">
-                7. Änderung unserer Datenschutzbestimmungen
+                8. Änderung unserer Datenschutzbestimmungen
               </h2>
               <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
                 Wir behalten uns vor, diese Datenschutzerklärung anzupassen, damit sie stets den aktuellen rechtlichen Anforderungen entspricht oder um Änderungen unserer Leistungen in der Datenschutzerklärung umzusetzen, z.B. bei der Einführung neuer Services. Für Ihren erneuten Besuch gilt dann die neue Datenschutzerklärung.
