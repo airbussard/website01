@@ -6,6 +6,7 @@ import { ArrowLeft, ExternalLink, Calendar, Tag } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { getProjectById } from '@/lib/data/projects';
 import Image from 'next/image';
+import ImageGallery from '@/components/ImageGallery';
 
 export default function ProjectDetailPage() {
   const params = useParams();
@@ -92,6 +93,24 @@ export default function ProjectDetailPage() {
                   <p className="text-gray-600 dark:text-gray-400 whitespace-pre-wrap">
                     {project.longDescription}
                   </p>
+                </div>
+              )}
+
+              {/* Image Gallery */}
+              {project.images && project.images.length > 0 && (
+                <div className="mb-12">
+                  <h2 className="text-2xl font-bold mb-6 text-gray-800 dark:text-white">
+                    Screenshots
+                  </h2>
+                  <ImageGallery
+                    images={project.images.map((url, index) => ({
+                      id: `${project.id}-${index}`,
+                      image_url: url,
+                      alt_text: `${project.title} - Screenshot ${index + 1}`,
+                      display_order: index
+                    }))}
+                    projectTitle={project.title}
+                  />
                 </div>
               )}
             </motion.div>

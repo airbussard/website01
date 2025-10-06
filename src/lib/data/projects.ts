@@ -39,6 +39,12 @@ Das System ist speziell für Berufspiloten entwickelt und erfüllt alle behördl
     category: 'system',
     technologies: ['Swift', 'SwiftUI', 'PHP', 'Supabase', 'PostgreSQL', 'Apple Sign-In', 'PDF Generation', 'Responsive Web'],
     imageUrl: '/images/projects/log-k.jpg',
+    images: [
+      '/images/projects/logk/logk_web.png',
+      '/images/projects/logk/logk_web_02.png',
+      '/images/projects/logk/logk_ios_01.png',
+      '/images/projects/logk/logk_ios_02.png',
+    ],
     liveUrl: 'https://log-k.flighthour.de',
     githubUrl: '',
     featured: true,
@@ -47,33 +53,49 @@ Das System ist speziell für Berufspiloten entwickelt und erfüllt alle behördl
   },
   {
     id: 'immogear-app',
-    title: 'ImmoGear - Immobilienverwaltung',
-    description: 'Native iOS App für Vermieter und Hausverwalter zur effizienten Immobilienverwaltung',
-    longDescription: `Eine professionelle iOS-App für Vermieter, Hausverwalter und Immobilieneigentümer zur Verwaltung ihrer Objekte.
+    title: 'ImmoGear - Immobilienverwaltung (iOS & Web)',
+    description: 'Professionelle Immobilienverwaltung - Native iOS App mit umfangreichem Web-Portal',
+    longDescription: `Eine professionelle Immobilienverwaltungslösung für Vermieter und Hausverwalter auf zwei Plattformen.
 
-Die App bietet einen umfassenden Überblick über alle verwalteten Immobilien mit Read-Only Zugriff auf das zentrale System.
+Das System bietet sowohl eine native iOS-App für mobilen Zugriff als auch ein vollwertiges Web-Portal für die Verwaltung am Desktop.
 
-Features:
+**iOS App (Native SwiftUI):**
+- Offline-fähige native Performance
 - Immobilienübersicht mit allen verwalteten Objekten
 - Mieterverwaltung mit Vertragsdetails
 - Zahlungsübersicht und Mietzahlungsstatus
 - Aufgabenverwaltung für Wartungen und To-Dos
 - Dokumentenverwaltung pro Immobilie
 - Zählerstandsverwaltung für Nebenkostenabrechnungen
-- Synchronisation mit Web-Portal
-
-Architektur:
-- Native SwiftUI für optimale Performance
 - MVVM Architecture Pattern
-- Supabase als Backend (Read-Only)
-- Async/Await für asynchrone Operationen
 - Vollständig auf Deutsch lokalisiert
 
+**Web-Portal (Hauptsystem):**
+- Vollständige CRUD-Operationen für alle Daten
+- Immobilien-, Mieter- und Vertragsverwaltung
+- Finanzübersichten und Reporting
+- Dokumentenmanagement mit Upload
+- Kalender für Termine und Fristen
+- Responsive Design für Desktop und Tablet
+- Mehrbenutzerverwaltung mit Rollen
+
+Technische Architektur:
+- Native Swift/SwiftUI für iOS
+- Modern Web-Stack für das Portal
+- Supabase Backend mit PostgreSQL
+- Echtzeit-Synchronisation zwischen Plattformen
+- Row Level Security (RLS) für Datenisolierung
+- Async/Await für asynchrone Operationen
+
 Besonderheit:
-Die App arbeitet im Read-Only Modus, um Datenkonflikte zu vermeiden. Alle Änderungen erfolgen über das Web-Portal.`,
-    category: 'mobile',
-    technologies: ['Swift', 'SwiftUI', 'Supabase', 'MVVM', 'Async/Await'],
+Die iOS App arbeitet im Read-Only Modus für mobile Übersicht, während das Web-Portal die vollständige Verwaltung ermöglicht.`,
+    category: 'system',
+    technologies: ['Swift', 'SwiftUI', 'Supabase', 'PostgreSQL', 'MVVM', 'Async/Await', 'Responsive Web'],
     imageUrl: '/images/projects/immogear.jpg',
+    images: [
+      '/images/projects/immogear/immogear_web_01.png',
+      '/images/projects/immogear/immogear_web_02.png',
+    ],
     liveUrl: 'https://immogear.de',
     githubUrl: '',
     featured: true,
@@ -164,6 +186,11 @@ Die Plattform ist vollständig produktionsreif und skalierbar für größere Nut
     category: 'web',
     technologies: ['Next.js', 'TypeScript', 'Turborepo', 'Supabase', 'PostgreSQL', 'Stripe', 'Tailwind CSS', 'Framer Motion', 'Prisma'],
     imageUrl: '/images/projects/eventhour.jpg',
+    images: [
+      '/images/projects/eventhour/eventhour_01.png',
+      '/images/projects/eventhour/eventhour_02.png',
+      '/images/projects/eventhour/eventhour_03.png',
+    ],
     liveUrl: 'https://flighthourlandingp.immogear.de',
     githubUrl: 'https://github.com/airbussard/flighthour-landing-pages',
     featured: true,

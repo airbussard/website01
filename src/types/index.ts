@@ -6,6 +6,7 @@ export interface Project {
   category: 'web' | 'mobile' | 'system';
   technologies: string[];
   imageUrl: string;
+  images?: string[]; // Array of additional project screenshots
   liveUrl?: string;
   githubUrl?: string;
   featured: boolean;
