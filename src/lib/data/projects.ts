@@ -3,34 +3,41 @@ import { Project } from '@/types';
 export const projects: Project[] = [
   {
     id: 'log-k-flugbuch',
-    title: 'Log-K - Digitales Pilotenflugbuch',
-    description: 'EASA/FAA konformes digitales Flugbuch als native iOS App mit Web-Dashboard',
-    longDescription: `Ein umfassendes digitales Flugbuch-System für Piloten mit vollständiger EASA/FAA Compliance.
+    title: 'Log-K - Digitales Pilotenflugbuch (iOS & Web)',
+    description: 'EASA/FAA konformes digitales Flugbuch - Native iOS App mit vollwertigem Web-Dashboard',
+    longDescription: `Ein umfassendes digitales Flugbuch-System für Piloten mit vollständiger EASA/FAA Compliance auf zwei Plattformen.
 
-Das System besteht aus einer nativen iOS-App und einem modernen Web-Dashboard, die nahtlos über Supabase synchronisiert werden.
+Das System bietet sowohl eine native iOS-App als auch ein vollwertiges Web-Dashboard, die nahtlos über Supabase synchronisiert werden.
 
-Hauptmerkmale:
-- Native iOS App in Swift/SwiftUI
-- EASA/FAA konformes Flugbuch mit PDF-Export
+**iOS App (Native Swift/SwiftUI):**
+- Offline-fähige native Performance
+- Apple Sign-In Integration
+- EASA/FAA konformes Flugbuch
 - Flottenverwaltung mit detaillierten Flugzeugdaten
 - Crew-Verwaltung und Besatzungszuordnung
-- Dashboard mit umfangreichen Statistiken und Charts
 - Profilverwaltung mit Lizenzen und Ratings
 - Automatische Backup-Funktionen
-- Apple Sign-In Integration
-- Row Level Security (RLS) für Datenisolierung
+- PDF-Export für Behörden
 
-Technische Highlights:
-- Native Swift/SwiftUI für iOS
-- Web-Dashboard in PHP mit Supabase Backend
-- Echtzeit-Synchronisation zwischen App und Web
-- Soft-Delete-Implementierung für Datenintegrität
-- Umfangreiche Filter- und Export-Funktionen
+**Web-Dashboard (PHP/Supabase):**
+- Voller Funktionsumfang wie iOS App
+- CRUD-Operationen für Flüge, Flugzeuge und Crew
+- Interaktives Dashboard mit Statistiken und Charts
+- Filter- und Export-Funktionen
+- Responsive Design für Desktop und Tablet
+- Row Level Security (RLS) für Datenisolierung
 - Sichere Authentifizierung über Supabase Auth
 
-Die App ist speziell für Berufspiloten entwickelt und erfüllt alle behördlichen Anforderungen.`,
-    category: 'mobile',
-    technologies: ['Swift', 'SwiftUI', 'PHP', 'Supabase', 'PostgreSQL', 'Apple Sign-In', 'PDF Generation'],
+Technische Highlights:
+- Echtzeit-Synchronisation zwischen iOS und Web
+- Soft-Delete-Implementierung für Datenintegrität
+- PostgreSQL Datenbank mit optimierten Queries
+- Umfangreiche Backup-Funktionen
+- Multi-Plattform-Architektur mit gemeinsamer Datenbasis
+
+Das System ist speziell für Berufspiloten entwickelt und erfüllt alle behördlichen Anforderungen für EASA und FAA.`,
+    category: 'system',
+    technologies: ['Swift', 'SwiftUI', 'PHP', 'Supabase', 'PostgreSQL', 'Apple Sign-In', 'PDF Generation', 'Responsive Web'],
     imageUrl: '/images/projects/log-k.jpg',
     liveUrl: 'https://log-k.flighthour.de',
     githubUrl: '',
