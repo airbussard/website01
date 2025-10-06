@@ -35,7 +35,7 @@ export default function ImpressumPage() {
                 Kontakt
               </h2>
               <div className="space-y-2 text-gray-600 dark:text-gray-300">
-                <p>E-Mail: info@getemergence.com</p>
+                <p>E-Mail: hello@getemergence.com</p>
               </div>
             </section>
 

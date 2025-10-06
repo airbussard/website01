@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { Resend } from 'resend';
 
 export async function POST(request: Request) {
   try {
@@ -51,8 +52,31 @@ export async function POST(request: Request) {
       }
     }
 
-    // Here you could also add email sending logic
-    // For example, using SendGrid, Resend, or other email services
+    // Send email notification via Resend
+    if (process.env.RESEND_API_KEY) {
+      try {
+        const resend = new Resend(process.env.RESEND_API_KEY);
+
+        await resend.emails.send({
+          from: 'onboarding@resend.dev', // This is the verified sender from Resend
+          to: 'hello@getemergence.com',
+          subject: `Neue Kontaktanfrage: ${subject}`,
+          html: `
+            <h2>Neue Kontaktanfrage</h2>
+            <p><strong>Von:</strong> ${name}</p>
+            <p><strong>E-Mail:</strong> ${email}</p>
+            ${company ? `<p><strong>Firma:</strong> ${company}</p>` : ''}
+            ${projectType ? `<p><strong>Projekttyp:</strong> ${projectType}</p>` : ''}
+            <p><strong>Betreff:</strong> ${subject}</p>
+            <p><strong>Nachricht:</strong></p>
+            <p>${message.replace(/\n/g, '<br>')}</p>
+          `,
+        });
+      } catch (emailError) {
+        console.error('Failed to send email:', emailError);
+        // Don't fail the request if email fails
+      }
+    }
 
     return NextResponse.json(
       { message: 'Contact request received successfully' },
