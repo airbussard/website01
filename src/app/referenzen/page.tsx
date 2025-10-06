@@ -1,11 +1,12 @@
 'use client';
 
 import { useState } from 'react';
+import { motion } from 'framer-motion';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ProjectCard from '@/components/ProjectCard';
 import { projects as allProjects } from '@/lib/data/projects';
-import { Filter } from 'lucide-react';
+import { Filter, Code2, Smartphone, Database, Lightbulb } from 'lucide-react';
 import Link from 'next/link';
 
 const categories = [
@@ -112,20 +113,101 @@ export default function ReferenzenPage() {
         </div>
 
         {/* CTA Section */}
-        <div className="mt-20 text-center bg-gradient-to-r from-primary-600 to-secondary-600 rounded-xl p-8 md:p-12 text-white">
-          <h2 className="text-3xl font-bold mb-4">
-            Ihr Projekt könnte das nächste sein
-          </h2>
-          <p className="text-xl mb-8 opacity-90">
-            Lassen Sie uns gemeinsam etwas Großartiges erschaffen
-          </p>
-          <Link
-            href="/kontakt"
-            className="inline-flex items-center px-6 py-3 bg-white text-primary-600 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
-          >
-            Projekt starten
-          </Link>
-        </div>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          viewport={{ once: true }}
+          className="mt-20 relative bg-white dark:bg-gray-900 rounded-2xl border-2 border-primary-500 overflow-hidden"
+        >
+          {/* Background Grid Pattern */}
+          <div className="absolute inset-0 opacity-5">
+            <div
+              className="absolute inset-0"
+              style={{
+                backgroundImage: `linear-gradient(0deg, rgb(59, 130, 246) 1px, transparent 1px), linear-gradient(90deg, rgb(59, 130, 246) 1px, transparent 1px)`,
+                backgroundSize: '40px 40px'
+              }}
+            />
+          </div>
+
+          <div className="relative grid md:grid-cols-2 gap-8 p-8 md:p-12">
+            {/* Left: Decorative Elements */}
+            <div className="hidden md:flex items-center justify-center relative">
+              <motion.div
+                animate={{
+                  y: [0, -20, 0],
+                }}
+                transition={{
+                  duration: 4,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
+                className="absolute top-0 left-0"
+              >
+                <div className="w-20 h-20 border-2 border-primary-500 rounded-2xl flex items-center justify-center">
+                  <Code2 className="h-10 w-10 text-primary-600 dark:text-primary-400" />
+                </div>
+              </motion.div>
+
+              <motion.div
+                animate={{
+                  y: [0, 20, 0],
+                }}
+                transition={{
+                  duration: 3,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                  delay: 0.5
+                }}
+                className="absolute bottom-4 right-4"
+              >
+                <div className="w-16 h-16 border-2 border-primary-500 rounded-2xl flex items-center justify-center">
+                  <Smartphone className="h-8 w-8 text-primary-600 dark:text-primary-400" />
+                </div>
+              </motion.div>
+
+              <motion.div
+                animate={{
+                  y: [0, -15, 0],
+                }}
+                transition={{
+                  duration: 3.5,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                  delay: 1
+                }}
+                className="absolute top-1/3 right-1/4"
+              >
+                <div className="w-14 h-14 border-2 border-primary-500 rounded-xl flex items-center justify-center">
+                  <Database className="h-7 w-7 text-primary-600 dark:text-primary-400" />
+                </div>
+              </motion.div>
+
+              <div className="w-32 h-32 border-2 border-primary-500 rounded-3xl flex items-center justify-center">
+                <Lightbulb className="h-16 w-16 text-primary-600 dark:text-primary-400" />
+              </div>
+            </div>
+
+            {/* Right: Content */}
+            <div className="flex flex-col justify-center text-center md:text-left">
+              <h2 className="text-3xl font-bold mb-4 text-gray-900 dark:text-white">
+                Ihr Projekt könnte das nächste sein
+              </h2>
+              <p className="text-xl mb-8 text-gray-600 dark:text-gray-300">
+                Lassen Sie uns gemeinsam etwas Großartiges erschaffen
+              </p>
+              <div>
+                <Link
+                  href="/kontakt"
+                  className="inline-flex items-center px-8 py-4 bg-primary-600 text-white rounded-xl font-semibold hover:bg-primary-700 hover:scale-105 hover:shadow-xl transition-all duration-300 text-lg"
+                >
+                  Projekt starten
+                </Link>
+              </div>
+            </div>
+          </div>
+        </motion.div>
       </main>
 
       <Footer />
