@@ -7,7 +7,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { projects as allProjects } from '@/lib/data/projects';
 
-const categories = [
+const categories: Array<{ id: 'all' | 'web' | 'mobile' | 'system'; name: string; icon: any }> = [
   { id: 'all', name: 'Alle', icon: null },
   { id: 'web', name: 'Web', icon: Globe },
   { id: 'mobile', name: 'iOS Apps', icon: Smartphone },
@@ -15,12 +15,12 @@ const categories = [
 ];
 
 export default function Projects() {
-  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedCategory, setSelectedCategory] = useState<'all' | 'web' | 'mobile' | 'system'>('all');
   const [hoveredProject, setHoveredProject] = useState<string | null>(null);
 
   const filteredProjects = selectedCategory === 'all'
     ? allProjects
-    : allProjects.filter(p => p.category === selectedCategory);
+    : allProjects.filter(p => p.categories.includes(selectedCategory));
 
   return (
     <section id="projects" className="py-20 bg-gray-50">
@@ -97,9 +97,9 @@ export default function Projects() {
                     </div>
                   ) : (
                     <div className="absolute inset-0 flex items-center justify-center">
-                      {project.category === 'mobile' ? (
+                      {project.categories.includes('mobile') ? (
                         <Smartphone className="h-20 w-20 text-primary-600/20" />
-                      ) : project.category === 'system' ? (
+                      ) : project.categories.includes('system') ? (
                         <Code className="h-20 w-20 text-primary-600/20" />
                       ) : (
                         <Globe className="h-20 w-20 text-primary-600/20" />

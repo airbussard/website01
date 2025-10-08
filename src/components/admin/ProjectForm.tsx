@@ -16,7 +16,7 @@ export default function ProjectForm({ project, onClose, onSave }: ProjectFormPro
     title: project?.title || '',
     description: project?.description || '',
     longDescription: project?.longDescription || '',
-    category: project?.category || 'web',
+    category: project?.categories?.[0] || 'web',
     technologies: project?.technologies?.join(', ') || '',
     liveUrl: project?.liveUrl || '',
     githubUrl: project?.githubUrl || '',
@@ -34,7 +34,7 @@ export default function ProjectForm({ project, onClose, onSave }: ProjectFormPro
       title: formData.title,
       description: formData.description,
       long_description: formData.longDescription,
-      category: formData.category,
+      categories: [formData.category], // Store as array
       technologies: formData.technologies.split(',').map(t => t.trim()).filter(Boolean),
       live_url: formData.liveUrl || null,
       github_url: formData.githubUrl || null,

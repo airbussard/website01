@@ -114,17 +114,21 @@ export default function ProjectDetailPage() {
                   Projektinformationen
                 </h3>
 
-                {/* Category */}
+                {/* Categories */}
                 <div className="mb-4">
                   <div className="flex items-center text-gray-600 mb-2">
                     <Tag className="h-4 w-4 mr-2" />
-                    <span className="text-sm">Kategorie</span>
+                    <span className="text-sm">Kategorien</span>
                   </div>
-                  <p className="font-medium text-gray-800 capitalize">
-                    {project.category === 'mobile' ? 'iOS App' :
-                     project.category === 'web' ? 'Web Application' :
-                     'System'}
-                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {project.categories.map(cat => (
+                      <span key={cat} className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-sm font-medium capitalize">
+                        {cat === 'mobile' ? 'iOS App' :
+                         cat === 'web' ? 'Web' :
+                         'System'}
+                      </span>
+                    ))}
+                  </div>
                 </div>
 
                 {/* Date */}

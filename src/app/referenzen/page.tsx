@@ -2,14 +2,12 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
 import ProjectCard from '@/components/ProjectCard';
 import { projects as allProjects } from '@/lib/data/projects';
 import { Filter, Code2, Smartphone, Database, Lightbulb } from 'lucide-react';
 import Link from 'next/link';
 
-const categories = [
+const categories: Array<{ id: 'all' | 'web' | 'mobile' | 'system'; label: string }> = [
   { id: 'all', label: 'Alle Projekte' },
   { id: 'web', label: 'Web Development' },
   { id: 'mobile', label: 'Mobile Apps' },
@@ -17,17 +15,15 @@ const categories = [
 ];
 
 export default function ReferenzenPage() {
-  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedCategory, setSelectedCategory] = useState<'all' | 'web' | 'mobile' | 'system'>('all');
 
   const filteredProjects = allProjects.filter(project =>
-    selectedCategory === 'all' || project.category === selectedCategory
+    selectedCategory === 'all' || project.categories.includes(selectedCategory)
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      <Header />
-
-      <main className="container mx-auto px-6 py-20">
+    <main className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-20">
+      <div className="container mx-auto px-6">
         {/* Hero Section */}
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
@@ -88,7 +84,7 @@ export default function ReferenzenPage() {
           </div>
           <div className="bg-white rounded-xl p-6 text-center">
             <div className="text-3xl font-bold text-primary-600 mb-2">
-              {allProjects.filter(p => p.category === 'web').length}
+              {allProjects.filter(p => p.categories.includes('web')).length}
             </div>
             <div className="text-gray-600">
               Webanwendungen
@@ -96,7 +92,7 @@ export default function ReferenzenPage() {
           </div>
           <div className="bg-white rounded-xl p-6 text-center">
             <div className="text-3xl font-bold text-primary-600 mb-2">
-              {allProjects.filter(p => p.category === 'mobile').length}
+              {allProjects.filter(p => p.categories.includes('mobile')).length}
             </div>
             <div className="text-gray-600">
               Mobile Apps
@@ -208,9 +204,7 @@ export default function ReferenzenPage() {
             </div>
           </div>
         </motion.div>
-      </main>
-
-      <Footer />
-    </div>
+      </div>
+    </main>
   );
 }
