@@ -280,46 +280,6 @@ Die Website ist speziell auf die Bedürfnisse eines lokalen Einzelhandelsgeschä
     createdAt: '2024-10-05',
     display_order: 6,
   },
-  {
-    id: 'jvc-kalender',
-    title: 'jVC Kalender & Verfügbarkeitsmanagement',
-    description: 'Jugendverband-Terminverwaltung mit Verfügbarkeitskalender und ICS-Export',
-    longDescription: `Ein spezialisiertes Kalendersystem für den Jugendverband jVC zur Verwaltung von Terminen und Verfügbarkeiten.
-
-Das System ermöglicht effiziente Terminplanung unter Berücksichtigung von Urlauben und Verfügbarkeiten aller Mitglieder.
-
-Hauptfunktionen:
-- Gemeinsamer Kalender für alle Termine
-- Verfügbarkeitskalender mit Overlay-Funktion
-- Urlaubsverwaltung (mehrere Zeiträume pro Person)
-- F-Tage (Freie Tage) Verwaltung
-- ICS-Export für iPhone/Mac/Google Calendar
-- Zeitraum-basierter Export von Terminen
-- Automatische Einladungsmails bei Account-Erstellung
-
-Rollen-System:
-- **Normal**: Eigene Verfügbarkeit verwalten, Termine ansehen
-- **Moderator**: Termine erstellen und verwalten
-- **Administrator**: Vollständige Nutzerverwaltung
-
-Technische Features:
-- React Big Calendar für intuitive Darstellung
-- ICS-Format-Export für Kalender-Kompatibilität
-- Realtime-Updates mit Supabase
-- E-Mail-Integration für Benachrichtigungen
-- Verfügbarkeits-Overlay im Kalender
-- Responsive Design für alle Geräte
-
-Die Plattform wurde speziell für die Bedürfnisse von Jugendverbänden entwickelt.`,
-    categories: ['web'],
-    technologies: ['Next.js', 'TypeScript', 'Supabase', 'PostgreSQL', 'React Big Calendar', 'ICS Export', 'Tailwind CSS'],
-    imageUrl: '/images/projects/jvc.jpg',
-    liveUrl: 'https://kalender.jvc-online.de',
-    githubUrl: 'https://github.com/airbussard/jvc',
-    featured: false,
-    createdAt: '2025-10-03',
-    display_order: 7,
-  },
 ];
 
 // Helper function to get project by ID
