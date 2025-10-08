@@ -31,7 +31,7 @@ const techCategories = [
 
 export default function Technologies() {
   return (
-    <section id="tech" className="py-20 bg-gray-50 dark:bg-gray-900">
+    <section id="tech" className="py-20 bg-gray-50">
       <div className="container mx-auto px-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -45,7 +45,7 @@ export default function Technologies() {
               Technologie-Stack
             </span>
           </h2>
-          <p className="text-xl text-gray-600 dark:text-gray-400">
+          <p className="text-xl text-gray-600">
             Die richtigen Werkzeuge für jedes Projekt
           </p>
         </motion.div>
@@ -58,9 +58,9 @@ export default function Technologies() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: categoryIndex * 0.1 }}
               viewport={{ once: true }}
-              className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg"
+              className="bg-white rounded-xl p-6 shadow-lg"
             >
-              <h3 className="text-xl font-bold mb-4 text-primary-600 dark:text-primary-400">
+              <h3 className="text-xl font-bold mb-4 text-primary-600">
                 {category.name}
               </h3>
               <div className="flex flex-wrap gap-2">
@@ -74,7 +74,7 @@ export default function Technologies() {
                       delay: categoryIndex * 0.1 + techIndex * 0.05,
                     }}
                     viewport={{ once: true }}
-                    className="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full text-sm font-medium hover:bg-primary-100 dark:hover:bg-primary-900/30 hover:text-primary-700 dark:hover:text-primary-400 transition-colors cursor-default"
+                    className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm font-medium hover:bg-primary-100 hover:text-primary-700 transition-colors cursor-default"
                   >
                     {tech}
                   </motion.span>
@@ -91,10 +91,10 @@ export default function Technologies() {
           viewport={{ once: true }}
           className="mt-12 text-center"
         >
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="text-gray-600">
             ... und viele weitere Technologien, je nach Projektanforderung.
           </p>
-          <p className="text-gray-600 dark:text-gray-400 mt-2">
+          <p className="text-gray-600 mt-2">
             Wir bleiben stets auf dem neuesten Stand der Technologie.
           </p>
         </motion.div>

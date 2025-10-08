@@ -15,7 +15,7 @@ export default function Hero() {
   return (
     <section id="home" className="min-h-screen flex items-center justify-center relative overflow-hidden">
       {/* Background Gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary-50 via-white to-primary-100 dark:from-gray-900 dark:via-gray-800 dark:to-primary-950" />
+      <div className="absolute inset-0 bg-gradient-to-br from-primary-50 via-white to-primary-100" />
 
       {/* Animated Background Elements */}
       <div className="absolute inset-0">
@@ -36,7 +36,7 @@ export default function Hero() {
                 Digital Excellence
               </span>
               <br />
-              <span className="text-gray-800 dark:text-white">
+              <span className="text-gray-800">
                 Modern Solutions
               </span>
             </h1>
@@ -46,7 +46,7 @@ export default function Hero() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-8"
+            className="text-xl md:text-2xl text-gray-600 mb-8"
           >
             Wir entwickeln moderne Websites, komplexe Websysteme und native iOS Apps.
             Von der Konzeption bis zur Umsetzung – Ihre digitale Transformation aus einer Hand.
@@ -66,7 +66,7 @@ export default function Hero() {
             </Link>
             <button
               onClick={scrollToProjects}
-              className="px-8 py-4 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-800 dark:text-white border-2 border-gray-200 dark:border-gray-700 rounded-lg font-semibold transition-all transform hover:scale-105"
+              className="px-8 py-4 bg-white hover:bg-gray-50 text-gray-800 border-2 border-gray-200 rounded-lg font-semibold transition-all transform hover:scale-105"
             >
               Projekte ansehen
             </button>
@@ -82,13 +82,13 @@ export default function Hero() {
               href="https://linkedin.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-gray-600 hover:text-primary-600 dark:text-gray-400 dark:hover:text-primary-400 transition-colors"
+              className="text-gray-600 hover:text-primary-600 transition-colors"
             >
               <Linkedin className="h-6 w-6" />
             </Link>
             <Link
               href="mailto:hello@getemergence.com"
-              className="text-gray-600 hover:text-primary-600 dark:text-gray-400 dark:hover:text-primary-400 transition-colors"
+              className="text-gray-600 hover:text-primary-600 transition-colors"
             >
               <Mail className="h-6 w-6" />
             </Link>

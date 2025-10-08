@@ -97,7 +97,7 @@ export default function CookieConsent({ forceShow = false }: CookieConsentProps)
                 : 'bottom-0 left-0 right-0'
             }`}
           >
-            <div className="relative bg-white dark:bg-gray-900 rounded-2xl border-2 border-primary-500 shadow-2xl overflow-hidden">
+            <div className="relative bg-white rounded-2xl border-2 border-primary-500 shadow-2xl overflow-hidden">
               {/* Grid Pattern Background */}
               <div className="absolute inset-0 opacity-5 pointer-events-none">
                 <div
@@ -115,13 +115,13 @@ export default function CookieConsent({ forceShow = false }: CookieConsentProps)
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center space-x-3">
                     <div className="w-12 h-12 border-2 border-primary-500 rounded-xl flex items-center justify-center flex-shrink-0">
-                      <Cookie className="h-6 w-6 text-primary-600 dark:text-primary-400" />
+                      <Cookie className="h-6 w-6 text-primary-600" />
                     </div>
                     <div>
-                      <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                      <h3 className="text-xl font-bold text-gray-900">
                         {showSettings ? 'Cookie-Einstellungen' : 'Cookie-Hinweis'}
                       </h3>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                      <p className="text-sm text-gray-500">
                         Wir respektieren Ihre Privatsphäre
                       </p>
                     </div>
@@ -132,7 +132,7 @@ export default function CookieConsent({ forceShow = false }: CookieConsentProps)
                         setShowBanner(false);
                         setShowSettings(false);
                       }}
-                      className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                      className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                     >
                       <X className="h-5 w-5 text-gray-500" />
                     </button>
@@ -142,7 +142,7 @@ export default function CookieConsent({ forceShow = false }: CookieConsentProps)
                 {/* Simple Banner */}
                 {!showSettings && (
                   <>
-                    <p className="text-gray-600 dark:text-gray-300 text-sm mb-6">
+                    <p className="text-gray-600 text-sm mb-6">
                       Wir verwenden Cookies, um Ihre Erfahrung zu verbessern. Nur essentielle Cookies sind erforderlich, während andere uns helfen, unsere Website zu optimieren.
                     </p>
 
@@ -156,27 +156,27 @@ export default function CookieConsent({ forceShow = false }: CookieConsentProps)
                       </button>
                       <button
                         onClick={handleAcceptEssential}
-                        className="flex-1 px-4 py-3 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-xl font-semibold hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors flex items-center justify-center space-x-2"
+                        className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-xl font-semibold hover:bg-gray-200 transition-colors flex items-center justify-center space-x-2"
                       >
                         <Shield className="h-4 w-4" />
                         <span>Nur Notwendige</span>
                       </button>
                       <button
                         onClick={() => setShowSettings(true)}
-                        className="px-4 py-3 border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-xl font-semibold hover:border-primary-500 hover:text-primary-600 dark:hover:text-primary-400 transition-colors flex items-center justify-center space-x-2"
+                        className="px-4 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:border-primary-500 hover:text-primary-600 transition-colors flex items-center justify-center space-x-2"
                       >
                         <Settings2 className="h-4 w-4" />
                         <span>Einstellungen</span>
                       </button>
                     </div>
 
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-4 text-center">
+                    <p className="text-xs text-gray-500 mt-4 text-center">
                       Mehr Infos in unserer{' '}
-                      <Link href="/cookie-policy" className="text-primary-600 dark:text-primary-400 hover:underline">
+                      <Link href="/cookie-policy" className="text-primary-600 hover:underline">
                         Cookie-Richtlinie
                       </Link>
                       {' '}und{' '}
-                      <Link href="/datenschutz" className="text-primary-600 dark:text-primary-400 hover:underline">
+                      <Link href="/datenschutz" className="text-primary-600 hover:underline">
                         Datenschutzerklärung
                       </Link>
                     </p>
@@ -186,37 +186,37 @@ export default function CookieConsent({ forceShow = false }: CookieConsentProps)
                 {/* Settings Modal */}
                 {showSettings && (
                   <div className="space-y-4 max-h-[60vh] overflow-y-auto">
-                    <p className="text-gray-600 dark:text-gray-300 text-sm mb-4">
+                    <p className="text-gray-600 text-sm mb-4">
                       Wählen Sie, welche Arten von Cookies Sie akzeptieren möchten. Essentielle Cookies können nicht deaktiviert werden.
                     </p>
 
                     {/* Essential Cookies */}
-                    <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 border-2 border-gray-200 dark:border-gray-700">
+                    <div className="bg-gray-50 rounded-xl p-4 border-2 border-gray-200">
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center space-x-2">
-                          <Shield className="h-5 w-5 text-green-600 dark:text-green-400" />
-                          <h4 className="font-semibold text-gray-900 dark:text-white">
+                          <Shield className="h-5 w-5 text-green-600" />
+                          <h4 className="font-semibold text-gray-900">
                             Essentielle Cookies
                           </h4>
                         </div>
-                        <span className="text-xs px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-full">
+                        <span className="text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full">
                           Immer aktiv
                         </span>
                       </div>
-                      <p className="text-sm text-gray-600 dark:text-gray-300">
+                      <p className="text-sm text-gray-600">
                         Diese Cookies sind für die grundlegende Funktionalität der Website erforderlich.
                       </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                      <p className="text-xs text-gray-500 mt-2">
                         {getCookiesByCategory('essential').length} Cookie(s)
                       </p>
                     </div>
 
                     {/* Analytics Cookies */}
-                    <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 border-2 border-gray-200 dark:border-gray-700">
+                    <div className="bg-gray-50 rounded-xl p-4 border-2 border-gray-200">
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center space-x-2">
-                          <Cookie className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                          <h4 className="font-semibold text-gray-900 dark:text-white">
+                          <Cookie className="h-5 w-5 text-blue-600" />
+                          <h4 className="font-semibold text-gray-900">
                             Analytische Cookies
                           </h4>
                         </div>
@@ -225,7 +225,7 @@ export default function CookieConsent({ forceShow = false }: CookieConsentProps)
                           className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                             consent.analytics
                               ? 'bg-primary-600'
-                              : 'bg-gray-300 dark:bg-gray-600'
+                              : 'bg-gray-300'
                           }`}
                         >
                           <span
@@ -235,20 +235,20 @@ export default function CookieConsent({ forceShow = false }: CookieConsentProps)
                           />
                         </button>
                       </div>
-                      <p className="text-sm text-gray-600 dark:text-gray-300">
+                      <p className="text-sm text-gray-600">
                         Helfen uns zu verstehen, wie Besucher mit unserer Website interagieren.
                       </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                      <p className="text-xs text-gray-500 mt-2">
                         {getCookiesByCategory('analytics').length} Cookie(s)
                       </p>
                     </div>
 
                     {/* Marketing Cookies */}
-                    <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 border-2 border-gray-200 dark:border-gray-700">
+                    <div className="bg-gray-50 rounded-xl p-4 border-2 border-gray-200">
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center space-x-2">
-                          <Cookie className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-                          <h4 className="font-semibold text-gray-900 dark:text-white">
+                          <Cookie className="h-5 w-5 text-purple-600" />
+                          <h4 className="font-semibold text-gray-900">
                             Marketing Cookies
                           </h4>
                         </div>
@@ -257,7 +257,7 @@ export default function CookieConsent({ forceShow = false }: CookieConsentProps)
                           className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                             consent.marketing
                               ? 'bg-primary-600'
-                              : 'bg-gray-300 dark:bg-gray-600'
+                              : 'bg-gray-300'
                           }`}
                         >
                           <span
@@ -267,16 +267,16 @@ export default function CookieConsent({ forceShow = false }: CookieConsentProps)
                           />
                         </button>
                       </div>
-                      <p className="text-sm text-gray-600 dark:text-gray-300">
+                      <p className="text-sm text-gray-600">
                         Werden verwendet, um relevante Werbung anzuzeigen.
                       </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                      <p className="text-xs text-gray-500 mt-2">
                         {getCookiesByCategory('marketing').length} Cookie(s)
                       </p>
                     </div>
 
                     {/* Action Buttons */}
-                    <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-200">
                       <button
                         onClick={handleSaveSettings}
                         className="flex-1 px-4 py-3 bg-primary-600 text-white rounded-xl font-semibold hover:bg-primary-700 transition-colors"
@@ -285,15 +285,15 @@ export default function CookieConsent({ forceShow = false }: CookieConsentProps)
                       </button>
                       <button
                         onClick={handleAcceptAll}
-                        className="flex-1 px-4 py-3 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-xl font-semibold hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                        className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-xl font-semibold hover:bg-gray-200 transition-colors"
                       >
                         Alle akzeptieren
                       </button>
                     </div>
 
-                    <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
+                    <p className="text-xs text-gray-500 text-center">
                       Mehr Details in unserer{' '}
-                      <Link href="/cookie-policy" className="text-primary-600 dark:text-primary-400 hover:underline">
+                      <Link href="/cookie-policy" className="text-primary-600 hover:underline">
                         Cookie-Richtlinie
                       </Link>
                     </p>

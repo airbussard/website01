@@ -37,7 +37,7 @@ export default function Header() {
       className={cn(
         'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
         isScrolled
-          ? 'bg-white/80 dark:bg-gray-900/80 backdrop-blur-md shadow-lg'
+          ? 'bg-white/80 backdrop-blur-md shadow-lg'
           : 'bg-transparent'
       )}
     >
@@ -53,7 +53,7 @@ export default function Header() {
               <span className="text-xl font-bold bg-gradient-to-r from-primary-600 to-primary-400 bg-clip-text text-transparent">
                 getemergence.com
               </span>
-              <span className="text-xs text-gray-500 dark:text-gray-400 -mt-1">
+              <span className="text-xs text-gray-500 -mt-1">
                 Digital Solutions
               </span>
             </div>
@@ -65,7 +65,7 @@ export default function Header() {
               <Link
                 key={item.name}
                 href={item.href}
-                className="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors font-medium"
+                className="text-gray-700 hover:text-primary-600 transition-colors font-medium"
               >
                 {item.name}
               </Link>
@@ -74,11 +74,11 @@ export default function Header() {
 
           {/* Services Icons - Desktop */}
           <div className="hidden md:flex items-center space-x-4">
-            <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
+            <div className="flex items-center space-x-2 text-sm text-gray-600">
               <Globe className="h-4 w-4" />
               <span>Web</span>
             </div>
-            <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
+            <div className="flex items-center space-x-2 text-sm text-gray-600">
               <Smartphone className="h-4 w-4" />
               <span>iOS</span>
             </div>
@@ -90,9 +90,9 @@ export default function Header() {
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
             {mobileMenuOpen ? (
-              <X className="h-6 w-6 text-gray-700 dark:text-gray-300" />
+              <X className="h-6 w-6 text-gray-700" />
             ) : (
-              <Menu className="h-6 w-6 text-gray-700 dark:text-gray-300" />
+              <Menu className="h-6 w-6 text-gray-700" />
             )}
           </button>
         </div>
@@ -113,17 +113,17 @@ export default function Header() {
                     key={item.name}
                     href={item.href}
                     onClick={handleNavClick}
-                    className="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors font-medium text-left py-2"
+                    className="text-gray-700 hover:text-primary-600 transition-colors font-medium text-left py-2"
                   >
                     {item.name}
                   </Link>
                 ))}
-                <div className="flex items-center space-x-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                  <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
+                <div className="flex items-center space-x-4 pt-4 border-t border-gray-200">
+                  <div className="flex items-center space-x-2 text-sm text-gray-600">
                     <Globe className="h-4 w-4" />
                     <span>Web</span>
                   </div>
-                  <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
+                  <div className="flex items-center space-x-2 text-sm text-gray-600">
                     <Smartphone className="h-4 w-4" />
                     <span>iOS</span>
                   </div>

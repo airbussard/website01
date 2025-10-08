@@ -102,16 +102,16 @@ export default function ServicesPage() {
   const [expandedService, setExpandedService] = useState<string | null>(null);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       <Header />
 
       <main className="container mx-auto px-6 py-20">
         {/* Hero Section */}
         <div className="text-center mb-16">
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
+          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
             Unsere Services
           </h1>
-          <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             Von der Idee bis zur fertigen Lösung - wir begleiten Sie auf dem Weg zur digitalen Transformation
           </p>
         </div>
@@ -125,7 +125,7 @@ export default function ServicesPage() {
             return (
               <div
                 key={service.id}
-                className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden transition-all duration-300"
+                className="bg-white rounded-xl shadow-lg overflow-hidden transition-all duration-300"
               >
                 <div
                   className="p-8 cursor-pointer"
@@ -133,42 +133,42 @@ export default function ServicesPage() {
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex items-start space-x-4">
-                      <div className="p-3 bg-primary-100 dark:bg-primary-900/30 rounded-lg">
-                        <Icon className="h-6 w-6 text-primary-600 dark:text-primary-400" />
+                      <div className="p-3 bg-primary-100 rounded-lg">
+                        <Icon className="h-6 w-6 text-primary-600" />
                       </div>
                       <div>
-                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                        <h2 className="text-2xl font-bold text-gray-900 mb-2">
                           {service.title}
                         </h2>
-                        <p className="text-gray-600 dark:text-gray-300">
+                        <p className="text-gray-600">
                           {service.shortDescription}
                         </p>
                       </div>
                     </div>
-                    <button className="text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-transform transform">
+                    <button className="text-gray-400 hover:text-primary-600 transition-transform transform">
                       <ArrowRight className={`h-6 w-6 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
                     </button>
                   </div>
                 </div>
 
                 {isExpanded && (
-                  <div className="px-8 pb-8 border-t border-gray-100 dark:border-gray-700 animate-fadeIn">
+                  <div className="px-8 pb-8 border-t border-gray-100 animate-fadeIn">
                     <div className="pt-6">
-                      <p className="text-gray-600 dark:text-gray-300 mb-6 leading-relaxed">
+                      <p className="text-gray-600 mb-6 leading-relaxed">
                         {service.description}
                       </p>
 
                       <div className="grid md:grid-cols-2 gap-8">
                         {/* Features */}
                         <div>
-                          <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
+                          <h3 className="text-lg font-semibold text-gray-800 mb-4">
                             Leistungen
                           </h3>
                           <ul className="space-y-2">
                             {service.features.map((feature, index) => (
                               <li key={index} className="flex items-start">
                                 <CheckCircle className="h-5 w-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" />
-                                <span className="text-gray-600 dark:text-gray-300 text-sm">
+                                <span className="text-gray-600 text-sm">
                                   {feature}
                                 </span>
                               </li>
@@ -178,14 +178,14 @@ export default function ServicesPage() {
 
                         {/* Benefits */}
                         <div>
-                          <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
+                          <h3 className="text-lg font-semibold text-gray-800 mb-4">
                             Ihre Vorteile
                           </h3>
                           <ul className="space-y-2">
                             {service.benefits.map((benefit, index) => (
                               <li key={index} className="flex items-start">
                                 <CheckCircle className="h-5 w-5 text-blue-500 mr-2 flex-shrink-0 mt-0.5" />
-                                <span className="text-gray-600 dark:text-gray-300 text-sm">
+                                <span className="text-gray-600 text-sm">
                                   {benefit}
                                 </span>
                               </li>
@@ -196,14 +196,14 @@ export default function ServicesPage() {
 
                       {/* Technologies */}
                       <div className="mt-6">
-                        <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-3">
+                        <h3 className="text-lg font-semibold text-gray-800 mb-3">
                           Technologien
                         </h3>
                         <div className="flex flex-wrap gap-2">
                           {service.technologies.map((tech, index) => (
                             <span
                               key={index}
-                              className="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full text-sm"
+                              className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm"
                             >
                               {tech}
                             </span>
@@ -224,7 +224,7 @@ export default function ServicesPage() {
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
           viewport={{ once: true }}
-          className="relative bg-white dark:bg-gray-900 rounded-2xl border-2 border-primary-500 overflow-hidden"
+          className="relative bg-white rounded-2xl border-2 border-primary-500 overflow-hidden"
         >
           {/* Background Grid Pattern */}
           <div className="absolute inset-0 opacity-5">
@@ -252,7 +252,7 @@ export default function ServicesPage() {
                 className="absolute top-0 left-0"
               >
                 <div className="w-20 h-20 border-2 border-primary-500 rounded-2xl flex items-center justify-center">
-                  <Code2 className="h-10 w-10 text-primary-600 dark:text-primary-400" />
+                  <Code2 className="h-10 w-10 text-primary-600" />
                 </div>
               </motion.div>
 
@@ -269,7 +269,7 @@ export default function ServicesPage() {
                 className="absolute bottom-4 right-4"
               >
                 <div className="w-16 h-16 border-2 border-primary-500 rounded-2xl flex items-center justify-center">
-                  <Smartphone className="h-8 w-8 text-primary-600 dark:text-primary-400" />
+                  <Smartphone className="h-8 w-8 text-primary-600" />
                 </div>
               </motion.div>
 
@@ -286,21 +286,21 @@ export default function ServicesPage() {
                 className="absolute top-1/3 right-1/4"
               >
                 <div className="w-14 h-14 border-2 border-primary-500 rounded-xl flex items-center justify-center">
-                  <Database className="h-7 w-7 text-primary-600 dark:text-primary-400" />
+                  <Database className="h-7 w-7 text-primary-600" />
                 </div>
               </motion.div>
 
               <div className="w-32 h-32 border-2 border-primary-500 rounded-3xl flex items-center justify-center">
-                <Lightbulb className="h-16 w-16 text-primary-600 dark:text-primary-400" />
+                <Lightbulb className="h-16 w-16 text-primary-600" />
               </div>
             </div>
 
             {/* Right: Content */}
             <div className="flex flex-col justify-center text-center md:text-left">
-              <h2 className="text-3xl font-bold mb-4 text-gray-900 dark:text-white">
+              <h2 className="text-3xl font-bold mb-4 text-gray-900">
                 Bereit für Ihr nächstes Projekt?
               </h2>
-              <p className="text-xl mb-8 text-gray-600 dark:text-gray-300">
+              <p className="text-xl mb-8 text-gray-600">
                 Lassen Sie uns gemeinsam Ihre Ideen verwirklichen
               </p>
               <div>

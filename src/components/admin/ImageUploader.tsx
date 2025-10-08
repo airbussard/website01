@@ -151,16 +151,16 @@ export default function ImageUploader({ projectId, onClose }: ImageUploaderProps
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
-          <h2 className="text-2xl font-bold text-gray-800 dark:text-white flex items-center">
+        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+          <h2 className="text-2xl font-bold text-gray-800 flex items-center">
             <ImageIcon className="h-6 w-6 mr-2" />
             Bilder verwalten
           </h2>
           <button
             onClick={onClose}
-            className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+            className="text-gray-500 hover:text-gray-700"
           >
             <X className="h-6 w-6" />
           </button>
@@ -169,16 +169,16 @@ export default function ImageUploader({ projectId, onClose }: ImageUploaderProps
         {/* Upload Area */}
         <div className="p-6">
           <label className="block w-full">
-            <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center hover:border-primary-500 transition-colors cursor-pointer">
+            <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-primary-500 transition-colors cursor-pointer">
               {uploading ? (
                 <Loader2 className="h-12 w-12 animate-spin mx-auto text-primary-600" />
               ) : (
                 <>
                   <Upload className="h-12 w-12 mx-auto text-gray-400 mb-3" />
-                  <p className="text-gray-600 dark:text-gray-400">
+                  <p className="text-gray-600">
                     Klicken oder Dateien hier ablegen
                   </p>
-                  <p className="text-sm text-gray-500 dark:text-gray-500 mt-1">
+                  <p className="text-sm text-gray-500 mt-1">
                     PNG, JPG, GIF bis zu 10MB
                   </p>
                 </>
@@ -198,7 +198,7 @@ export default function ImageUploader({ projectId, onClose }: ImageUploaderProps
         {/* Images Grid */}
         <div className="p-6 pt-0">
           {images.length === 0 ? (
-            <p className="text-center text-gray-500 dark:text-gray-400 py-8">
+            <p className="text-center text-gray-500 py-8">
               Noch keine Bilder hochgeladen
             </p>
           ) : (
@@ -206,7 +206,7 @@ export default function ImageUploader({ projectId, onClose }: ImageUploaderProps
               {images.map((image) => (
                 <div
                   key={image.id}
-                  className="relative group bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden"
+                  className="relative group bg-gray-100 rounded-lg overflow-hidden"
                 >
                   <div className="aspect-video relative">
                     <Image
@@ -251,7 +251,7 @@ export default function ImageUploader({ projectId, onClose }: ImageUploaderProps
                     placeholder="Bildunterschrift..."
                     value={image.caption || ''}
                     onChange={(e) => updateCaption(image.id, e.target.value)}
-                    className="w-full px-3 py-2 text-sm bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="w-full px-3 py-2 text-sm bg-white border-t border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500"
                   />
                 </div>
               ))}

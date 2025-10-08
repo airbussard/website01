@@ -17,7 +17,7 @@ export default function ProjectDetailPage() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-4">
+          <h1 className="text-2xl font-bold text-gray-800 mb-4">
             Projekt nicht gefunden
           </h1>
           <Link
@@ -44,7 +44,7 @@ export default function ProjectDetailPage() {
         >
           <Link
             href="/#projects"
-            className="inline-flex items-center text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+            className="inline-flex items-center text-gray-600 hover:text-primary-600 transition-colors"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
             Zurück zu Projekten
@@ -67,7 +67,7 @@ export default function ProjectDetailPage() {
               </h1>
 
               {/* Description */}
-              <p className="text-xl text-gray-600 dark:text-gray-400 mb-8">
+              <p className="text-xl text-gray-600 mb-8">
                 {project.description}
               </p>
 
@@ -88,11 +88,11 @@ export default function ProjectDetailPage() {
 
               {/* Long Description */}
               {project.longDescription && (
-                <div className="prose prose-lg dark:prose-invert max-w-none mb-12">
-                  <h2 className="text-2xl font-bold mb-4 text-gray-800 dark:text-white">
+                <div className="prose prose-lg max-w-none mb-12">
+                  <h2 className="text-2xl font-bold mb-4 text-gray-800">
                     Projektdetails
                   </h2>
-                  <p className="text-gray-600 dark:text-gray-400 whitespace-pre-wrap">
+                  <p className="text-gray-600 whitespace-pre-wrap">
                     {project.longDescription}
                   </p>
                 </div>
@@ -109,18 +109,18 @@ export default function ProjectDetailPage() {
               className="sticky top-24"
             >
               {/* Project Info Card */}
-              <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg mb-6">
-                <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white">
+              <div className="bg-white rounded-xl p-6 shadow-lg mb-6">
+                <h3 className="text-lg font-semibold mb-4 text-gray-800">
                   Projektinformationen
                 </h3>
 
                 {/* Category */}
                 <div className="mb-4">
-                  <div className="flex items-center text-gray-600 dark:text-gray-400 mb-2">
+                  <div className="flex items-center text-gray-600 mb-2">
                     <Tag className="h-4 w-4 mr-2" />
                     <span className="text-sm">Kategorie</span>
                   </div>
-                  <p className="font-medium text-gray-800 dark:text-white capitalize">
+                  <p className="font-medium text-gray-800 capitalize">
                     {project.category === 'mobile' ? 'iOS App' :
                      project.category === 'web' ? 'Web Application' :
                      'System'}
@@ -130,11 +130,11 @@ export default function ProjectDetailPage() {
                 {/* Date */}
                 {project.createdAt && (
                   <div className="mb-4">
-                    <div className="flex items-center text-gray-600 dark:text-gray-400 mb-2">
+                    <div className="flex items-center text-gray-600 mb-2">
                       <Calendar className="h-4 w-4 mr-2" />
                       <span className="text-sm">Fertigstellung</span>
                     </div>
-                    <p className="font-medium text-gray-800 dark:text-white">
+                    <p className="font-medium text-gray-800">
                       {new Date(project.createdAt).toLocaleDateString('de-DE', {
                         year: 'numeric',
                         month: 'long',
@@ -160,15 +160,15 @@ export default function ProjectDetailPage() {
               </div>
 
               {/* Technologies Card */}
-              <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg">
-                <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white">
+              <div className="bg-white rounded-xl p-6 shadow-lg">
+                <h3 className="text-lg font-semibold mb-4 text-gray-800">
                   Technologien
                 </h3>
                 <div className="flex flex-wrap gap-2">
                   {project.technologies.map((tech) => (
                     <span
                       key={tech}
-                      className="px-3 py-1 bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400 rounded-full text-sm font-medium"
+                      className="px-3 py-1 bg-primary-100 text-primary-700 rounded-full text-sm font-medium"
                     >
                       {tech}
                     </span>

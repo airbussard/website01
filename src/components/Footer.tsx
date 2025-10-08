@@ -24,7 +24,7 @@ export default function Footer() {
                 <span className="text-xl font-bold bg-gradient-to-r from-primary-400 to-primary-600 bg-clip-text text-transparent">
                   getemergence.com
                 </span>
-                <span className="text-xs text-gray-500 dark:text-gray-400 -mt-1">
+                <span className="text-xs text-gray-500 -mt-1">
                   Digital Solutions
                 </span>
               </div>

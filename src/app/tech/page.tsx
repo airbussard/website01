@@ -92,7 +92,7 @@ const techDetails = [
 
 export default function TechPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       <Header />
 
       <main className="container mx-auto px-6 py-20">
@@ -108,14 +108,14 @@ export default function TechPage() {
               Technologie-Stack
             </span>
           </h1>
-          <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             Die richtigen Werkzeuge für jedes Projekt - bewährt, modern und zukunftssicher
           </p>
         </motion.div>
 
         {/* Tech Categories */}
         <div className="mb-20">
-          <h2 className="text-3xl font-bold text-center mb-12 text-gray-900 dark:text-white">
+          <h2 className="text-3xl font-bold text-center mb-12 text-gray-900">
             Unsere Expertise
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -126,14 +126,14 @@ export default function TechPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: categoryIndex * 0.1 }}
                 viewport={{ once: true }}
-                className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow"
+                className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow"
               >
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center">
+                  <h3 className="text-xl font-bold text-gray-900 flex items-center">
                     <span className="text-3xl mr-3">{category.icon}</span>
                     {category.name}
                   </h3>
-                  <span className="px-3 py-1 bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 rounded-full text-xs font-semibold">
+                  <span className="px-3 py-1 bg-primary-100 text-primary-600 rounded-full text-xs font-semibold">
                     {category.expertise}
                   </span>
                 </div>
@@ -141,7 +141,7 @@ export default function TechPage() {
                   {category.techs.map((tech) => (
                     <span
                       key={tech}
-                      className="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full text-sm font-medium hover:bg-primary-100 dark:hover:bg-primary-900/30 hover:text-primary-700 dark:hover:text-primary-400 transition-colors cursor-default"
+                      className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm font-medium hover:bg-primary-100 hover:text-primary-700 transition-colors cursor-default"
                     >
                       {tech}
                     </span>
@@ -154,7 +154,7 @@ export default function TechPage() {
 
         {/* Tech Philosophy */}
         <div className="mb-20">
-          <h2 className="text-3xl font-bold text-center mb-12 text-gray-900 dark:text-white">
+          <h2 className="text-3xl font-bold text-center mb-12 text-gray-900">
             Unsere Technologie-Philosophie
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -167,15 +167,15 @@ export default function TechPage() {
                   whileInView={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
                   viewport={{ once: true }}
-                  className="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-lg text-center"
+                  className="bg-white rounded-xl p-8 shadow-lg text-center"
                 >
-                  <div className="w-16 h-16 bg-primary-100 dark:bg-primary-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Icon className="h-8 w-8 text-primary-600 dark:text-primary-400" />
+                  <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Icon className="h-8 w-8 text-primary-600" />
                   </div>
-                  <h3 className="text-xl font-bold mb-3 text-gray-900 dark:text-white">
+                  <h3 className="text-xl font-bold mb-3 text-gray-900">
                     {item.title}
                   </h3>
-                  <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
+                  <p className="text-gray-600 leading-relaxed">
                     {item.description}
                   </p>
                 </motion.div>
@@ -186,7 +186,7 @@ export default function TechPage() {
 
         {/* Detailed Tech Stack */}
         <div className="mb-20">
-          <h2 className="text-3xl font-bold text-center mb-12 text-gray-900 dark:text-white">
+          <h2 className="text-3xl font-bold text-center mb-12 text-gray-900">
             Technologie im Detail
           </h2>
           <div className="space-y-8">
@@ -197,25 +197,25 @@ export default function TechPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
                 viewport={{ once: true }}
-                className="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-lg"
+                className="bg-white rounded-xl p-8 shadow-lg"
               >
-                <h3 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">
+                <h3 className="text-2xl font-bold mb-4 text-gray-900">
                   {detail.category}
                 </h3>
-                <p className="text-gray-600 dark:text-gray-300 mb-6 leading-relaxed">
+                <p className="text-gray-600 mb-6 leading-relaxed">
                   {detail.description}
                 </p>
 
                 <div className="grid md:grid-cols-2 gap-6">
                   <div>
-                    <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 uppercase tracking-wide">
+                    <h4 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">
                       Technologien
                     </h4>
                     <div className="flex flex-wrap gap-2">
                       {detail.techs.map((tech) => (
                         <span
                           key={tech}
-                          className="px-3 py-1 bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 rounded-lg text-sm font-medium"
+                          className="px-3 py-1 bg-primary-100 text-primary-700 rounded-lg text-sm font-medium"
                         >
                           {tech}
                         </span>
@@ -224,14 +224,14 @@ export default function TechPage() {
                   </div>
 
                   <div>
-                    <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 uppercase tracking-wide">
+                    <h4 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">
                       Anwendungsfälle
                     </h4>
                     <ul className="space-y-2">
                       {detail.useCases.map((useCase, idx) => (
                         <li key={idx} className="flex items-start">
                           <CheckCircle className="h-5 w-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" />
-                          <span className="text-gray-600 dark:text-gray-300 text-sm">
+                          <span className="text-gray-600 text-sm">
                             {useCase}
                           </span>
                         </li>
@@ -250,12 +250,12 @@ export default function TechPage() {
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
           viewport={{ once: true }}
-          className="bg-gray-100 dark:bg-gray-800 rounded-xl p-8 mb-12 text-center"
+          className="bg-gray-100 rounded-xl p-8 mb-12 text-center"
         >
-          <p className="text-gray-600 dark:text-gray-300 text-lg mb-2">
+          <p className="text-gray-600 text-lg mb-2">
             ... und viele weitere Technologien, je nach Projektanforderung.
           </p>
-          <p className="text-gray-600 dark:text-gray-300">
+          <p className="text-gray-600">
             Wir bleiben stets auf dem neuesten Stand der Technologie und erweitern kontinuierlich unser Know-how.
           </p>
         </motion.div>
@@ -266,7 +266,7 @@ export default function TechPage() {
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
           viewport={{ once: true }}
-          className="relative bg-white dark:bg-gray-900 rounded-2xl border-2 border-primary-500 overflow-hidden"
+          className="relative bg-white rounded-2xl border-2 border-primary-500 overflow-hidden"
         >
           {/* Background Grid Pattern */}
           <div className="absolute inset-0 opacity-5">
@@ -294,7 +294,7 @@ export default function TechPage() {
                 className="absolute top-0 left-0"
               >
                 <div className="w-20 h-20 border-2 border-primary-500 rounded-2xl flex items-center justify-center">
-                  <Star className="h-10 w-10 text-primary-600 dark:text-primary-400" />
+                  <Star className="h-10 w-10 text-primary-600" />
                 </div>
               </motion.div>
 
@@ -311,7 +311,7 @@ export default function TechPage() {
                 className="absolute bottom-4 right-4"
               >
                 <div className="w-16 h-16 border-2 border-primary-500 rounded-2xl flex items-center justify-center">
-                  <TrendingUp className="h-8 w-8 text-primary-600 dark:text-primary-400" />
+                  <TrendingUp className="h-8 w-8 text-primary-600" />
                 </div>
               </motion.div>
 
@@ -328,21 +328,21 @@ export default function TechPage() {
                 className="absolute top-1/3 right-1/4"
               >
                 <div className="w-14 h-14 border-2 border-primary-500 rounded-xl flex items-center justify-center">
-                  <CheckCircle className="h-7 w-7 text-primary-600 dark:text-primary-400" />
+                  <CheckCircle className="h-7 w-7 text-primary-600" />
                 </div>
               </motion.div>
 
               <div className="w-32 h-32 border-2 border-primary-500 rounded-3xl flex items-center justify-center">
-                <Shield className="h-16 w-16 text-primary-600 dark:text-primary-400" />
+                <Shield className="h-16 w-16 text-primary-600" />
               </div>
             </div>
 
             {/* Right: Content */}
             <div className="flex flex-col justify-center text-center md:text-left">
-              <h2 className="text-3xl font-bold mb-4 text-gray-900 dark:text-white">
+              <h2 className="text-3xl font-bold mb-4 text-gray-900">
                 Bereit für moderne Technologie?
               </h2>
-              <p className="text-xl mb-8 text-gray-600 dark:text-gray-300">
+              <p className="text-xl mb-8 text-gray-600">
                 Lassen Sie uns gemeinsam die perfekte Tech-Stack für Ihr Projekt finden
               </p>
               <div>

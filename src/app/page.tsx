@@ -42,7 +42,7 @@ export default function Home() {
         <Hero />
 
         {/* Services Teaser */}
-        <section className="py-20 bg-white dark:bg-gray-800">
+        <section className="py-20 bg-white">
           <div className="container mx-auto px-6">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -56,7 +56,7 @@ export default function Home() {
                   Unsere Services
                 </span>
               </h2>
-              <p className="text-xl text-gray-600 dark:text-gray-400">
+              <p className="text-xl text-gray-600">
                 Maßgeschneiderte Lösungen für Ihre digitalen Herausforderungen
               </p>
             </motion.div>
@@ -71,15 +71,15 @@ export default function Home() {
                     whileInView={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: index * 0.1 }}
                     viewport={{ once: true }}
-                    className="bg-gray-50 dark:bg-gray-900 rounded-xl p-6 hover:shadow-lg transition-shadow"
+                    className="bg-gray-50 rounded-xl p-6 hover:shadow-lg transition-shadow"
                   >
-                    <div className="w-12 h-12 bg-primary-100 dark:bg-primary-900/30 rounded-lg flex items-center justify-center mb-4">
-                      <Icon className="h-6 w-6 text-primary-600 dark:text-primary-400" />
+                    <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center mb-4">
+                      <Icon className="h-6 w-6 text-primary-600" />
                     </div>
-                    <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-white">
+                    <h3 className="text-lg font-semibold mb-2 text-gray-800">
                       {service.title}
                     </h3>
-                    <p className="text-gray-600 dark:text-gray-400 text-sm">
+                    <p className="text-gray-600 text-sm">
                       {service.description}
                     </p>
                   </motion.div>
@@ -96,7 +96,7 @@ export default function Home() {
             >
               <Link
                 href="/services"
-                className="inline-flex items-center text-primary-600 dark:text-primary-400 font-semibold hover:underline"
+                className="inline-flex items-center text-primary-600 font-semibold hover:underline"
               >
                 Alle Services ansehen
                 <ArrowRight className="ml-2 h-5 w-5" />
@@ -106,7 +106,7 @@ export default function Home() {
         </section>
 
         {/* Featured Projects */}
-        <section className="py-20 bg-gray-50 dark:bg-gray-900">
+        <section className="py-20 bg-gray-50">
           <div className="container mx-auto px-6">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -120,7 +120,7 @@ export default function Home() {
                   Ausgewählte Projekte
                 </span>
               </h2>
-              <p className="text-xl text-gray-600 dark:text-gray-400">
+              <p className="text-xl text-gray-600">
                 Einblicke in unsere erfolgreichen Projekte
               </p>
             </motion.div>
@@ -140,7 +140,7 @@ export default function Home() {
             >
               <Link
                 href="/referenzen"
-                className="inline-flex items-center text-primary-600 dark:text-primary-400 font-semibold hover:underline"
+                className="inline-flex items-center text-primary-600 font-semibold hover:underline"
               >
                 Alle Projekte ansehen
                 <ArrowRight className="ml-2 h-5 w-5" />
@@ -150,14 +150,14 @@ export default function Home() {
         </section>
 
         {/* CTA Section */}
-        <section className="py-20 bg-white dark:bg-gray-800">
+        <section className="py-20 bg-white">
           <div className="container mx-auto px-6">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
               viewport={{ once: true }}
-              className="relative bg-white dark:bg-gray-900 rounded-2xl border-2 border-primary-500 overflow-hidden"
+              className="relative bg-white rounded-2xl border-2 border-primary-500 overflow-hidden"
             >
               {/* Background Grid Pattern */}
               <div className="absolute inset-0 opacity-5">
@@ -185,7 +185,7 @@ export default function Home() {
                     className="absolute top-0 left-0"
                   >
                     <div className="w-20 h-20 border-2 border-primary-500 rounded-2xl flex items-center justify-center">
-                      <Code2 className="h-10 w-10 text-primary-600 dark:text-primary-400" />
+                      <Code2 className="h-10 w-10 text-primary-600" />
                     </div>
                   </motion.div>
 
@@ -202,7 +202,7 @@ export default function Home() {
                     className="absolute bottom-4 right-4"
                   >
                     <div className="w-16 h-16 border-2 border-primary-500 rounded-2xl flex items-center justify-center">
-                      <Smartphone className="h-8 w-8 text-primary-600 dark:text-primary-400" />
+                      <Smartphone className="h-8 w-8 text-primary-600" />
                     </div>
                   </motion.div>
 
@@ -219,21 +219,21 @@ export default function Home() {
                     className="absolute top-1/3 right-1/4"
                   >
                     <div className="w-14 h-14 border-2 border-primary-500 rounded-xl flex items-center justify-center">
-                      <Database className="h-7 w-7 text-primary-600 dark:text-primary-400" />
+                      <Database className="h-7 w-7 text-primary-600" />
                     </div>
                   </motion.div>
 
                   <div className="w-32 h-32 border-2 border-primary-500 rounded-3xl flex items-center justify-center">
-                    <Lightbulb className="h-16 w-16 text-primary-600 dark:text-primary-400" />
+                    <Lightbulb className="h-16 w-16 text-primary-600" />
                   </div>
                 </div>
 
                 {/* Right: Content */}
                 <div className="flex flex-col justify-center text-center md:text-left">
-                  <h2 className="text-3xl md:text-4xl font-bold mb-4 text-gray-900 dark:text-white">
+                  <h2 className="text-3xl md:text-4xl font-bold mb-4 text-gray-900">
                     Bereit für Ihr nächstes Projekt?
                   </h2>
-                  <p className="text-xl mb-8 text-gray-600 dark:text-gray-300">
+                  <p className="text-xl mb-8 text-gray-600">
                     Lassen Sie uns gemeinsam Ihre digitalen Visionen verwirklichen
                   </p>
                   <div>

@@ -23,7 +23,7 @@ export default function Projects() {
     : allProjects.filter(p => p.category === selectedCategory);
 
   return (
-    <section id="projects" className="py-20 bg-gray-50 dark:bg-gray-900">
+    <section id="projects" className="py-20 bg-gray-50">
       <div className="container mx-auto px-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -37,7 +37,7 @@ export default function Projects() {
               Unsere Projekte
             </span>
           </h2>
-          <p className="text-xl text-gray-600 dark:text-gray-400">
+          <p className="text-xl text-gray-600">
             Eine Auswahl unserer erfolgreichen Projekte
           </p>
         </motion.div>
@@ -53,7 +53,7 @@ export default function Projects() {
                 className={`flex items-center space-x-2 px-6 py-3 rounded-full font-medium transition-all ${
                   selectedCategory === category.id
                     ? 'bg-primary-600 text-white shadow-lg'
-                    : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                    : 'bg-white text-gray-700 hover:bg-gray-100'
                 }`}
               >
                 {Icon && <Icon className="h-4 w-4" />}
@@ -74,11 +74,11 @@ export default function Projects() {
               viewport={{ once: true }}
               onMouseEnter={() => setHoveredProject(project.id)}
               onMouseLeave={() => setHoveredProject(null)}
-              className="bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 group"
+              className="bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 group"
             >
               <Link href={`/project/${project.id}`}>
                 {/* Project Image */}
-                <div className="relative h-48 overflow-hidden bg-gradient-to-br from-primary-100 to-primary-200 dark:from-primary-900 dark:to-primary-800">
+                <div className="relative h-48 overflow-hidden bg-gradient-to-br from-primary-100 to-primary-200">
                   {project.featured && (
                     <div className="absolute top-4 right-4 bg-yellow-400 text-yellow-900 px-3 py-1 rounded-full text-xs font-semibold z-10">
                       Featured
@@ -118,10 +118,10 @@ export default function Projects() {
 
                 {/* Project Content */}
                 <div className="p-6">
-                  <h3 className="text-xl font-bold mb-2 text-gray-800 dark:text-white">
+                  <h3 className="text-xl font-bold mb-2 text-gray-800">
                     {project.title}
                   </h3>
-                  <p className="text-gray-600 dark:text-gray-400 mb-4 line-clamp-2">
+                  <p className="text-gray-600 mb-4 line-clamp-2">
                     {project.description}
                   </p>
 
@@ -130,13 +130,13 @@ export default function Projects() {
                     {project.technologies.slice(0, 3).map((tech) => (
                       <span
                         key={tech}
-                        className="px-3 py-1 bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400 rounded-full text-xs font-medium"
+                        className="px-3 py-1 bg-primary-100 text-primary-700 rounded-full text-xs font-medium"
                       >
                         {tech}
                       </span>
                     ))}
                     {project.technologies.length > 3 && (
-                      <span className="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded-full text-xs font-medium">
+                      <span className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-medium">
                         +{project.technologies.length - 3}
                       </span>
                     )}
@@ -150,7 +150,7 @@ export default function Projects() {
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={(e) => e.stopPropagation()}
-                        className="text-gray-600 hover:text-primary-600 dark:text-gray-400 dark:hover:text-primary-400 transition-colors"
+                        className="text-gray-600 hover:text-primary-600 transition-colors"
                       >
                         <ExternalLink className="h-5 w-5" />
                       </a>
@@ -164,7 +164,7 @@ export default function Projects() {
 
         {filteredProjects.length === 0 && (
           <div className="text-center py-12">
-            <p className="text-gray-600 dark:text-gray-400 text-lg">
+            <p className="text-gray-600 text-lg">
               Keine Projekte in dieser Kategorie gefunden.
             </p>
           </div>

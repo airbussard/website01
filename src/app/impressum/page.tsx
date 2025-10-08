@@ -8,21 +8,21 @@ export const metadata = {
 
 export default function ImpressumPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       <Header />
 
       <main className="container mx-auto px-6 py-20">
         <div className="max-w-4xl mx-auto">
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-8">
+          <h1 className="text-4xl font-bold text-gray-900 mb-8">
             Impressum
           </h1>
 
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 space-y-6">
+          <div className="bg-white rounded-xl shadow-lg p-8 space-y-6">
             <section>
-              <h2 className="text-2xl font-semibold text-gray-800 dark:text-white mb-4">
+              <h2 className="text-2xl font-semibold text-gray-800 mb-4">
                 Angaben gemäß § 5 TMG
               </h2>
-              <div className="space-y-2 text-gray-600 dark:text-gray-300">
+              <div className="space-y-2 text-gray-600">
                 <p>Oscar Knabe</p>
                 <p>Steinstraße 71</p>
                 <p>52249 Eschweiler</p>
@@ -31,29 +31,29 @@ export default function ImpressumPage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-gray-800 dark:text-white mb-4">
+              <h2 className="text-2xl font-semibold text-gray-800 mb-4">
                 Kontakt
               </h2>
-              <div className="space-y-2 text-gray-600 dark:text-gray-300">
+              <div className="space-y-2 text-gray-600">
                 <p>E-Mail: hello@getemergence.com</p>
               </div>
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-gray-800 dark:text-white mb-4">
+              <h2 className="text-2xl font-semibold text-gray-800 mb-4">
                 Umsatzsteuer-ID
               </h2>
-              <div className="text-gray-600 dark:text-gray-300">
+              <div className="text-gray-600">
                 <p>Umsatzsteuer-Identifikationsnummer gemäß § 27a UStG:</p>
                 <p className="italic">Die UST-ID wird nachgereicht.</p>
               </div>
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-gray-800 dark:text-white mb-4">
+              <h2 className="text-2xl font-semibold text-gray-800 mb-4">
                 Verantwortlich für den Inhalt nach § 55 Abs. 2 RStV
               </h2>
-              <div className="space-y-2 text-gray-600 dark:text-gray-300">
+              <div className="space-y-2 text-gray-600">
                 <p>Oscar Knabe</p>
                 <p>Steinstraße 71</p>
                 <p>52249 Eschweiler</p>
@@ -61,13 +61,13 @@ export default function ImpressumPage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-gray-800 dark:text-white mb-4">
+              <h2 className="text-2xl font-semibold text-gray-800 mb-4">
                 Haftungsausschluss
               </h2>
 
-              <div className="space-y-4 text-gray-600 dark:text-gray-300">
+              <div className="space-y-4 text-gray-600">
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-2">
+                  <h3 className="text-lg font-semibold text-gray-700 mb-2">
                     Haftung für Inhalte
                   </h3>
                   <p className="text-sm leading-relaxed">
@@ -76,7 +76,7 @@ export default function ImpressumPage() {
                 </div>
 
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-2">
+                  <h3 className="text-lg font-semibold text-gray-700 mb-2">
                     Haftung für Links
                   </h3>
                   <p className="text-sm leading-relaxed">
@@ -85,7 +85,7 @@ export default function ImpressumPage() {
                 </div>
 
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-2">
+                  <h3 className="text-lg font-semibold text-gray-700 mb-2">
                     Urheberrecht
                   </h3>
                   <p className="text-sm leading-relaxed">

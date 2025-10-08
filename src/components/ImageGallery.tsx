@@ -60,7 +60,7 @@ export default function ImageGallery({ images, projectTitle }: ImageGalleryProps
       {/* Main Gallery */}
       <div className="space-y-4">
         {/* Primary Image */}
-        <div className="relative aspect-video w-full overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-800 group cursor-pointer"
+        <div className="relative aspect-video w-full overflow-hidden rounded-xl bg-gray-100 group cursor-pointer"
              onClick={() => openLightbox(0)}>
           <Image
             src={images[0].image_url}
@@ -88,7 +88,7 @@ export default function ImageGallery({ images, projectTitle }: ImageGalleryProps
                 key={image.id}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="relative aspect-video overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800 cursor-pointer group"
+                className="relative aspect-video overflow-hidden rounded-lg bg-gray-100 cursor-pointer group"
                 onClick={() => openLightbox(index + 1)}
               >
                 <Image

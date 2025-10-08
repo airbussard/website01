@@ -49,7 +49,7 @@ export default function Contact({ showHeading = true }: ContactProps) {
   };
 
   return (
-    <section id="contact" className="py-20 bg-white dark:bg-gray-800">
+    <section id="contact" className="py-20 bg-white">
       <div className="container mx-auto px-6">
         {showHeading && (
           <motion.div
@@ -64,7 +64,7 @@ export default function Contact({ showHeading = true }: ContactProps) {
                 Projekt anfragen
               </span>
             </h2>
-            <p className="text-xl text-gray-600 dark:text-gray-400">
+            <p className="text-xl text-gray-600">
               Starten Sie Ihre digitale Transformation mit uns
             </p>
           </motion.div>
@@ -76,20 +76,20 @@ export default function Contact({ showHeading = true }: ContactProps) {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
             viewport={{ once: true }}
-            className="bg-gray-50 dark:bg-gray-900 rounded-2xl p-8 md:p-12 shadow-xl"
+            className="bg-gray-50 rounded-2xl p-8 md:p-12 shadow-xl"
           >
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Name */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     <User className="inline h-4 w-4 mr-2" />
                     Name *
                   </label>
                   <input
                     {...register('name', { required: 'Name ist erforderlich' })}
                     type="text"
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors"
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white text-gray-900 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors"
                     placeholder="Max Mustermann"
                   />
                   {errors.name && (
@@ -99,7 +99,7 @@ export default function Contact({ showHeading = true }: ContactProps) {
 
                 {/* Email */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     <Mail className="inline h-4 w-4 mr-2" />
                     E-Mail *
                   </label>
@@ -112,7 +112,7 @@ export default function Contact({ showHeading = true }: ContactProps) {
                       },
                     })}
                     type="email"
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors"
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white text-gray-900 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors"
                     placeholder="max@beispiel.de"
                   />
                   {errors.email && (
@@ -122,27 +122,27 @@ export default function Contact({ showHeading = true }: ContactProps) {
 
                 {/* Company */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     <Building className="inline h-4 w-4 mr-2" />
                     Unternehmen
                   </label>
                   <input
                     {...register('company')}
                     type="text"
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors"
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white text-gray-900 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors"
                     placeholder="Firma GmbH (optional)"
                   />
                 </div>
 
                 {/* Project Type */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     <Briefcase className="inline h-4 w-4 mr-2" />
                     Projekttyp
                   </label>
                   <select
                     {...register('projectType')}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors"
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white text-gray-900 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors"
                   >
                     <option value="">Bitte wählen</option>
                     <option value="website">Website</option>
@@ -155,13 +155,13 @@ export default function Contact({ showHeading = true }: ContactProps) {
 
               {/* Subject */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Betreff *
                 </label>
                 <input
                   {...register('subject', { required: 'Betreff ist erforderlich' })}
                   type="text"
-                  className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors"
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white text-gray-900 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors"
                   placeholder="Neue Website für unser Unternehmen"
                 />
                 {errors.subject && (
@@ -171,7 +171,7 @@ export default function Contact({ showHeading = true }: ContactProps) {
 
               {/* Message */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   <MessageSquare className="inline h-4 w-4 mr-2" />
                   Nachricht *
                 </label>
@@ -184,7 +184,7 @@ export default function Contact({ showHeading = true }: ContactProps) {
                     },
                   })}
                   rows={6}
-                  className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors resize-none"
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white text-gray-900 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors resize-none"
                   placeholder="Beschreiben Sie Ihr Projekt..."
                 />
                 {errors.message && (
@@ -194,13 +194,13 @@ export default function Contact({ showHeading = true }: ContactProps) {
 
               {/* Submit Status Messages */}
               {submitStatus === 'success' && (
-                <div className="p-4 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-lg">
+                <div className="p-4 bg-green-100 text-green-700 rounded-lg">
                   Vielen Dank für Ihre Anfrage! Ich werde mich schnellstmöglich bei Ihnen melden.
                 </div>
               )}
 
               {submitStatus === 'error' && (
-                <div className="p-4 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-lg">
+                <div className="p-4 bg-red-100 text-red-700 rounded-lg">
                   Es ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.
                 </div>
               )}

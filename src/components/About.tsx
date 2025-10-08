@@ -35,7 +35,7 @@ const highlights = [
 
 export default function About() {
   return (
-    <section id="about" className="py-20 bg-white dark:bg-gray-800">
+    <section id="about" className="py-20 bg-white">
       <div className="container mx-auto px-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -49,7 +49,7 @@ export default function About() {
               Über uns
             </span>
           </h2>
-          <p className="text-xl text-gray-600 dark:text-gray-400">
+          <p className="text-xl text-gray-600">
             Ihr Partner für digitale Innovation
           </p>
         </motion.div>
@@ -61,22 +61,22 @@ export default function About() {
             transition={{ duration: 0.5 }}
             viewport={{ once: true }}
           >
-            <h3 className="text-3xl font-bold mb-4 text-gray-800 dark:text-white">
+            <h3 className="text-3xl font-bold mb-4 text-gray-800">
               Innovation durch Technologie
             </h3>
-            <p className="text-gray-600 dark:text-gray-400 mb-4">
+            <p className="text-gray-600 mb-4">
               getemergence.com ist Ihr vertrauenswürdiger Partner für digitale Transformation.
               Unser erfahrenes Team aus Full-Stack Entwicklern und iOS Experten bringt Ihre
               digitalen Visionen zum Leben. Mit über einem Jahrzehnt Erfahrung haben wir
               erfolgreich Lösungen für Unternehmen jeder Größe entwickelt.
             </p>
-            <p className="text-gray-600 dark:text-gray-400 mb-4">
+            <p className="text-gray-600 mb-4">
               Unsere Stärke liegt in der perfekten Verbindung von technischer Exzellenz
               und tiefem Verständnis für Geschäftsprozesse. Wir entwickeln nicht nur Software –
               wir schaffen digitale Erlebnisse, die Ihre Nutzer begeistern und Ihr Business
               voranbringen.
             </p>
-            <p className="text-gray-600 dark:text-gray-400">
+            <p className="text-gray-600">
               Von Start-ups bis zu etablierten Unternehmen – wir sind der Partner, der Ihre
               digitalen Herausforderungen in erfolgreiche Lösungen verwandelt. Technologie
               ist unsere Leidenschaft, Ihr Erfolg unser Ziel.
@@ -93,12 +93,12 @@ export default function About() {
             {stats.map((stat, index) => (
               <div
                 key={index}
-                className="bg-gray-50 dark:bg-gray-900 rounded-xl p-6 text-center"
+                className="bg-gray-50 rounded-xl p-6 text-center"
               >
                 <div className="text-3xl md:text-4xl font-bold text-primary-600 mb-2">
                   {stat.number}
                 </div>
-                <div className="text-gray-600 dark:text-gray-400">
+                <div className="text-gray-600">
                   {stat.label}
                 </div>
               </div>
@@ -116,15 +116,15 @@ export default function About() {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 viewport={{ once: true }}
-                className="bg-gray-50 dark:bg-gray-900 rounded-xl p-6 hover:shadow-lg transition-shadow"
+                className="bg-gray-50 rounded-xl p-6 hover:shadow-lg transition-shadow"
               >
-                <div className="w-12 h-12 bg-primary-100 dark:bg-primary-900/30 rounded-lg flex items-center justify-center mb-4">
-                  <Icon className="h-6 w-6 text-primary-600 dark:text-primary-400" />
+                <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center mb-4">
+                  <Icon className="h-6 w-6 text-primary-600" />
                 </div>
-                <h4 className="text-lg font-semibold mb-2 text-gray-800 dark:text-white">
+                <h4 className="text-lg font-semibold mb-2 text-gray-800">
                   {highlight.title}
                 </h4>
-                <p className="text-gray-600 dark:text-gray-400 text-sm">
+                <p className="text-gray-600 text-sm">
                   {highlight.description}
                 </p>
               </motion.div>
