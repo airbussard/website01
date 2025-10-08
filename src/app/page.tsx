@@ -3,9 +3,7 @@
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { ArrowRight, Code2, Smartphone, Database, Lightbulb } from 'lucide-react';
-import Header from '@/components/Header';
 import Hero from '@/components/Hero';
-import Footer from '@/components/Footer';
 import ProjectCard from '@/components/ProjectCard';
 import { getFeaturedProjects } from '@/lib/data/projects';
 
@@ -36,9 +34,7 @@ export default function Home() {
   const featuredProjects = getFeaturedProjects().slice(0, 3);
 
   return (
-    <>
-      <Header />
-      <main>
+    <main>
         <Hero />
 
         {/* Services Teaser */}
@@ -250,8 +246,6 @@ export default function Home() {
             </motion.div>
           </div>
         </section>
-      </main>
-      <Footer />
-    </>
+    </main>
   );
 }
