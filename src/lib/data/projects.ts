@@ -274,7 +274,7 @@ Die Website ist speziell auf die Bedürfnisse eines lokalen Einzelhandelsgeschä
     categories: ['web'],
     technologies: ['Next.js', 'TypeScript', 'Tailwind CSS', 'Nodemailer', 'Google Maps API', 'CapRover', 'Docker'],
     imageUrl: '/images/projects/teppichhaus.jpg',
-    liveUrl: 'https://teppichhaus-am-dornbusch.de',
+    liveUrl: 'https://teppich-frankfurt.de',
     githubUrl: '',
     featured: false,
     createdAt: '2025-04-22',
