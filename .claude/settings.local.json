@@ -2,7 +2,14 @@
   "permissions": {
     "allow": [
       "Bash(curl -X POST \"https://captain.immogear.de/api/v2/user/apps/webhooks/triggerbuild?namespace=captain&token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7InRva2VuVmVyc2lvbiI6IjQ3ODYwMDY3LTQ3MDktNDJmMS1hZDIxLTRmNWQ2ZWFjZWJmZCIsImFwcE5hbWUiOiJ3ZWJzaXRlMDFvc2NhcmtuYWJlIiwibmFtZXNwYWNlIjoiY2FwdGFpbiJ9LCJpYXQiOjE3NTgxOTUzODJ9.mhObDqR-VkgYE0JPcVGL4e5Y6oHrN0rnVeQpZCqEJ-g\")",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(xargs cat:*)",
+      "Bash(npm run build:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nfeat: B2B-Optimierung der Website fuer nicht-technische Kunden\n\n- Hero: Neue kundenorientierte Headline, Trust-Badges, optimierter CTA\n- Neue Vorteile-Sektion mit 4 USPs (Preis, Schnelligkeit, Betreuung, SEO)\n- Neue Branchen-Sektion (Handwerker, Dienstleister, Mittelstand)\n- Neue Prozess-Sektion (4-Schritte Zusammenarbeit)\n- Services nutzenorientiert formuliert mit Zielgruppen-Info\n- Services-Seite komplett neu: Fuer wen, Was Sie bekommen, Ihr Nutzen\n- CTAs optimiert: \"Kostenloses Erstgespraech\" statt \"Projekt anfragen\"\n- Footer mit neuer Beschreibung\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git push:*)",
+      "Bash(ls:*)",
+      "Bash(git commit:*)"
     ],
     "deny": [],
     "ask": []
