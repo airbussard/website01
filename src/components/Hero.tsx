@@ -1,8 +1,14 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { ArrowDown, Linkedin, Mail } from 'lucide-react';
+import { ArrowDown, Linkedin, Mail, MapPin, User, FileCheck } from 'lucide-react';
 import Link from 'next/link';
+
+const trustBadges = [
+  { icon: MapPin, text: 'Made in Germany' },
+  { icon: User, text: 'Persoenlicher Ansprechpartner' },
+  { icon: FileCheck, text: 'Festpreis-Garantie' },
+];
 
 export default function Hero() {
   const scrollToProjects = () => {
@@ -31,13 +37,13 @@ export default function Hero() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <h1 className="text-5xl md:text-7xl font-bold mb-6">
+            <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold mb-6">
               <span className="bg-gradient-to-r from-primary-600 to-primary-400 bg-clip-text text-transparent">
-                Digital Excellence
+                Ihre Website.
               </span>
               <br />
               <span className="text-gray-800">
-                Modern Solutions
+                Ihr Wettbewerbsvorteil.
               </span>
             </h1>
           </motion.div>
@@ -46,11 +52,34 @@ export default function Hero() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="text-xl md:text-2xl text-gray-600 mb-8"
+            className="text-lg sm:text-xl md:text-2xl text-gray-600 mb-8 max-w-3xl mx-auto"
           >
-            Wir entwickeln moderne Websites, komplexe Websysteme und native iOS Apps.
-            Von der Konzeption bis zur Umsetzung – Ihre digitale Transformation aus einer Hand.
+            Individuelle Digitalloesungen fuer Ihr Unternehmen -
+            <span className="text-primary-600 font-medium"> schnell umgesetzt</span>,
+            <span className="text-primary-600 font-medium"> fair bepreist</span> und mit
+            <span className="text-primary-600 font-medium"> dauerhafter Betreuung</span>.
           </motion.p>
+
+          {/* Trust Badges */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.15 }}
+            className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 mb-8"
+          >
+            {trustBadges.map((badge, index) => {
+              const Icon = badge.icon;
+              return (
+                <div
+                  key={index}
+                  className="flex items-center gap-2 text-gray-600 bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full border border-gray-200 shadow-sm"
+                >
+                  <Icon className="h-4 w-4 text-primary-600" />
+                  <span className="text-sm font-medium">{badge.text}</span>
+                </div>
+              );
+            })}
+          </motion.div>
 
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -59,10 +88,10 @@ export default function Hero() {
             className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12"
           >
             <Link
-              href="#contact"
+              href="/kontakt"
               className="px-8 py-4 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-semibold transition-all transform hover:scale-105 shadow-lg hover:shadow-xl"
             >
-              Projekt anfragen
+              Kostenloses Erstgespraech
             </Link>
             <button
               onClick={scrollToProjects}

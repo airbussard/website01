@@ -30,8 +30,8 @@ export default function Footer() {
               </div>
             </Link>
             <p className="text-gray-400 mb-4">
-              Ihr Partner für digitale Lösungen.
-              Spezialisiert auf moderne Webanwendungen, komplexe Systeme und native iOS Apps.
+              Individuelle Digitalloesungen fuer Ihr Unternehmen.
+              Von der Website bis zum komplexen System - schnell, fair und mit dauerhafter Betreuung.
             </p>
             <div className="flex space-x-4">
               <Link
@@ -108,12 +108,12 @@ export default function Footer() {
 
           {/* Services */}
           <div>
-            <h4 className="text-lg font-semibold mb-4">Services</h4>
+            <h4 className="text-lg font-semibold mb-4">Leistungen</h4>
             <ul className="space-y-2">
-              <li className="text-gray-400">Web Development</li>
-              <li className="text-gray-400">iOS App Entwicklung</li>
-              <li className="text-gray-400">API Entwicklung</li>
-              <li className="text-gray-400">Consulting</li>
+              <li className="text-gray-400">Websites & Webshops</li>
+              <li className="text-gray-400">Web-Anwendungen</li>
+              <li className="text-gray-400">Mobile Apps</li>
+              <li className="text-gray-400">IT-Beratung</li>
             </ul>
           </div>
         </div>

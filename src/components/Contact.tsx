@@ -61,11 +61,11 @@ export default function Contact({ showHeading = true }: ContactProps) {
           >
             <h2 className="text-4xl md:text-5xl font-bold mb-4">
               <span className="bg-gradient-to-r from-primary-600 to-primary-400 bg-clip-text text-transparent">
-                Projekt anfragen
+                Kostenloses Erstgespraech
               </span>
             </h2>
             <p className="text-xl text-gray-600">
-              Starten Sie Ihre digitale Transformation mit uns
+              Erzaehlen Sie uns von Ihrem Vorhaben - wir melden uns innerhalb von 24 Stunden
             </p>
           </motion.div>
         )}
@@ -219,7 +219,7 @@ export default function Contact({ showHeading = true }: ContactProps) {
                 ) : (
                   <>
                     <Send className="h-5 w-5" />
-                    <span>Anfrage senden</span>
+                    <span>Unverbindlich anfragen</span>
                   </>
                 )}
               </button>
