@@ -1,69 +1,59 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Code, Briefcase, Award, Users, Target, Heart, Lightbulb, TrendingUp } from 'lucide-react';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
+import { Code, Briefcase, Award, Users, Target, Heart, Lightbulb, TrendingUp, MessageSquare, Shield, Zap, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
-
-const stats = [
-  { number: '10+', label: 'Jahre Erfahrung' },
-  { number: '100+', label: 'Erfolgreiche Projekte' },
-  { number: '50+', label: 'Zufriedene Kunden' },
-  { number: '24/7', label: 'Support' },
-];
+import Image from 'next/image';
 
 const highlights = [
   {
-    icon: Code,
-    title: 'Technische Expertise',
-    description: 'Breites Spektrum an Technologien von React bis Swift',
+    icon: MessageSquare,
+    title: 'Klare Kommunikation',
+    description: 'Ich erklaere alles so, dass Sie es verstehen - ohne Fachbegriffe',
   },
   {
-    icon: Briefcase,
-    title: 'Business Verständnis',
-    description: 'Lösungen die technisch und wirtschaftlich überzeugen',
+    icon: Shield,
+    title: 'Zuverlaessigkeit',
+    description: 'Ein fester Ansprechpartner von Anfang bis Ende',
   },
   {
-    icon: Award,
-    title: 'Qualität im Fokus',
-    description: 'Clean Code, beste Practices und durchdachte Architektur',
+    icon: Zap,
+    title: 'Schnelle Umsetzung',
+    description: 'Effiziente Entwicklung ohne unnoetige Verzoegerungen',
   },
   {
-    icon: Users,
-    title: 'Teamplayer',
-    description: 'Agile Zusammenarbeit und klare Kommunikation',
+    icon: Heart,
+    title: 'Ehrliche Beratung',
+    description: 'Ich empfehle nur, was Sie wirklich brauchen',
   },
 ];
 
 const values = [
   {
     icon: Target,
-    title: 'Zielorientiert',
-    description: 'Wir fokussieren uns auf messbare Ergebnisse und den Erfolg Ihrer digitalen Projekte. Jede Zeile Code dient einem klaren Geschäftsziel.',
+    title: 'Loesungsorientiert',
+    description: 'Ich konzentriere mich auf das, was Ihrem Unternehmen wirklich hilft - nicht auf technische Spielereien.',
   },
   {
-    icon: Heart,
-    title: 'Leidenschaft',
-    description: 'Technologie ist nicht nur unser Beruf, sondern unsere Passion. Diese Begeisterung spiegelt sich in jedem Projekt wider.',
+    icon: Briefcase,
+    title: 'Partnerschaftlich',
+    description: 'Ich sehe mich als Ihren Partner, nicht als Dienstleister. Ihr Erfolg ist auch mein Erfolg.',
   },
   {
     icon: Lightbulb,
-    title: 'Innovation',
-    description: 'Wir bleiben am Puls der Zeit und setzen modernste Technologien ein, um zukunftssichere Lösungen zu schaffen.',
+    title: 'Pragmatisch',
+    description: 'Die beste Loesung ist oft die einfachste. Ich setze auf bewaehrte Ansaetze statt auf unnoetige Komplexitaet.',
   },
   {
     icon: TrendingUp,
-    title: 'Wachstum',
-    description: 'Ihr Erfolg ist unser Erfolg. Wir entwickeln skalierbare Lösungen, die mit Ihrem Unternehmen wachsen.',
+    title: 'Langfristig',
+    description: 'Ich entwickle Loesungen, die auch in Jahren noch funktionieren - und betreue Sie auch nach dem Projekt.',
   },
 ];
 
 export default function AboutPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      <Header />
-
       <main className="container mx-auto px-6 py-20">
         {/* Hero Section */}
         <motion.div
@@ -74,15 +64,15 @@ export default function AboutPage() {
         >
           <h1 className="text-4xl md:text-5xl font-bold mb-4">
             <span className="bg-gradient-to-r from-primary-600 to-primary-400 bg-clip-text text-transparent">
-              Über getemergence.com
+              Wer steckt hinter getemergence?
             </span>
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Ihr Partner für digitale Innovation und maßgeschneiderte Software-Lösungen
+            Ein Ansprechpartner. Individuelle Loesungen. Langfristige Betreuung.
           </p>
         </motion.div>
 
-        {/* Main Content */}
+        {/* Main Content - Oscar Introduction */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-20">
           <motion.div
             initial={{ opacity: 0, x: -50 }}
@@ -92,54 +82,54 @@ export default function AboutPage() {
             className="bg-white rounded-xl p-8 shadow-lg"
           >
             <h2 className="text-3xl font-bold mb-6 text-gray-800">
-              Innovation durch Technologie
+              Digitale Loesungen - einfach erklaert
             </h2>
             <p className="text-gray-600 mb-4 leading-relaxed">
-              getemergence.com ist Ihr vertrauenswürdiger Partner für digitale Transformation.
-              Unser erfahrenes Team aus Full-Stack Entwicklern und iOS Experten bringt Ihre
-              digitalen Visionen zum Leben. Mit über einem Jahrzehnt Erfahrung haben wir
-              erfolgreich Lösungen für Unternehmen jeder Größe entwickelt.
+              Sie brauchen eine Website oder ein digitales Werkzeug fuer Ihr Unternehmen?
+              Ich entwickle Loesungen, die genau zu Ihren Anforderungen passen -
+              ohne unnoetige Komplexitaet und zu fairen Preisen.
             </p>
             <p className="text-gray-600 mb-4 leading-relaxed">
-              Unsere Stärke liegt in der perfekten Verbindung von technischer Exzellenz
-              und tiefem Verständnis für Geschäftsprozesse. Wir entwickeln nicht nur Software –
-              wir schaffen digitale Erlebnisse, die Ihre Nutzer begeistern und Ihr Business
-              voranbringen.
+              Seit ueber 10 Jahren helfe ich Unternehmen dabei, online erfolgreicher zu werden.
+              Von der einfachen Firmenwebsite bis zum komplexen Buchungssystem -
+              ich begleite Sie von der ersten Idee bis zum fertigen Produkt und darueber hinaus.
             </p>
             <p className="text-gray-600 leading-relaxed">
-              Von Start-ups bis zu etablierten Unternehmen – wir sind der Partner, der Ihre
-              digitalen Herausforderungen in erfolgreiche Lösungen verwandelt. Technologie
-              ist unsere Leidenschaft, Ihr Erfolg unser Ziel.
+              Das Wichtigste dabei: <strong>Ich erklaere alles so, dass Sie es verstehen.</strong> Keine
+              Fachbegriffe, kein Verkaufsdruck - nur ehrliche Beratung und zuverlaessige Umsetzung.
             </p>
           </motion.div>
 
+          {/* Oscar Image */}
           <motion.div
             initial={{ opacity: 0, x: 50 }}
             whileInView={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5 }}
             viewport={{ once: true }}
-            className="grid grid-cols-2 gap-6"
+            className="flex justify-center"
           >
-            {stats.map((stat, index) => (
-              <div
-                key={index}
-                className="bg-white rounded-xl p-6 text-center shadow-lg hover:shadow-xl transition-shadow"
-              >
-                <div className="text-3xl md:text-4xl font-bold text-primary-600 mb-2">
-                  {stat.number}
-                </div>
-                <div className="text-gray-600">
-                  {stat.label}
-                </div>
+            <div className="relative">
+              <div className="w-72 h-72 md:w-96 md:h-96 rounded-2xl overflow-hidden shadow-xl">
+                <Image
+                  src="/oscar.jpeg"
+                  alt="Oscar Knabe - Ihr Ansprechpartner"
+                  fill
+                  className="object-cover"
+                  priority
+                />
               </div>
-            ))}
+              <div className="absolute -bottom-4 -right-4 bg-white rounded-xl p-4 shadow-lg">
+                <p className="font-semibold text-gray-900">Oscar Knabe</p>
+                <p className="text-sm text-primary-600">Ihr Ansprechpartner</p>
+              </div>
+            </div>
           </motion.div>
         </div>
 
         {/* Highlights */}
         <div className="mb-20">
           <h2 className="text-3xl font-bold text-center mb-12 text-gray-900">
-            Warum getemergence.com?
+            Was Sie von mir erwarten koennen
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {highlights.map((highlight, index) => {
@@ -171,7 +161,7 @@ export default function AboutPage() {
         {/* Values */}
         <div className="mb-20">
           <h2 className="text-3xl font-bold text-center mb-12 text-gray-900">
-            Unsere Werte
+            Meine Arbeitsweise
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {values.map((value, index) => {
@@ -201,37 +191,6 @@ export default function AboutPage() {
                 </motion.div>
               );
             })}
-          </div>
-        </div>
-
-        {/* Team Section */}
-        <div className="mb-20">
-          <h2 className="text-3xl font-bold text-center mb-12 text-gray-900">
-            Unser Team
-          </h2>
-          <div className="max-w-2xl mx-auto">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              viewport={{ once: true }}
-              className="bg-white rounded-xl p-8 shadow-lg text-center"
-            >
-              <div className="w-32 h-32 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-full mx-auto mb-6 flex items-center justify-center">
-                <span className="text-4xl font-bold text-white">OK</span>
-              </div>
-              <h3 className="text-2xl font-bold mb-2 text-gray-900">
-                Oscar Knabe
-              </h3>
-              <p className="text-primary-600 mb-4 font-medium">
-                Founder & Lead Developer
-              </p>
-              <p className="text-gray-600 leading-relaxed">
-                Mit über 10 Jahren Erfahrung in der Software-Entwicklung bringe ich technische Expertise
-                und strategisches Denken zusammen. Spezialisiert auf Full-Stack Development, iOS Apps
-                und System-Architektur entwickle ich maßgeschneiderte Lösungen für digitale Herausforderungen.
-              </p>
-            </motion.div>
           </div>
         </div>
 
@@ -315,25 +274,24 @@ export default function AboutPage() {
             {/* Right: Content */}
             <div className="flex flex-col justify-center text-center md:text-left">
               <h2 className="text-3xl font-bold mb-4 text-gray-900">
-                Lassen Sie uns zusammenarbeiten
+                Lassen Sie uns sprechen
               </h2>
               <p className="text-xl mb-8 text-gray-600">
-                Bereit für Ihr nächstes digitales Projekt? Wir freuen uns auf Ihre Ideen!
+                Erzaehlen Sie mir von Ihrem Vorhaben - in einem kostenlosen Erstgespraech finden wir heraus, wie ich Ihnen helfen kann.
               </p>
               <div>
                 <Link
                   href="/kontakt"
                   className="inline-flex items-center px-8 py-4 bg-primary-600 text-white rounded-xl font-semibold hover:bg-primary-700 hover:scale-105 hover:shadow-xl transition-all duration-300 text-lg"
                 >
-                  Jetzt Kontakt aufnehmen
+                  Kostenloses Erstgespraech vereinbaren
+                  <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
               </div>
             </div>
           </div>
         </motion.div>
       </main>
-
-      <Footer />
     </div>
   );
 }

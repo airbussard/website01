@@ -1,35 +1,29 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Code, Briefcase, Award, Users } from 'lucide-react';
-
-const stats = [
-  { number: '10+', label: 'Jahre Erfahrung' },
-  { number: '100+', label: 'Erfolgreiche Projekte' },
-  { number: '50+', label: 'Zufriedene Kunden' },
-  { number: '24/7', label: 'Support' },
-];
+import { MessageSquare, Shield, Zap, Heart } from 'lucide-react';
+import Image from 'next/image';
 
 const highlights = [
   {
-    icon: Code,
-    title: 'Technische Expertise',
-    description: 'Breites Spektrum an Technologien von React bis Swift',
+    icon: MessageSquare,
+    title: 'Klare Kommunikation',
+    description: 'Ich erklaere alles so, dass Sie es verstehen - ohne Fachbegriffe',
   },
   {
-    icon: Briefcase,
-    title: 'Business Verständnis',
-    description: 'Lösungen die technisch und wirtschaftlich überzeugen',
+    icon: Shield,
+    title: 'Zuverlaessigkeit',
+    description: 'Ein fester Ansprechpartner von Anfang bis Ende',
   },
   {
-    icon: Award,
-    title: 'Qualität im Fokus',
-    description: 'Clean Code, beste Practices und durchdachte Architektur',
+    icon: Zap,
+    title: 'Schnelle Umsetzung',
+    description: 'Effiziente Entwicklung ohne unnoetige Verzoegerungen',
   },
   {
-    icon: Users,
-    title: 'Teamplayer',
-    description: 'Agile Zusammenarbeit und klare Kommunikation',
+    icon: Heart,
+    title: 'Ehrliche Beratung',
+    description: 'Ich empfehle nur, was Sie wirklich brauchen',
   },
 ];
 
@@ -46,11 +40,11 @@ export default function About() {
         >
           <h2 className="text-4xl md:text-5xl font-bold mb-4">
             <span className="bg-gradient-to-r from-primary-600 to-primary-400 bg-clip-text text-transparent">
-              Über uns
+              Ihr Ansprechpartner
             </span>
           </h2>
           <p className="text-xl text-gray-600">
-            Ihr Partner für digitale Innovation
+            Ein fester Kontakt fuer alle Ihre digitalen Projekte
           </p>
         </motion.div>
 
@@ -62,24 +56,21 @@ export default function About() {
             viewport={{ once: true }}
           >
             <h3 className="text-3xl font-bold mb-4 text-gray-800">
-              Innovation durch Technologie
+              Digitale Loesungen - einfach erklaert
             </h3>
             <p className="text-gray-600 mb-4">
-              getemergence.com ist Ihr vertrauenswürdiger Partner für digitale Transformation.
-              Unser erfahrenes Team aus Full-Stack Entwicklern und iOS Experten bringt Ihre
-              digitalen Visionen zum Leben. Mit über einem Jahrzehnt Erfahrung haben wir
-              erfolgreich Lösungen für Unternehmen jeder Größe entwickelt.
+              Sie brauchen eine Website oder ein digitales Werkzeug fuer Ihr Unternehmen?
+              Ich entwickle Loesungen, die genau zu Ihren Anforderungen passen -
+              ohne unnoetige Komplexitaet und zu fairen Preisen.
             </p>
             <p className="text-gray-600 mb-4">
-              Unsere Stärke liegt in der perfekten Verbindung von technischer Exzellenz
-              und tiefem Verständnis für Geschäftsprozesse. Wir entwickeln nicht nur Software –
-              wir schaffen digitale Erlebnisse, die Ihre Nutzer begeistern und Ihr Business
-              voranbringen.
+              Seit ueber 10 Jahren helfe ich Unternehmen dabei, online erfolgreicher zu werden.
+              Von der einfachen Firmenwebsite bis zum komplexen Buchungssystem -
+              ich begleite Sie von der ersten Idee bis zum fertigen Produkt und darueber hinaus.
             </p>
             <p className="text-gray-600">
-              Von Start-ups bis zu etablierten Unternehmen – wir sind der Partner, der Ihre
-              digitalen Herausforderungen in erfolgreiche Lösungen verwandelt. Technologie
-              ist unsere Leidenschaft, Ihr Erfolg unser Ziel.
+              Das Wichtigste dabei: <strong>Ich erklaere alles so, dass Sie es verstehen.</strong> Keine
+              Fachbegriffe, kein Verkaufsdruck - nur ehrliche Beratung und zuverlaessige Umsetzung.
             </p>
           </motion.div>
 
@@ -88,21 +79,22 @@ export default function About() {
             whileInView={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5 }}
             viewport={{ once: true }}
-            className="grid grid-cols-2 gap-6"
+            className="flex justify-center"
           >
-            {stats.map((stat, index) => (
-              <div
-                key={index}
-                className="bg-gray-50 rounded-xl p-6 text-center"
-              >
-                <div className="text-3xl md:text-4xl font-bold text-primary-600 mb-2">
-                  {stat.number}
-                </div>
-                <div className="text-gray-600">
-                  {stat.label}
-                </div>
+            <div className="relative">
+              <div className="w-64 h-64 md:w-80 md:h-80 rounded-2xl overflow-hidden shadow-xl">
+                <Image
+                  src="/oscar.jpeg"
+                  alt="Oscar Knabe - Ihr Ansprechpartner"
+                  fill
+                  className="object-cover"
+                />
               </div>
-            ))}
+              <div className="absolute -bottom-4 -right-4 bg-white rounded-xl p-4 shadow-lg">
+                <p className="font-semibold text-gray-900">Oscar Knabe</p>
+                <p className="text-sm text-primary-600">Ihr Ansprechpartner</p>
+              </div>
+            </div>
           </motion.div>
         </div>
 
