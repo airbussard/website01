@@ -4,6 +4,7 @@ import "./globals.css";
 import CookieConsent from "@/components/CookieConsent";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { OrganizationJsonLd, LocalBusinessJsonLd, WebsiteJsonLd } from "@/components/JsonLd";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -11,24 +12,42 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "getemergence.com - Digital Solutions & Software Development",
-  description: "Ihr Partner für digitale Transformation. Spezialisiert auf moderne Webanwendungen, komplexe Systeme und native iOS Apps.",
-  keywords: "Digital Solutions, Web Development, iOS Development, Software Development, React, Next.js, Swift, Digital Transformation",
-  authors: [{ name: "getemergence.com" }],
+  metadataBase: new URL('https://oscarknabe.de'),
+  title: {
+    default: "Webentwicklung Frankfurt - Websites & Web-Apps | getemergence.com",
+    template: "%s | getemergence.com",
+  },
+  description: "Professionelle Webentwicklung aus Deutschland. Websites, Web-Anwendungen und Mobile Apps für Unternehmen. Persönliche Betreuung, faire Preise.",
+  keywords: "Webentwicklung, Website erstellen, Web-App, Mobile App, Frankfurt, Köln, Deutschland, Webdesign, SEO, Unternehmen",
+  authors: [{ name: "Oscar Knabe", url: "https://oscarknabe.de" }],
   creator: "getemergence.com",
+  publisher: "getemergence.com",
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
   openGraph: {
     type: "website",
     locale: "de_DE",
-    url: "https://getemergence.com",
-    title: "getemergence.com - Digital Solutions & Software Development",
-    description: "Moderne Websites, komplexe Systeme und native Apps für Ihr Unternehmen",
+    url: "https://oscarknabe.de",
+    title: "Webentwicklung Frankfurt - Websites & Web-Apps | getemergence.com",
+    description: "Professionelle Webentwicklung aus Deutschland. Websites, Web-Anwendungen und Mobile Apps für Unternehmen.",
     siteName: "getemergence.com",
+    images: [
+      {
+        url: "/og-image.jpg",
+        width: 1200,
+        height: 630,
+        alt: "getemergence.com - Webentwicklung",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "getemergence.com - Digital Solutions & Software Development",
-    description: "Moderne Websites, komplexe Systeme und native Apps für Ihr Unternehmen",
-    creator: "@getemergence",
+    title: "Webentwicklung Frankfurt - Websites & Web-Apps | getemergence.com",
+    description: "Professionelle Webentwicklung aus Deutschland. Websites, Web-Anwendungen und Mobile Apps für Unternehmen.",
+    images: ["/og-image.jpg"],
   },
   robots: {
     index: true,
@@ -41,6 +60,13 @@ export const metadata: Metadata = {
       "max-snippet": -1,
     },
   },
+  alternates: {
+    canonical: "./",
+  },
+  verification: {
+    // Google Search Console verification (add your code here)
+    // google: "your-verification-code",
+  },
 };
 
 export default function RootLayout({
@@ -50,6 +76,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="de" className="scroll-smooth">
+      <head>
+        <OrganizationJsonLd />
+        <LocalBusinessJsonLd />
+        <WebsiteJsonLd />
+      </head>
       <body
         className={`${inter.variable} font-sans antialiased`}
       >

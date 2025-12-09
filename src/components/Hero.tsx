@@ -6,7 +6,7 @@ import Link from 'next/link';
 
 const trustBadges = [
   { icon: MapPin, text: 'Made in Germany' },
-  { icon: User, text: 'Persoenlicher Ansprechpartner' },
+  { icon: User, text: 'Persönlicher Ansprechpartner' },
   { icon: FileCheck, text: 'Festpreis-Garantie' },
 ];
 
@@ -54,7 +54,7 @@ export default function Hero() {
             transition={{ duration: 0.5, delay: 0.1 }}
             className="text-lg sm:text-xl md:text-2xl text-gray-600 mb-8 max-w-3xl mx-auto"
           >
-            Individuelle Digitalloesungen fuer Ihr Unternehmen -
+            Individuelle Digitallösungen für Ihr Unternehmen -
             <span className="text-primary-600 font-medium"> schnell umgesetzt</span>,
             <span className="text-primary-600 font-medium"> fair bepreist</span> und mit
             <span className="text-primary-600 font-medium"> dauerhafter Betreuung</span>.
@@ -91,7 +91,7 @@ export default function Hero() {
               href="/kontakt"
               className="px-8 py-4 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-semibold transition-all transform hover:scale-105 shadow-lg hover:shadow-xl"
             >
-              Kostenloses Erstgespraech
+              Kostenloses Erstgespräch
             </Link>
             <button
               onClick={scrollToProjects}

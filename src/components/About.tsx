@@ -8,17 +8,17 @@ const highlights = [
   {
     icon: MessageSquare,
     title: 'Klare Kommunikation',
-    description: 'Ich erklaere alles so, dass Sie es verstehen - ohne Fachbegriffe',
+    description: 'Ich erkläre alles so, dass Sie es verstehen - ohne Fachbegriffe',
   },
   {
     icon: Shield,
-    title: 'Zuverlaessigkeit',
+    title: 'Zuverlässigkeit',
     description: 'Ein fester Ansprechpartner von Anfang bis Ende',
   },
   {
     icon: Zap,
     title: 'Schnelle Umsetzung',
-    description: 'Effiziente Entwicklung ohne unnoetige Verzoegerungen',
+    description: 'Effiziente Entwicklung ohne unnötige Verzögerungen',
   },
   {
     icon: Heart,
@@ -44,7 +44,7 @@ export default function About() {
             </span>
           </h2>
           <p className="text-xl text-gray-600">
-            Ein fester Kontakt fuer alle Ihre digitalen Projekte
+            Ein fester Kontakt für alle Ihre digitalen Projekte
           </p>
         </motion.div>
 
@@ -56,21 +56,21 @@ export default function About() {
             viewport={{ once: true }}
           >
             <h3 className="text-3xl font-bold mb-4 text-gray-800">
-              Digitale Loesungen - einfach erklaert
+              Digitale Lösungen - einfach erklärt
             </h3>
             <p className="text-gray-600 mb-4">
-              Sie brauchen eine Website oder ein digitales Werkzeug fuer Ihr Unternehmen?
-              Ich entwickle Loesungen, die genau zu Ihren Anforderungen passen -
-              ohne unnoetige Komplexitaet und zu fairen Preisen.
+              Sie brauchen eine Website oder ein digitales Werkzeug für Ihr Unternehmen?
+              Ich entwickle Lösungen, die genau zu Ihren Anforderungen passen -
+              ohne unnötige Komplexität und zu fairen Preisen.
             </p>
             <p className="text-gray-600 mb-4">
-              Seit ueber 10 Jahren helfe ich Unternehmen dabei, online erfolgreicher zu werden.
+              Seit über 10 Jahren helfe ich Unternehmen dabei, online erfolgreicher zu werden.
               Von der einfachen Firmenwebsite bis zum komplexen Buchungssystem -
-              ich begleite Sie von der ersten Idee bis zum fertigen Produkt und darueber hinaus.
+              ich begleite Sie von der ersten Idee bis zum fertigen Produkt und darüber hinaus.
             </p>
             <p className="text-gray-600">
-              Das Wichtigste dabei: <strong>Ich erklaere alles so, dass Sie es verstehen.</strong> Keine
-              Fachbegriffe, kein Verkaufsdruck - nur ehrliche Beratung und zuverlaessige Umsetzung.
+              Das Wichtigste dabei: <strong>Ich erkläre alles so, dass Sie es verstehen.</strong> Keine
+              Fachbegriffe, kein Verkaufsdruck - nur ehrliche Beratung und zuverlässige Umsetzung.
             </p>
           </motion.div>
 

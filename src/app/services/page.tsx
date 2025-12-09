@@ -30,10 +30,10 @@ const services = [
     id: 'websites',
     icon: Globe,
     title: 'Websites & Webshops',
-    tagline: 'Ihre digitale Visitenkarte, die rund um die Uhr fuer Sie arbeitet',
-    description: 'Professionelle Websites, die nicht nur gut aussehen, sondern auch Kunden gewinnen. Optimiert fuer Suchmaschinen und mobile Geraete.',
+    tagline: 'Ihre digitale Visitenkarte, die rund um die Uhr für Sie arbeitet',
+    description: 'Professionelle Websites, die nicht nur gut aussehen, sondern auch Kunden gewinnen. Optimiert für Suchmaschinen und mobile Geräte.',
     forWhom: [
-      { icon: Store, text: 'Lokale Geschaefte' },
+      { icon: Store, text: 'Lokale Geschäfte' },
       { icon: Briefcase, text: 'Dienstleister' },
       { icon: Truck, text: 'Handwerker' },
       { icon: Users, text: 'Freiberufler' },
@@ -43,12 +43,12 @@ const services = [
       'Kontaktformular mit E-Mail-Benachrichtigung',
       'Google Maps Integration',
       'Lokale SEO-Optimierung',
-      'Responsive fuer alle Geraete',
+      'Responsive für alle Geräte',
       'Hosting & SSL inklusive',
     ],
     benefits: [
       'Werden Sie online von Neukunden gefunden',
-      'Generieren Sie Anfragen auch ausserhalb der Oeffnungszeiten',
+      'Generieren Sie Anfragen auch außerhalb der Öffnungszeiten',
       'Professioneller erster Eindruck',
     ],
   },
@@ -56,8 +56,8 @@ const services = [
     id: 'webapps',
     icon: Layers,
     title: 'Web-Anwendungen',
-    tagline: 'Digitale Werkzeuge, die Ihre Geschaeftsprozesse automatisieren',
-    description: 'Massgeschneiderte Web-Anwendungen, die Ihre taegliche Arbeit vereinfachen und Prozesse automatisieren. Von Kundenportalen bis zu internen Tools.',
+    tagline: 'Digitale Werkzeuge, die Ihre Geschäftsprozesse automatisieren',
+    description: 'Maßgeschneiderte Web-Anwendungen, die Ihre tägliche Arbeit vereinfachen und Prozesse automatisieren. Von Kundenportalen bis zu internen Tools.',
     forWhom: [
       { icon: Briefcase, text: 'Agenturen' },
       { icon: Building2, text: 'Beratungsunternehmen' },
@@ -67,14 +67,14 @@ const services = [
     features: [
       'Kundenportale mit Login-Bereich',
       'Buchungs- und Terminverwaltung',
-      'Ticketsysteme fuer Anfragen',
+      'Ticketsysteme für Anfragen',
       'Kalkulationstools',
       'Anfragenmanagement',
       'Dashboard & Reporting',
     ],
     benefits: [
       'Weniger manuelle Arbeit durch Automatisierung',
-      'Besserer Ueberblick ueber Ihr Geschaeft',
+      'Besserer Überblick über Ihr Geschäft',
       'Professionellerer Kundenservice',
     ],
   },
@@ -83,7 +83,7 @@ const services = [
     icon: Smartphone,
     title: 'Mobile Apps',
     tagline: 'Ihre Marke in der Hosentasche Ihrer Kunden',
-    description: 'Native iOS und Android Apps, die Ihre Kunden begeistern. Von der Konzeption ueber die Entwicklung bis zur Veroeffentlichung im App Store.',
+    description: 'Native iOS und Android Apps, die Ihre Kunden begeistern. Von der Konzeption über die Entwicklung bis zur Veröffentlichung im App Store.',
     forWhom: [
       { icon: Building2, text: 'Unternehmen' },
       { icon: Store, text: 'Einzelhandel' },
@@ -94,13 +94,13 @@ const services = [
       'Native iOS & Android Entwicklung',
       'Benutzerfreundliches Interface',
       'Push-Benachrichtigungen',
-      'Offline-Faehigkeit',
-      'App Store Veroeffentlichung',
+      'Offline-Fähigkeit',
+      'App Store Veröffentlichung',
       'Laufende Wartung & Updates',
     ],
     benefits: [
       'Direkte Verbindung zu Ihren Kunden',
-      'Hoehere Kundenbindung',
+      'Höhere Kundenbindung',
       'Modernes Unternehmensimage',
     ],
   },
@@ -109,17 +109,17 @@ const services = [
     icon: Lightbulb,
     title: 'IT-Beratung',
     tagline: 'Klarheit vor der Investition - wir helfen bei der Entscheidung',
-    description: 'Sie stehen vor einer digitalen Entscheidung? Wir beraten Sie unabhaengig und helfen Ihnen, die richtige Loesung zu finden - ohne Verkaufsdruck.',
+    description: 'Sie stehen vor einer digitalen Entscheidung? Wir beraten Sie unabhängig und helfen Ihnen, die richtige Lösung zu finden - ohne Verkaufsdruck.',
     forWhom: [
-      { icon: Building2, text: 'Geschaeftsfuehrer' },
+      { icon: Building2, text: 'Geschäftsführer' },
       { icon: BarChart3, text: 'Entscheider' },
       { icon: Users, text: 'Teams' },
-      { icon: Compass, text: 'Gruender' },
+      { icon: Compass, text: 'Gründer' },
     ],
     features: [
-      'Unabhaengige Technologieberatung',
+      'Unabhängige Technologieberatung',
       'Anforderungsanalyse',
-      'Machbarkeitspruefung',
+      'Machbarkeitsprüfung',
       'Anbietervergleich',
       'Projektplanung',
       'Zweitmeinung zu Angeboten',
@@ -127,7 +127,7 @@ const services = [
     benefits: [
       'Fundierte Entscheidungsgrundlage',
       'Vermeidung teurer Fehlentscheidungen',
-      'Neutraler Blick von aussen',
+      'Neutraler Blick von außen',
     ],
   },
 ];
@@ -144,7 +144,7 @@ export default function ServicesPage() {
           className="text-center mb-16"
         >
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-            Die richtige Loesung fuer Ihr Unternehmen
+            Die richtige Lösung für Ihr Unternehmen
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             Von der einfachen Website bis zum komplexen System - wir finden gemeinsam heraus, was Sie wirklich brauchen
@@ -190,7 +190,7 @@ export default function ServicesPage() {
                     {/* Fuer wen? */}
                     <div>
                       <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">
-                        Fuer wen?
+                        Für wen?
                       </h3>
                       <div className="grid grid-cols-2 gap-3">
                         {service.forWhom.map((item, itemIndex) => {
@@ -273,13 +273,13 @@ export default function ServicesPage() {
             Nicht sicher, was Sie brauchen?
           </h2>
           <p className="text-xl mb-8 text-gray-600 max-w-2xl mx-auto">
-            Kein Problem! In einem kostenlosen Erstgespraech finden wir gemeinsam heraus, welche Loesung am besten zu Ihnen passt.
+            Kein Problem! In einem kostenlosen Erstgespräch finden wir gemeinsam heraus, welche Lösung am besten zu Ihnen passt.
           </p>
           <Link
             href="/kontakt"
             className="inline-flex items-center px-8 py-4 bg-primary-600 text-white rounded-xl font-semibold hover:bg-primary-700 hover:scale-105 hover:shadow-xl transition-all duration-300 text-lg"
           >
-            Kostenloses Erstgespraech vereinbaren
+            Kostenloses Erstgespräch vereinbaren
             <ArrowRight className="ml-2 h-5 w-5" />
           </Link>
         </motion.div>

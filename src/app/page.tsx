@@ -36,17 +36,17 @@ const benefits = [
   {
     icon: Zap,
     title: 'Schnelle Umsetzung',
-    description: 'Von der Idee zur fertigen Loesung in Wochen, nicht Monaten.',
+    description: 'Von der Idee zur fertigen Lösung in Wochen, nicht Monaten.',
   },
   {
     icon: Shield,
     title: 'Dauerhafte Betreuung',
-    description: 'Langfristige Partnerschaft mit persoenlichem Ansprechpartner.',
+    description: 'Langfristige Partnerschaft mit persönlichem Ansprechpartner.',
   },
   {
     icon: TrendingUp,
     title: 'Werbeoptimiert',
-    description: 'SEO & Conversion-Optimierung fuer mehr Kundenanfragen.',
+    description: 'SEO & Conversion-Optimierung für mehr Kundenanfragen.',
   },
 ];
 
@@ -94,10 +94,10 @@ const targetGroups = [
 const processSteps = [
   {
     number: '1',
-    title: 'Erstgespraech',
+    title: 'Erstgespräch',
     subtitle: 'Kostenlos',
     icon: MessageSquare,
-    items: ['Anforderungen verstehen', 'Ziele definieren', 'Machbarkeit pruefen'],
+    items: ['Anforderungen verstehen', 'Ziele definieren', 'Machbarkeit prüfen'],
   },
   {
     number: '2',
@@ -111,7 +111,7 @@ const processSteps = [
     title: 'Umsetzung',
     subtitle: '',
     icon: Code2,
-    items: ['Entwicklung', 'Regelmaessige Abstimmung', 'Tests & Qualitaet'],
+    items: ['Entwicklung', 'Regelmäßige Abstimmung', 'Tests & Qualität'],
   },
   {
     number: '4',
@@ -133,7 +133,7 @@ const services = [
   {
     icon: Layers,
     title: 'Web-Anwendungen',
-    description: 'Digitale Werkzeuge, die Ihre Geschaeftsprozesse automatisieren',
+    description: 'Digitale Werkzeuge, die Ihre Geschäftsprozesse automatisieren',
     forWhom: 'Agenturen, Beratungen, Mittelstand',
   },
   {
@@ -145,7 +145,7 @@ const services = [
   {
     icon: Lightbulb,
     title: 'IT-Beratung',
-    description: 'Klarheit vor der Investition - unabhaengige Beratung',
+    description: 'Klarheit vor der Investition - unabhängige Beratung',
     forWhom: 'Vor digitalen Entscheidungen',
   },
 ];
@@ -171,7 +171,7 @@ export default function Home() {
                 Warum Unternehmen mit uns arbeiten
               </h2>
               <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                Wir verstehen die Beduerfnisse von kleinen und mittelstaendischen Unternehmen
+                Wir verstehen die Bedürfnisse von kleinen und mittelständischen Unternehmen
               </p>
             </motion.div>
 
@@ -214,10 +214,10 @@ export default function Home() {
               className="text-center mb-12"
             >
               <h2 className="text-3xl md:text-4xl font-bold mb-4 text-gray-900">
-                Fuer wen wir arbeiten
+                Für wen wir arbeiten
               </h2>
               <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                Von der einfachen Website bis zum komplexen System - wir finden die richtige Loesung fuer Ihr Unternehmen
+                Von der einfachen Website bis zum komplexen System - wir finden die richtige Lösung für Ihr Unternehmen
               </p>
             </motion.div>
 
@@ -278,7 +278,7 @@ export default function Home() {
                 Unsere Leistungen
               </h2>
               <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                Massgeschneiderte Loesungen fuer Ihre digitalen Herausforderungen
+                Maßgeschneiderte Lösungen für Ihre digitalen Herausforderungen
               </p>
             </motion.div>
 
@@ -322,7 +322,7 @@ export default function Home() {
                 href="/services"
                 className="inline-flex items-center text-primary-600 font-semibold hover:underline"
               >
-                Finden Sie die richtige Loesung
+                Finden Sie die richtige Lösung
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
             </motion.div>
@@ -343,7 +343,7 @@ export default function Home() {
                 So arbeiten wir zusammen
               </h2>
               <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                Vom ersten Gespraech bis zur dauerhaften Betreuung - transparent und planbar
+                Vom ersten Gespräch bis zur dauerhaften Betreuung - transparent und planbar
               </p>
             </motion.div>
 
@@ -518,17 +518,17 @@ export default function Home() {
                 {/* Right: Content */}
                 <div className="flex flex-col justify-center text-center md:text-left">
                   <h2 className="text-3xl md:text-4xl font-bold mb-4 text-gray-900">
-                    Bereit fuer Ihr Projekt?
+                    Bereit für Ihr Projekt?
                   </h2>
                   <p className="text-xl mb-8 text-gray-600">
-                    In einem kostenlosen Erstgespraech klaeren wir Ihre Anforderungen und zeigen Ihnen, wie wir helfen koennen.
+                    In einem kostenlosen Erstgespräch klären wir Ihre Anforderungen und zeigen Ihnen, wie wir helfen können.
                   </p>
                   <div>
                     <Link
                       href="/kontakt"
                       className="inline-flex items-center px-8 py-4 bg-primary-600 text-white rounded-xl font-semibold hover:bg-primary-700 hover:scale-105 hover:shadow-xl transition-all duration-300 text-lg"
                     >
-                      Kostenloses Erstgespraech vereinbaren
+                      Kostenloses Erstgespräch vereinbaren
                       <ArrowRight className="ml-2 h-5 w-5" />
                     </Link>
                   </div>

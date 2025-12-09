@@ -9,17 +9,17 @@ const highlights = [
   {
     icon: MessageSquare,
     title: 'Klare Kommunikation',
-    description: 'Ich erklaere alles so, dass Sie es verstehen - ohne Fachbegriffe',
+    description: 'Ich erkläre alles so, dass Sie es verstehen - ohne Fachbegriffe',
   },
   {
     icon: Shield,
-    title: 'Zuverlaessigkeit',
+    title: 'Zuverlässigkeit',
     description: 'Ein fester Ansprechpartner von Anfang bis Ende',
   },
   {
     icon: Zap,
     title: 'Schnelle Umsetzung',
-    description: 'Effiziente Entwicklung ohne unnoetige Verzoegerungen',
+    description: 'Effiziente Entwicklung ohne unnötige Verzögerungen',
   },
   {
     icon: Heart,
@@ -31,7 +31,7 @@ const highlights = [
 const values = [
   {
     icon: Target,
-    title: 'Loesungsorientiert',
+    title: 'Lösungsorientiert',
     description: 'Ich konzentriere mich auf das, was Ihrem Unternehmen wirklich hilft - nicht auf technische Spielereien.',
   },
   {
@@ -42,12 +42,12 @@ const values = [
   {
     icon: Lightbulb,
     title: 'Pragmatisch',
-    description: 'Die beste Loesung ist oft die einfachste. Ich setze auf bewaehrte Ansaetze statt auf unnoetige Komplexitaet.',
+    description: 'Die beste Lösung ist oft die einfachste. Ich setze auf bewährte Ansätze statt auf unnötige Komplexität.',
   },
   {
     icon: TrendingUp,
     title: 'Langfristig',
-    description: 'Ich entwickle Loesungen, die auch in Jahren noch funktionieren - und betreue Sie auch nach dem Projekt.',
+    description: 'Ich entwickle Lösungen, die auch in Jahren noch funktionieren - und betreue Sie auch nach dem Projekt.',
   },
 ];
 
@@ -68,7 +68,7 @@ export default function AboutPage() {
             </span>
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Ein Ansprechpartner. Individuelle Loesungen. Langfristige Betreuung.
+            Ein Ansprechpartner. Individuelle Lösungen. Langfristige Betreuung.
           </p>
         </motion.div>
 
@@ -82,21 +82,21 @@ export default function AboutPage() {
             className="bg-white rounded-xl p-8 shadow-lg"
           >
             <h2 className="text-3xl font-bold mb-6 text-gray-800">
-              Digitale Loesungen - einfach erklaert
+              Digitale Lösungen - einfach erklärt
             </h2>
             <p className="text-gray-600 mb-4 leading-relaxed">
-              Sie brauchen eine Website oder ein digitales Werkzeug fuer Ihr Unternehmen?
-              Ich entwickle Loesungen, die genau zu Ihren Anforderungen passen -
-              ohne unnoetige Komplexitaet und zu fairen Preisen.
+              Sie brauchen eine Website oder ein digitales Werkzeug für Ihr Unternehmen?
+              Ich entwickle Lösungen, die genau zu Ihren Anforderungen passen -
+              ohne unnötige Komplexität und zu fairen Preisen.
             </p>
             <p className="text-gray-600 mb-4 leading-relaxed">
-              Seit ueber 10 Jahren helfe ich Unternehmen dabei, online erfolgreicher zu werden.
+              Seit über 10 Jahren helfe ich Unternehmen dabei, online erfolgreicher zu werden.
               Von der einfachen Firmenwebsite bis zum komplexen Buchungssystem -
-              ich begleite Sie von der ersten Idee bis zum fertigen Produkt und darueber hinaus.
+              ich begleite Sie von der ersten Idee bis zum fertigen Produkt und darüber hinaus.
             </p>
             <p className="text-gray-600 leading-relaxed">
-              Das Wichtigste dabei: <strong>Ich erklaere alles so, dass Sie es verstehen.</strong> Keine
-              Fachbegriffe, kein Verkaufsdruck - nur ehrliche Beratung und zuverlaessige Umsetzung.
+              Das Wichtigste dabei: <strong>Ich erkläre alles so, dass Sie es verstehen.</strong> Keine
+              Fachbegriffe, kein Verkaufsdruck - nur ehrliche Beratung und zuverlässige Umsetzung.
             </p>
           </motion.div>
 
@@ -129,7 +129,7 @@ export default function AboutPage() {
         {/* Highlights */}
         <div className="mb-20">
           <h2 className="text-3xl font-bold text-center mb-12 text-gray-900">
-            Was Sie von mir erwarten koennen
+            Was Sie von mir erwarten können
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {highlights.map((highlight, index) => {
@@ -277,14 +277,14 @@ export default function AboutPage() {
                 Lassen Sie uns sprechen
               </h2>
               <p className="text-xl mb-8 text-gray-600">
-                Erzaehlen Sie mir von Ihrem Vorhaben - in einem kostenlosen Erstgespraech finden wir heraus, wie ich Ihnen helfen kann.
+                Erzählen Sie mir von Ihrem Vorhaben - in einem kostenlosen Erstgespräch finden wir heraus, wie ich Ihnen helfen kann.
               </p>
               <div>
                 <Link
                   href="/kontakt"
                   className="inline-flex items-center px-8 py-4 bg-primary-600 text-white rounded-xl font-semibold hover:bg-primary-700 hover:scale-105 hover:shadow-xl transition-all duration-300 text-lg"
                 >
-                  Kostenloses Erstgespraech vereinbaren
+                  Kostenloses Erstgespräch vereinbaren
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
               </div>

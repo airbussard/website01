@@ -30,7 +30,7 @@ export default function Footer() {
               </div>
             </Link>
             <p className="text-gray-400 mb-4">
-              Individuelle Digitalloesungen fuer Ihr Unternehmen.
+              Individuelle Digitallösungen für Ihr Unternehmen.
               Von der Website bis zum komplexen System - schnell, fair und mit dauerhafter Betreuung.
             </p>
             <div className="flex space-x-4">
