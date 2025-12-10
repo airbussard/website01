@@ -157,11 +157,12 @@ export default function ServicesPage() {
             return (
               <motion.div
                 key={service.id}
+                id={service.id}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 viewport={{ once: true }}
-                className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden"
+                className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden scroll-mt-24"
               >
                 {/* Service Header */}
                 <div className="p-8 md:p-10 border-b border-gray-100">

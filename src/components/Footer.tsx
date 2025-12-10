@@ -53,7 +53,7 @@ export default function Footer() {
 
           {/* Quick Links */}
           <div>
-            <h4 className="text-lg font-semibold mb-4">Quick Links</h4>
+            <h4 className="text-lg font-semibold mb-4">Übersicht</h4>
             <ul className="space-y-2">
               <li>
                 <Link
@@ -110,10 +110,38 @@ export default function Footer() {
           <div>
             <h4 className="text-lg font-semibold mb-4">Leistungen</h4>
             <ul className="space-y-2">
-              <li className="text-gray-400">Websites & Webshops</li>
-              <li className="text-gray-400">Web-Anwendungen</li>
-              <li className="text-gray-400">Mobile Apps</li>
-              <li className="text-gray-400">IT-Beratung</li>
+              <li>
+                <Link
+                  href="/services#websites"
+                  className="text-gray-400 hover:text-primary-400 transition-colors"
+                >
+                  Websites & Webshops
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/services#webapps"
+                  className="text-gray-400 hover:text-primary-400 transition-colors"
+                >
+                  Web-Anwendungen
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/services#mobile"
+                  className="text-gray-400 hover:text-primary-400 transition-colors"
+                >
+                  Mobile Apps
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/services#consulting"
+                  className="text-gray-400 hover:text-primary-400 transition-colors"
+                >
+                  IT-Beratung
+                </Link>
+              </li>
             </ul>
           </div>
         </div>
