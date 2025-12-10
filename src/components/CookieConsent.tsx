@@ -93,7 +93,7 @@ export default function CookieConsent({ forceShow = false }: CookieConsentProps)
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
             className={`fixed z-[9999] ${
               showSettings
-                ? 'inset-x-4 top-1/2 -translate-y-1/2 md:inset-x-auto md:left-1/2 md:-translate-x-1/2 md:w-full md:max-w-2xl'
+                ? 'inset-4 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-2xl overflow-y-auto max-h-[calc(100vh-2rem)]'
                 : 'bottom-0 left-0 right-0'
             }`}
           >
