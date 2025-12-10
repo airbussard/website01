@@ -93,11 +93,11 @@ export default function CookieConsent({ forceShow = false }: CookieConsentProps)
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
             className={`fixed z-[9999] ${
               showSettings
-                ? 'inset-4 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-2xl overflow-y-auto max-h-[calc(100vh-2rem)]'
+                ? 'inset-0 flex items-center justify-center p-4'
                 : 'bottom-0 left-0 right-0'
             }`}
           >
-            <div className="relative bg-white rounded-2xl border-2 border-primary-500 shadow-2xl overflow-hidden">
+            <div className="relative bg-white rounded-2xl border-2 border-primary-500 shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto w-full max-w-2xl">
               {/* Grid Pattern Background */}
               <div className="absolute inset-0 opacity-5 pointer-events-none">
                 <div
