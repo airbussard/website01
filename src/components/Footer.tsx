@@ -73,7 +73,15 @@ export default function Footer() {
               </li>
               <li>
                 <Link
-                  href="/referenzen"
+                  href="/technologien"
+                  className="text-gray-400 hover:text-primary-400 transition-colors"
+                >
+                  Technologien
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/projekte"
                   className="text-gray-400 hover:text-primary-400 transition-colors"
                 >
                   Projekte
@@ -81,18 +89,10 @@ export default function Footer() {
               </li>
               <li>
                 <Link
-                  href="/about"
+                  href="/ueber-uns"
                   className="text-gray-400 hover:text-primary-400 transition-colors"
                 >
                   Über uns
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/tech"
-                  className="text-gray-400 hover:text-primary-400 transition-colors"
-                >
-                  Technologien
                 </Link>
               </li>
               <li>

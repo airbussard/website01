@@ -17,13 +17,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.9,
     },
     {
-      url: `${baseUrl}/referenzen`,
+      url: `${baseUrl}/projekte`,
       lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 0.8,
     },
     {
-      url: `${baseUrl}/about`,
+      url: `${baseUrl}/ueber-uns`,
       lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 0.7,
@@ -35,7 +35,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.8,
     },
     {
-      url: `${baseUrl}/tech`,
+      url: `${baseUrl}/technologien`,
       lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 0.5,

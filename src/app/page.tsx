@@ -443,7 +443,7 @@ export default function Home() {
               className="text-center"
             >
               <Link
-                href="/referenzen"
+                href="/projekte"
                 className="inline-flex items-center text-primary-600 font-semibold hover:underline"
               >
                 Alle Projekte ansehen

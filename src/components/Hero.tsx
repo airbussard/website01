@@ -87,7 +87,7 @@ export default function Hero() {
               Kostenloses Erstgespräch
             </Link>
             <Link
-              href="/referenzen"
+              href="/projekte"
               className="px-8 py-4 bg-white hover:bg-gray-50 text-gray-800 border-2 border-gray-200 rounded-lg font-semibold transition-all transform hover:scale-105"
             >
               Projekte ansehen
