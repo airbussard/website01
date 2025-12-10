@@ -195,7 +195,7 @@ export default function Contact({ showHeading = true }: ContactProps) {
               {/* Submit Status Messages */}
               {submitStatus === 'success' && (
                 <div className="p-4 bg-green-100 text-green-700 rounded-lg">
-                  Vielen Dank für Ihre Anfrage! Ich werde mich schnellstmöglich bei Ihnen melden.
+                  Vielen Dank für Ihre Anfrage! Wir werden uns schnellstmöglich bei Ihnen melden.
                 </div>
               )}
 

@@ -8,7 +8,7 @@ const highlights = [
   {
     icon: MessageSquare,
     title: 'Klare Kommunikation',
-    description: 'Ich erkläre alles so, dass Sie es verstehen - ohne Fachbegriffe',
+    description: 'Wir erklären alles so, dass Sie es verstehen - ohne Fachbegriffe',
   },
   {
     icon: Shield,
@@ -23,7 +23,7 @@ const highlights = [
   {
     icon: Heart,
     title: 'Ehrliche Beratung',
-    description: 'Ich empfehle nur, was Sie wirklich brauchen',
+    description: 'Wir empfehlen nur, was Sie wirklich brauchen',
   },
 ];
 
@@ -60,16 +60,16 @@ export default function About() {
             </h3>
             <p className="text-gray-600 mb-4">
               Sie brauchen eine Website oder ein digitales Werkzeug für Ihr Unternehmen?
-              Ich entwickle Lösungen, die genau zu Ihren Anforderungen passen -
+              Wir entwickeln Lösungen, die genau zu Ihren Anforderungen passen -
               ohne unnötige Komplexität und zu fairen Preisen.
             </p>
             <p className="text-gray-600 mb-4">
-              Seit über 10 Jahren helfe ich Unternehmen dabei, online erfolgreicher zu werden.
+              Seit über 10 Jahren helfen wir Unternehmen dabei, online erfolgreicher zu werden.
               Von der einfachen Firmenwebsite bis zum komplexen Buchungssystem -
-              ich begleite Sie von der ersten Idee bis zum fertigen Produkt und darüber hinaus.
+              wir begleiten Sie von der ersten Idee bis zum fertigen Produkt und darüber hinaus.
             </p>
             <p className="text-gray-600">
-              Das Wichtigste dabei: <strong>Ich erkläre alles so, dass Sie es verstehen.</strong> Keine
+              Das Wichtigste dabei: <strong>Wir erklären alles so, dass Sie es verstehen.</strong> Keine
               Fachbegriffe, kein Verkaufsdruck - nur ehrliche Beratung und zuverlässige Umsetzung.
             </p>
           </motion.div>

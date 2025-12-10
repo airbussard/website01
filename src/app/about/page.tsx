@@ -9,7 +9,7 @@ const highlights = [
   {
     icon: MessageSquare,
     title: 'Klare Kommunikation',
-    description: 'Ich erkläre alles so, dass Sie es verstehen - ohne Fachbegriffe',
+    description: 'Wir erklären alles so, dass Sie es verstehen - ohne Fachbegriffe',
   },
   {
     icon: Shield,
@@ -24,7 +24,7 @@ const highlights = [
   {
     icon: Heart,
     title: 'Ehrliche Beratung',
-    description: 'Ich empfehle nur, was Sie wirklich brauchen',
+    description: 'Wir empfehlen nur, was Sie wirklich brauchen',
   },
 ];
 
@@ -32,22 +32,22 @@ const values = [
   {
     icon: Target,
     title: 'Lösungsorientiert',
-    description: 'Ich konzentriere mich auf das, was Ihrem Unternehmen wirklich hilft - nicht auf technische Spielereien.',
+    description: 'Wir konzentrieren uns auf das, was Ihrem Unternehmen wirklich hilft - nicht auf technische Spielereien.',
   },
   {
     icon: Briefcase,
     title: 'Partnerschaftlich',
-    description: 'Ich sehe mich als Ihren Partner, nicht als Dienstleister. Ihr Erfolg ist auch mein Erfolg.',
+    description: 'Wir sehen uns als Ihren Partner, nicht als Dienstleister. Ihr Erfolg ist auch unser Erfolg.',
   },
   {
     icon: Lightbulb,
     title: 'Pragmatisch',
-    description: 'Die beste Lösung ist oft die einfachste. Ich setze auf bewährte Ansätze statt auf unnötige Komplexität.',
+    description: 'Die beste Lösung ist oft die einfachste. Wir setzen auf bewährte Ansätze statt auf unnötige Komplexität.',
   },
   {
     icon: TrendingUp,
     title: 'Langfristig',
-    description: 'Ich entwickle Lösungen, die auch in Jahren noch funktionieren - und betreue Sie auch nach dem Projekt.',
+    description: 'Wir entwickeln Lösungen, die auch in Jahren noch funktionieren - und betreuen Sie auch nach dem Projekt.',
   },
 ];
 
@@ -86,16 +86,16 @@ export default function AboutPage() {
             </h2>
             <p className="text-gray-600 mb-4 leading-relaxed">
               Sie brauchen eine Website oder ein digitales Werkzeug für Ihr Unternehmen?
-              Ich entwickle Lösungen, die genau zu Ihren Anforderungen passen -
+              Wir entwickeln Lösungen, die genau zu Ihren Anforderungen passen -
               ohne unnötige Komplexität und zu fairen Preisen.
             </p>
             <p className="text-gray-600 mb-4 leading-relaxed">
-              Seit über 10 Jahren helfe ich Unternehmen dabei, online erfolgreicher zu werden.
+              Seit über 10 Jahren helfen wir Unternehmen dabei, online erfolgreicher zu werden.
               Von der einfachen Firmenwebsite bis zum komplexen Buchungssystem -
-              ich begleite Sie von der ersten Idee bis zum fertigen Produkt und darüber hinaus.
+              wir begleiten Sie von der ersten Idee bis zum fertigen Produkt und darüber hinaus.
             </p>
             <p className="text-gray-600 leading-relaxed">
-              Das Wichtigste dabei: <strong>Ich erkläre alles so, dass Sie es verstehen.</strong> Keine
+              Das Wichtigste dabei: <strong>Wir erklären alles so, dass Sie es verstehen.</strong> Keine
               Fachbegriffe, kein Verkaufsdruck - nur ehrliche Beratung und zuverlässige Umsetzung.
             </p>
           </motion.div>
@@ -129,7 +129,7 @@ export default function AboutPage() {
         {/* Highlights */}
         <div className="mb-20">
           <h2 className="text-3xl font-bold text-center mb-12 text-gray-900">
-            Was Sie von mir erwarten können
+            Was Sie von uns erwarten können
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {highlights.map((highlight, index) => {
@@ -161,7 +161,7 @@ export default function AboutPage() {
         {/* Values */}
         <div className="mb-20">
           <h2 className="text-3xl font-bold text-center mb-12 text-gray-900">
-            Meine Arbeitsweise
+            Unsere Arbeitsweise
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {values.map((value, index) => {
@@ -277,7 +277,7 @@ export default function AboutPage() {
                 Lassen Sie uns sprechen
               </h2>
               <p className="text-xl mb-8 text-gray-600">
-                Erzählen Sie mir von Ihrem Vorhaben - in einem kostenlosen Erstgespräch finden wir heraus, wie ich Ihnen helfen kann.
+                Erzählen Sie uns von Ihrem Vorhaben - in einem kostenlosen Erstgespräch finden wir heraus, wie wir Ihnen helfen können.
               </p>
               <div>
                 <Link
