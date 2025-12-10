@@ -50,8 +50,16 @@ export async function POST(request: Request) {
     }
 
     // Send email notification via SMTP (Strato)
+    console.log('SMTP Config:', {
+      host: process.env.SMTP_HOST || 'NOT SET',
+      port: process.env.SMTP_PORT || 'NOT SET',
+      user: process.env.SMTP_USER || 'NOT SET',
+      passSet: process.env.SMTP_PASS ? 'YES' : 'NO',
+    });
+
     if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
       try {
+        console.log('Creating SMTP transporter...');
         const transporter = nodemailer.createTransport({
           host: process.env.SMTP_HOST,
           port: parseInt(process.env.SMTP_PORT || '465'),
@@ -62,7 +70,8 @@ export async function POST(request: Request) {
           },
         });
 
-        await transporter.sendMail({
+        console.log('Sending email...');
+        const info = await transporter.sendMail({
           from: `"Kontaktformular" <${process.env.SMTP_USER}>`,
           to: 'hello@getemergence.com',
           replyTo: email,
@@ -78,9 +87,12 @@ export async function POST(request: Request) {
             <p>${message.replace(/\n/g, '<br>')}</p>
           `,
         });
+        console.log('Email sent successfully:', info.messageId);
       } catch (emailError) {
         console.error('Failed to send email:', emailError);
       }
+    } else {
+      console.log('SMTP not configured - skipping email');
     }
 
     return NextResponse.json(
