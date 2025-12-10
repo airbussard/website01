@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Code2, Smartphone, Globe } from 'lucide-react';
+import { Menu, X, Code2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navigation = [
@@ -12,7 +12,6 @@ const navigation = [
   { name: 'Technologien', href: '/technologien' },
   { name: 'Projekte', href: '/projekte' },
   { name: 'Über uns', href: '/ueber-uns' },
-  { name: 'Kontakt', href: '/kontakt' },
 ];
 
 export default function Header() {
@@ -72,17 +71,13 @@ export default function Header() {
             ))}
           </div>
 
-          {/* Services Icons - Desktop */}
-          <div className="hidden md:flex items-center space-x-4">
-            <div className="flex items-center space-x-2 text-sm text-gray-600">
-              <Globe className="h-4 w-4" />
-              <span>Web</span>
-            </div>
-            <div className="flex items-center space-x-2 text-sm text-gray-600">
-              <Smartphone className="h-4 w-4" />
-              <span>iOS</span>
-            </div>
-          </div>
+          {/* CTA Button - Desktop */}
+          <Link
+            href="/kontakt"
+            className="hidden md:inline-flex px-6 py-2 bg-primary-600 text-white rounded-lg font-semibold hover:bg-primary-700 transition-colors"
+          >
+            Kontakt
+          </Link>
 
           {/* Mobile Menu Button */}
           <button
@@ -118,16 +113,13 @@ export default function Header() {
                     {item.name}
                   </Link>
                 ))}
-                <div className="flex items-center space-x-4 pt-4 border-t border-gray-200">
-                  <div className="flex items-center space-x-2 text-sm text-gray-600">
-                    <Globe className="h-4 w-4" />
-                    <span>Web</span>
-                  </div>
-                  <div className="flex items-center space-x-2 text-sm text-gray-600">
-                    <Smartphone className="h-4 w-4" />
-                    <span>iOS</span>
-                  </div>
-                </div>
+                <Link
+                  href="/kontakt"
+                  onClick={handleNavClick}
+                  className="mt-4 px-6 py-3 bg-primary-600 text-white rounded-lg font-semibold hover:bg-primary-700 transition-colors text-center"
+                >
+                  Kontakt
+                </Link>
               </div>
             </motion.div>
           )}
