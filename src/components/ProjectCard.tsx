@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Code, ArrowRight } from 'lucide-react';
 import { Project } from '@/types';
 
@@ -19,8 +20,17 @@ export default function ProjectCard({ project, index = 0 }: ProjectCardProps) {
       viewport={{ once: true }}
       className="bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow"
     >
-      <div className="h-48 bg-gray-100 border-b-2 border-primary-500 flex items-center justify-center">
-        <Code className="h-20 w-20 text-primary-500 opacity-20" />
+      <div className="relative h-48 bg-gray-100 border-b-2 border-primary-500 flex items-center justify-center overflow-hidden">
+        {project.imageUrl ? (
+          <Image
+            src={project.imageUrl}
+            alt={project.title}
+            fill
+            className="object-cover"
+          />
+        ) : (
+          <Code className="h-20 w-20 text-primary-500 opacity-20" />
+        )}
       </div>
       <div className="p-6">
         <h3 className="text-xl font-bold mb-2 text-gray-900">
