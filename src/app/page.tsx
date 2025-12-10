@@ -150,6 +150,25 @@ const services = [
   },
 ];
 
+// Testimonials
+const testimonials = [
+  {
+    name: 'Eyup Akpinar',
+    company: 'Flighthour',
+    quote: 'Super Zusammenarbeit, gerne wieder!',
+  },
+  {
+    name: 'Max Mustermann',
+    company: 'Beispiel GmbH',
+    quote: 'Professionelle Umsetzung und tolle Kommunikation.',
+  },
+  {
+    name: 'Anna Schmidt',
+    company: 'Schmidt & Partner',
+    quote: 'Schnell, zuverlässig und kreativ. Absolut empfehlenswert!',
+  },
+];
+
 export default function Home() {
   const featuredProjects = getFeaturedProjects().slice(0, 3);
 
@@ -431,6 +450,48 @@ export default function Home() {
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
             </motion.div>
+          </div>
+        </section>
+
+        {/* Testimonials */}
+        <section className="py-16 md:py-20 bg-gray-50">
+          <div className="container mx-auto px-6">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              viewport={{ once: true }}
+              className="text-center mb-12"
+            >
+              <h2 className="text-3xl md:text-4xl font-bold mb-4 text-gray-900">
+                Das sagen unsere Kunden
+              </h2>
+              <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+                Vertrauen durch erfolgreiche Zusammenarbeit
+              </p>
+            </motion.div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {testimonials.map((testimonial, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  viewport={{ once: true }}
+                  className="bg-white rounded-xl p-8 shadow-sm hover:shadow-lg transition-shadow border border-gray-100"
+                >
+                  <div className="text-4xl text-primary-300 mb-4">"</div>
+                  <p className="text-gray-700 mb-6 italic">
+                    {testimonial.quote}
+                  </p>
+                  <div className="border-t border-gray-100 pt-4">
+                    <p className="font-semibold text-gray-900">{testimonial.name}</p>
+                    <p className="text-sm text-gray-500">{testimonial.company}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
           </div>
         </section>
 
