@@ -108,6 +108,18 @@ export default function ProjectDetailPage() {
               transition={{ duration: 0.5, delay: 0.2 }}
               className="sticky top-24"
             >
+              {/* Price Tag */}
+              {project.price && (
+                <div className="bg-green-500 rounded-xl p-6 shadow-lg mb-6">
+                  <div className="text-white text-center">
+                    <span className="text-sm font-medium opacity-90">Projektpreis ab</span>
+                    <div className="text-3xl font-bold mt-1">
+                      {project.price.toLocaleString('de-DE')} €
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Project Info Card */}
               <div className="bg-white rounded-xl p-6 shadow-lg mb-6">
                 <h3 className="text-lg font-semibold mb-4 text-gray-800">

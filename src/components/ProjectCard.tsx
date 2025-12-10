@@ -31,6 +31,12 @@ export default function ProjectCard({ project, index = 0 }: ProjectCardProps) {
         ) : (
           <Code className="h-20 w-20 text-primary-500 opacity-20" />
         )}
+        {/* Price Tag */}
+        {project.price && (
+          <div className="absolute top-3 right-3 bg-green-500 text-white rounded-lg px-3 py-1.5 font-semibold text-sm shadow-lg">
+            ab {project.price.toLocaleString('de-DE')} €
+          </div>
+        )}
       </div>
       <div className="p-6">
         <h3 className="text-xl font-bold mb-2 text-gray-900">

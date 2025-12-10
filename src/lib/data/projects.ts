@@ -50,6 +50,7 @@ Das System ist speziell für Berufspiloten entwickelt und erfüllt alle behördl
     featured: true,
     createdAt: '2025-06-15',
     display_order: 1,
+    price: 40000,
   },
   {
     id: 'immogear-app',
@@ -101,6 +102,7 @@ Die iOS App arbeitet im Read-Only Modus für mobile Übersicht, während das Web
     featured: true,
     createdAt: '2025-03-20',
     display_order: 2,
+    price: 55000,
   },
   {
     id: 'flighthour-portal',
@@ -237,6 +239,7 @@ Die Website setzt den Fokus auf die Kunst und bietet eine störungsfreie Präsen
     featured: false,
     createdAt: '2025-08-05',
     display_order: 5,
+    price: 2000,
   },
   {
     id: 'teppichhaus-website',
@@ -279,6 +282,7 @@ Die Website ist speziell auf die Bedürfnisse eines lokalen Einzelhandelsgeschä
     featured: false,
     createdAt: '2025-04-22',
     display_order: 6,
+    price: 1500,
   },
 ];
 

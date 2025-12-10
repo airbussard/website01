@@ -12,6 +12,7 @@ export interface Project {
   featured: boolean;
   createdAt: string;
   display_order?: number;
+  price?: number; // Projektpreis als Referenz (in Euro)
 }
 
 export interface ContactForm {
