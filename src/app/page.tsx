@@ -242,6 +242,9 @@ export default function Home() {
                     <p className="text-primary-600 font-medium mb-4">
                       {group.subtitle}
                     </p>
+                    <p className="text-xs text-gray-500 uppercase tracking-wider mb-2 font-medium">
+                      Anwendungsbeispiele
+                    </p>
                     <ul className="space-y-2 mb-6">
                       {group.features.map((feature, featureIndex) => (
                         <li key={featureIndex} className="flex items-center text-gray-600 text-sm">

@@ -4,6 +4,7 @@ import "./globals.css";
 import CookieConsent from "@/components/CookieConsent";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import ScrollToTop from "@/components/ScrollToTop";
 import { OrganizationJsonLd, LocalBusinessJsonLd, WebsiteJsonLd } from "@/components/JsonLd";
 
 const inter = Inter({
@@ -88,6 +89,7 @@ export default function RootLayout({
         {children}
         <Footer />
         <CookieConsent />
+        <ScrollToTop />
       </body>
     </html>
   );

@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { ArrowDown, Linkedin, Mail, MapPin, User, FileCheck } from 'lucide-react';
+import { Linkedin, Mail, MapPin, User, FileCheck } from 'lucide-react';
 import Link from 'next/link';
 
 const trustBadges = [
@@ -11,13 +11,6 @@ const trustBadges = [
 ];
 
 export default function Hero() {
-  const scrollToProjects = () => {
-    const element = document.querySelector('#projects');
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
-
   return (
     <section id="home" className="min-h-screen flex items-center justify-center relative overflow-hidden">
       {/* Background Gradient */}
@@ -93,12 +86,12 @@ export default function Hero() {
             >
               Kostenloses Erstgespräch
             </Link>
-            <button
-              onClick={scrollToProjects}
+            <Link
+              href="/referenzen"
               className="px-8 py-4 bg-white hover:bg-gray-50 text-gray-800 border-2 border-gray-200 rounded-lg font-semibold transition-all transform hover:scale-105"
             >
               Projekte ansehen
-            </button>
+            </Link>
           </motion.div>
 
           <motion.div
@@ -123,21 +116,6 @@ export default function Hero() {
             </Link>
           </motion.div>
         </div>
-
-        {/* Scroll Indicator */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.5 }}
-          className="absolute bottom-8 left-1/2 transform -translate-x-1/2"
-        >
-          <button
-            onClick={scrollToProjects}
-            className="animate-bounce text-gray-400 hover:text-primary-600 transition-colors"
-          >
-            <ArrowDown className="h-8 w-8" />
-          </button>
-        </motion.div>
       </div>
     </section>
   );
