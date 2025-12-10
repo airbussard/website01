@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
-import { Resend } from 'resend';
+import nodemailer from 'nodemailer';
 
 export async function POST(request: Request) {
   try {
@@ -43,23 +43,29 @@ export async function POST(request: Request) {
 
         if (error) {
           console.error('Supabase error:', error);
-          // Don't fail the request if Supabase fails
-          // You could implement email fallback here
         }
       } catch (supabaseError) {
         console.error('Failed to connect to Supabase:', supabaseError);
-        // Continue without database storage
       }
     }
 
-    // Send email notification via Resend
-    if (process.env.RESEND_API_KEY) {
+    // Send email notification via SMTP (Strato)
+    if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
       try {
-        const resend = new Resend(process.env.RESEND_API_KEY);
+        const transporter = nodemailer.createTransport({
+          host: process.env.SMTP_HOST,
+          port: parseInt(process.env.SMTP_PORT || '465'),
+          secure: true, // SSL/TLS
+          auth: {
+            user: process.env.SMTP_USER,
+            pass: process.env.SMTP_PASS,
+          },
+        });
 
-        await resend.emails.send({
-          from: 'onboarding@resend.dev', // This is the verified sender from Resend
+        await transporter.sendMail({
+          from: `"Kontaktformular" <${process.env.SMTP_USER}>`,
           to: 'hello@getemergence.com',
+          replyTo: email,
           subject: `Neue Kontaktanfrage: ${subject}`,
           html: `
             <h2>Neue Kontaktanfrage</h2>
@@ -74,7 +80,6 @@ export async function POST(request: Request) {
         });
       } catch (emailError) {
         console.error('Failed to send email:', emailError);
-        // Don't fail the request if email fails
       }
     }
 
