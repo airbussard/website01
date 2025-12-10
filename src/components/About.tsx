@@ -64,7 +64,7 @@ export default function About() {
               ohne unnötige Komplexität und zu fairen Preisen.
             </p>
             <p className="text-gray-600 mb-4">
-              Seit über 10 Jahren helfen wir Unternehmen dabei, online erfolgreicher zu werden.
+              Wir helfen Unternehmen dabei, online erfolgreicher zu werden.
               Von der einfachen Firmenwebsite bis zum komplexen Buchungssystem -
               wir begleiten Sie von der ersten Idee bis zum fertigen Produkt und darüber hinaus.
             </p>
