@@ -256,11 +256,13 @@ export default function TechPage() {
             Wir bleiben stets auf dem neuesten Stand der Technologie und erweitern kontinuierlich unser Know-how.
           </p>
         </motion.div>
+      </main>
 
-        {/* Testimonials */}
-        <Testimonials />
+      {/* Testimonials - Full Width */}
+      <Testimonials />
 
-        {/* CTA Section */}
+      {/* CTA Section */}
+      <div className="container mx-auto px-6 pb-20">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -356,7 +358,7 @@ export default function TechPage() {
             </div>
           </div>
         </motion.div>
-      </main>
+      </div>
     </div>
   );
 }
