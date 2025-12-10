@@ -10,7 +10,6 @@ import {
   CheckCircle,
   ArrowRight,
   Users,
-  Store,
   Briefcase,
   Building2,
   Truck,
@@ -33,7 +32,7 @@ const services = [
     tagline: 'Ihre digitale Visitenkarte, die rund um die Uhr für Sie arbeitet',
     description: 'Professionelle Websites, die nicht nur gut aussehen, sondern auch Kunden gewinnen. Optimiert für Suchmaschinen und mobile Geräte.',
     forWhom: [
-      { icon: Store, text: 'Lokale Geschäfte' },
+      { icon: Building2, text: 'Unternehmen' },
       { icon: Briefcase, text: 'Dienstleister' },
       { icon: Truck, text: 'Handwerker' },
       { icon: Users, text: 'Freiberufler' },
@@ -86,7 +85,7 @@ const services = [
     description: 'Native iOS und Android Apps, die Ihre Kunden begeistern. Von der Konzeption über die Entwicklung bis zur Veröffentlichung im App Store.',
     forWhom: [
       { icon: Building2, text: 'Unternehmen' },
-      { icon: Store, text: 'Einzelhandel' },
+      { icon: ShoppingCart, text: 'Einzelhandel' },
       { icon: Calendar, text: 'Event-Veranstalter' },
       { icon: Truck, text: 'Logistik' },
     ],

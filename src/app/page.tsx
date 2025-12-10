@@ -128,7 +128,7 @@ const services = [
     icon: Globe,
     title: 'Websites & Webshops',
     description: 'Ihre digitale Visitenkarte - professionell, modern und rund um die Uhr erreichbar',
-    forWhom: 'Handwerker, Dienstleister, lokale Unternehmen',
+    forWhom: 'Handwerker, Dienstleister, Unternehmen',
   },
   {
     icon: Layers,
@@ -380,11 +380,6 @@ export default function Home() {
                         ))}
                       </ul>
                     </div>
-                    {index < processSteps.length - 1 && (
-                      <div className="hidden lg:block absolute top-1/2 -right-3 transform -translate-y-1/2">
-                        <ArrowRight className="h-6 w-6 text-gray-300" />
-                      </div>
-                    )}
                   </motion.div>
                 );
               })}
