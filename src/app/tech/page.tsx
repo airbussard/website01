@@ -2,8 +2,6 @@
 
 import { motion } from 'framer-motion';
 import { CheckCircle, Star, TrendingUp, Shield } from 'lucide-react';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
 import Link from 'next/link';
 
 const techCategories = [
@@ -93,8 +91,6 @@ const techDetails = [
 export default function TechPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      <Header />
-
       <main className="container mx-auto px-6 py-20">
         {/* Hero Section */}
         <motion.div
@@ -357,8 +353,6 @@ export default function TechPage() {
           </div>
         </motion.div>
       </main>
-
-      <Footer />
     </div>
   );
 }

@@ -1,8 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
 import CookieConsent from '@/components/CookieConsent';
 import { Cookie, Shield, BarChart3, Target, Settings2 } from 'lucide-react';
 import { cookieDefinitions } from '@/lib/cookies/consent';
@@ -50,8 +48,6 @@ export default function CookiePolicyPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      <Header />
-
       <main className="container mx-auto px-6 py-20">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
@@ -305,8 +301,6 @@ export default function CookiePolicyPage() {
           </div>
         </div>
       </main>
-
-      <Footer />
 
       {/* Cookie Settings Modal */}
       {showSettings && <CookieConsent forceShow={true} />}

@@ -1,15 +1,11 @@
 'use client';
 
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
 import Contact from '@/components/Contact';
 import { Mail, MapPin, Clock, Phone, MessageSquare } from 'lucide-react';
 
 export default function KontaktPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      <Header />
-
       <main className="container mx-auto px-6 py-20">
         {/* Hero Section */}
         <div className="text-center mb-16">
@@ -167,8 +163,6 @@ export default function KontaktPage() {
           title="Standort Steinstraße 71, 52249 Eschweiler"
         />
       </div>
-
-      <Footer />
     </div>
   );
 }

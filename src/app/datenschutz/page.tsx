@@ -1,6 +1,3 @@
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
-
 export const metadata = {
   title: 'Datenschutzerklärung - getemergence.com',
   description: 'Datenschutzerklärung und Informationen zum Datenschutz bei getemergence.com',
@@ -9,8 +6,6 @@ export const metadata = {
 export default function DatenschutzPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      <Header />
-
       <main className="container mx-auto px-6 py-20">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-4xl font-bold text-gray-900 mb-8">
@@ -256,8 +251,6 @@ export default function DatenschutzPage() {
           </div>
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 }
