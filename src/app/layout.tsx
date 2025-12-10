@@ -14,11 +14,11 @@ const inter = Inter({
 export const metadata: Metadata = {
   metadataBase: new URL('https://oscarknabe.de'),
   title: {
-    default: "Webentwicklung Frankfurt - Websites & Web-Apps | getemergence.com",
+    default: "Webentwicklung Nordrhein-Westfalen - Websites & Web-Apps | getemergence.com",
     template: "%s | getemergence.com",
   },
   description: "Professionelle Webentwicklung aus Deutschland. Websites, Web-Anwendungen und Mobile Apps für Unternehmen. Persönliche Betreuung, faire Preise.",
-  keywords: "Webentwicklung, Website erstellen, Web-App, Mobile App, Frankfurt, Köln, Deutschland, Webdesign, SEO, Unternehmen",
+  keywords: "Webentwicklung, Website erstellen, Web-App, Mobile App, Nordrhein-Westfalen, NRW, Köln, Deutschland, Webdesign, SEO, Unternehmen",
   authors: [{ name: "Oscar Knabe", url: "https://oscarknabe.de" }],
   creator: "getemergence.com",
   publisher: "getemergence.com",
@@ -31,7 +31,7 @@ export const metadata: Metadata = {
     type: "website",
     locale: "de_DE",
     url: "https://oscarknabe.de",
-    title: "Webentwicklung Frankfurt - Websites & Web-Apps | getemergence.com",
+    title: "Webentwicklung Nordrhein-Westfalen - Websites & Web-Apps | getemergence.com",
     description: "Professionelle Webentwicklung aus Deutschland. Websites, Web-Anwendungen und Mobile Apps für Unternehmen.",
     siteName: "getemergence.com",
     images: [
@@ -45,7 +45,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Webentwicklung Frankfurt - Websites & Web-Apps | getemergence.com",
+    title: "Webentwicklung Nordrhein-Westfalen - Websites & Web-Apps | getemergence.com",
     description: "Professionelle Webentwicklung aus Deutschland. Websites, Web-Anwendungen und Mobile Apps für Unternehmen.",
     images: ["/og-image.jpg"],
   },
