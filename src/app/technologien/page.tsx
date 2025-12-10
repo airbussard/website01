@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import { CheckCircle, Star, TrendingUp, Shield } from 'lucide-react';
 import Link from 'next/link';
+import Testimonials from '@/components/Testimonials';
 
 const techCategories = [
   {
@@ -255,6 +256,9 @@ export default function TechPage() {
             Wir bleiben stets auf dem neuesten Stand der Technologie und erweitern kontinuierlich unser Know-how.
           </p>
         </motion.div>
+
+        {/* Testimonials */}
+        <Testimonials />
 
         {/* CTA Section */}
         <motion.div

@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import Testimonials from '@/components/Testimonials';
 import {
   Globe,
   Layers,
@@ -260,6 +261,9 @@ export default function ServicesPage() {
             );
           })}
         </div>
+
+        {/* Testimonials */}
+        <Testimonials />
 
         {/* CTA Section */}
         <motion.div
