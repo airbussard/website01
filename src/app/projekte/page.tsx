@@ -26,8 +26,10 @@ export default function ReferenzenPage() {
       <div className="container mx-auto px-6">
         {/* Hero Section */}
         <div className="text-center mb-16">
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-            Unsere Referenzen
+          <h1 className="text-4xl md:text-5xl font-bold mb-4">
+            <span className="bg-gradient-to-r from-primary-600 to-primary-400 bg-clip-text text-transparent">
+              Unsere Referenzen
+            </span>
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             Entdecken Sie eine Auswahl unserer erfolgreich umgesetzten Projekte und überzeugen Sie sich von unserer Expertise

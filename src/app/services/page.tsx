@@ -143,8 +143,10 @@ export default function ServicesPage() {
           transition={{ duration: 0.5 }}
           className="text-center mb-16"
         >
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-            Die richtige Lösung für Ihr Unternehmen
+          <h1 className="text-4xl md:text-5xl font-bold mb-4">
+            <span className="bg-gradient-to-r from-primary-600 to-primary-400 bg-clip-text text-transparent">
+              Die richtige Lösung für Ihr Unternehmen
+            </span>
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             Von der einfachen Website bis zum komplexen System - wir finden gemeinsam heraus, was Sie wirklich brauchen

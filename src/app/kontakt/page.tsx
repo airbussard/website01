@@ -9,8 +9,10 @@ export default function KontaktPage() {
       <main className="container mx-auto px-6 py-20">
         {/* Hero Section */}
         <div className="text-center mb-16">
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-            Kontakt aufnehmen
+          <h1 className="text-4xl md:text-5xl font-bold mb-4">
+            <span className="bg-gradient-to-r from-primary-600 to-primary-400 bg-clip-text text-transparent">
+              Kontakt aufnehmen
+            </span>
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             Haben Sie ein spannendes Projekt? Lassen Sie uns darüber sprechen, wie wir Ihre Ideen gemeinsam verwirklichen können.
