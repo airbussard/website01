@@ -152,7 +152,104 @@ export default function ServicesPage() {
             Von der einfachen Website bis zum komplexen System - wir finden gemeinsam heraus, was Sie wirklich brauchen
           </p>
         </motion.div>
+      </main>
 
+      {/* Services Quick-Nav - Full Width */}
+      <section className="relative bg-white border-y-2 border-primary-500 overflow-hidden">
+        {/* Background Grid Pattern */}
+        <div className="absolute inset-0 opacity-5">
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage: `linear-gradient(0deg, rgb(59, 130, 246) 1px, transparent 1px), linear-gradient(90deg, rgb(59, 130, 246) 1px, transparent 1px)`,
+              backgroundSize: '40px 40px'
+            }}
+          />
+        </div>
+
+        <div className="relative container mx-auto px-6 py-12">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            {/* Websites & Webshops */}
+            <motion.a
+              href="#websites"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0 }}
+              className="group flex flex-col items-center text-center p-6 rounded-2xl border-2 border-transparent hover:border-primary-500 hover:bg-primary-50/50 transition-all cursor-pointer"
+            >
+              <motion.div
+                animate={{ y: [0, -8, 0] }}
+                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                className="w-16 h-16 border-2 border-primary-500 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-primary-500 transition-colors"
+              >
+                <Globe className="h-8 w-8 text-primary-600 group-hover:text-white transition-colors" />
+              </motion.div>
+              <h3 className="font-bold text-gray-900 mb-1">Websites & Webshops</h3>
+              <p className="text-sm text-gray-500">Ihre digitale Visitenkarte</p>
+            </motion.a>
+
+            {/* Web-Anwendungen */}
+            <motion.a
+              href="#webapps"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              className="group flex flex-col items-center text-center p-6 rounded-2xl border-2 border-transparent hover:border-primary-500 hover:bg-primary-50/50 transition-all cursor-pointer"
+            >
+              <motion.div
+                animate={{ y: [0, -8, 0] }}
+                transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+                className="w-16 h-16 border-2 border-primary-500 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-primary-500 transition-colors"
+              >
+                <Layers className="h-8 w-8 text-primary-600 group-hover:text-white transition-colors" />
+              </motion.div>
+              <h3 className="font-bold text-gray-900 mb-1">Web-Anwendungen</h3>
+              <p className="text-sm text-gray-500">Prozesse automatisieren</p>
+            </motion.a>
+
+            {/* Mobile Apps */}
+            <motion.a
+              href="#mobile"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="group flex flex-col items-center text-center p-6 rounded-2xl border-2 border-transparent hover:border-primary-500 hover:bg-primary-50/50 transition-all cursor-pointer"
+            >
+              <motion.div
+                animate={{ y: [0, -8, 0] }}
+                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+                className="w-16 h-16 border-2 border-primary-500 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-primary-500 transition-colors"
+              >
+                <Smartphone className="h-8 w-8 text-primary-600 group-hover:text-white transition-colors" />
+              </motion.div>
+              <h3 className="font-bold text-gray-900 mb-1">Mobile Apps</h3>
+              <p className="text-sm text-gray-500">iOS & Android</p>
+            </motion.a>
+
+            {/* IT-Beratung */}
+            <motion.a
+              href="#consulting"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+              className="group flex flex-col items-center text-center p-6 rounded-2xl border-2 border-transparent hover:border-primary-500 hover:bg-primary-50/50 transition-all cursor-pointer"
+            >
+              <motion.div
+                animate={{ y: [0, -8, 0] }}
+                transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut", delay: 1.5 }}
+                className="w-16 h-16 border-2 border-primary-500 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-primary-500 transition-colors"
+              >
+                <Lightbulb className="h-8 w-8 text-primary-600 group-hover:text-white transition-colors" />
+              </motion.div>
+              <h3 className="font-bold text-gray-900 mb-1">IT-Beratung</h3>
+              <p className="text-sm text-gray-500">Klarheit vor der Investition</p>
+            </motion.a>
+          </div>
+        </div>
+      </section>
+
+      {/* Services Content */}
+      <div className="container mx-auto px-6 py-20">
         {/* Services */}
         <div className="space-y-12 mb-16">
           {services.map((service, index) => {
@@ -263,7 +360,7 @@ export default function ServicesPage() {
             );
           })}
         </div>
-      </main>
+      </div>
 
       {/* Testimonials - Full Width */}
       <Testimonials />
