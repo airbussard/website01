@@ -29,14 +29,23 @@ const roleColors: Record<UserRole, string> = {
 };
 
 export default function ProfilePage() {
-  const { user, profile, role, refreshProfile } = useAuth();
+  const { user, profile, role, refreshProfile, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [initialized, setInitialized] = useState(false);
 
-  const [fullName, setFullName] = useState(profile?.full_name || '');
-  const [company, setCompany] = useState(profile?.company || '');
-  const [phone, setPhone] = useState(profile?.phone || '');
+  const [fullName, setFullName] = useState('');
+  const [company, setCompany] = useState('');
+  const [phone, setPhone] = useState('');
+
+  // Initialize form values when profile loads
+  if (profile && !initialized) {
+    setFullName(profile.full_name || '');
+    setCompany(profile.company || '');
+    setPhone(profile.phone || '');
+    setInitialized(true);
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -80,6 +89,15 @@ export default function ProfilePage() {
         .toUpperCase()
         .slice(0, 2)
     : 'U';
+
+  // Show loading while auth is loading
+  if (authLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">

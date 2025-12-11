@@ -68,7 +68,7 @@ const actionColors: Record<ActivityAction, string> = {
 const ITEMS_PER_PAGE = 20;
 
 export default function ActivityPage() {
-  const { user, isManagerOrAdmin } = useAuth();
+  const { user, isManagerOrAdmin, loading: authLoading } = useAuth();
   const [activities, setActivities] = useState<ActivityLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -78,7 +78,12 @@ export default function ActivityPage() {
 
   useEffect(() => {
     const fetchActivities = async () => {
-      if (!user || !isManagerOrAdmin) return;
+      // Wait for auth to finish loading
+      if (authLoading) return;
+      if (!user || !isManagerOrAdmin) {
+        setLoading(false);
+        return;
+      }
 
       setLoading(true);
       const supabase = createClient();
@@ -113,7 +118,7 @@ export default function ActivityPage() {
     };
 
     fetchActivities();
-  }, [user, isManagerOrAdmin, entityFilter, page]);
+  }, [user, isManagerOrAdmin, authLoading, entityFilter, page]);
 
   const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
 
