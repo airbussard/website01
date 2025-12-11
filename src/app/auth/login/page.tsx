@@ -21,20 +21,27 @@ function LoginForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('[Login Page] handleSubmit called');
+    console.log('[Login Page] Email:', email);
     setError(null);
     setLoading(true);
 
     try {
+      console.log('[Login Page] Calling signIn...');
       const { error: signInError } = await signIn(email, password);
+      console.log('[Login Page] signIn returned:', { error: signInError });
 
       if (signInError) {
+        console.error('[Login Page] Login failed:', signInError);
         setError(signInError);
         setLoading(false);
         return;
       }
 
+      console.log('[Login Page] Login successful, redirecting to:', redirect);
       router.push(redirect);
-    } catch {
+    } catch (err) {
+      console.error('[Login Page] Caught exception:', err);
       setError('Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.');
       setLoading(false);
     }

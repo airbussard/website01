@@ -112,20 +112,27 @@ export function useAuth(): UseAuthReturn {
 
   // Sign In
   const signIn = useCallback(async (email: string, password: string) => {
+    console.log('[Auth] signIn called with email:', email);
     try {
       setError(null);
-      const { error } = await supabase.auth.signInWithPassword({
+      console.log('[Auth] Calling supabase.auth.signInWithPassword...');
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
+      console.log('[Auth] signIn response:', { data: !!data, error: error?.message });
+
       if (error) {
+        console.error('[Auth] signIn error:', error);
         setError(error.message);
         return { error: error.message };
       }
 
+      console.log('[Auth] signIn successful, user:', data?.user?.email);
       return { error: null };
     } catch (err) {
+      console.error('[Auth] signIn caught exception:', err);
       const message = err instanceof Error ? err.message : 'Anmeldung fehlgeschlagen';
       setError(message);
       return { error: message };
