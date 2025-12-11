@@ -18,6 +18,11 @@ ARG NEXT_PUBLIC_SUPABASE_ANON_KEY
 ENV NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL
 ENV NEXT_PUBLIC_SUPABASE_ANON_KEY=$NEXT_PUBLIC_SUPABASE_ANON_KEY
 
+# Debug: Log build-time env vars (kann später entfernt werden)
+RUN echo "=== BUILD DEBUG ===" && \
+    echo "NEXT_PUBLIC_SUPABASE_URL: $NEXT_PUBLIC_SUPABASE_URL" && \
+    echo "NEXT_PUBLIC_SUPABASE_ANON_KEY set: $(test -n \"$NEXT_PUBLIC_SUPABASE_ANON_KEY\" && echo 'YES' || echo 'NO')"
+
 COPY package.json package-lock.json ./
 RUN npm ci
 
