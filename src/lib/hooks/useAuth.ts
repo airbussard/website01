@@ -31,8 +31,8 @@ export function useAuth(): UseAuthReturn {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Profil laden oder erstellen
-  const fetchProfile = useCallback(async (userId: string, userEmail?: string) => {
+  // Profil laden (ohne auto-create um RLS-Probleme zu vermeiden)
+  const fetchProfile = useCallback(async (userId: string) => {
     try {
       const { data, error } = await supabase
         .from('profiles')
@@ -41,36 +41,14 @@ export function useAuth(): UseAuthReturn {
         .single();
 
       if (error) {
-        // Profil existiert nicht - erstelle es
-        if (error.code === 'PGRST116') {
-          console.log('[Auth] Profil nicht gefunden, erstelle neues Profil...');
-          const { data: newProfile, error: insertError } = await supabase
-            .from('profiles')
-            .insert({
-              id: userId,
-              email: userEmail || '',
-              role: 'user',
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString(),
-            })
-            .select()
-            .single();
-
-          if (insertError) {
-            console.error('Fehler beim Erstellen des Profils:', insertError);
-            return null;
-          }
-
-          return newProfile as Profile;
-        }
-
-        console.error('Fehler beim Laden des Profils:', error);
+        // Profil nicht gefunden ist OK - User muss es manuell erstellen oder Admin macht es
+        console.log('[Auth] Profil nicht gefunden:', error.code);
         return null;
       }
 
       return data as Profile;
     } catch (err) {
-      console.error('Fehler beim Laden des Profils:', err);
+      console.error('[Auth] Fehler beim Laden des Profils:', err);
       return null;
     }
   }, []);
@@ -85,15 +63,20 @@ export function useAuth(): UseAuthReturn {
 
   // Auth-State initialisieren
   useEffect(() => {
+    let isMounted = true;
+
     const initAuth = async () => {
       try {
-        setLoading(true);
-
         // Session abrufen
         const { data: { session: currentSession }, error: sessionError } = await supabase.auth.getSession();
 
+        if (!isMounted) return;
+
         if (sessionError) {
-          throw sessionError;
+          console.error('[Auth] Session error:', sessionError);
+          setError('Fehler bei der Authentifizierung');
+          setLoading(false);
+          return;
         }
 
         setSession(currentSession);
@@ -101,13 +84,20 @@ export function useAuth(): UseAuthReturn {
 
         // Profil laden wenn eingeloggt
         if (currentSession?.user) {
-          const userProfile = await fetchProfile(currentSession.user.id, currentSession.user.email);
-          setProfile(userProfile);
+          const userProfile = await fetchProfile(currentSession.user.id);
+          if (isMounted) {
+            setProfile(userProfile);
+          }
         }
       } catch (err) {
-        console.error('Auth Initialisierungsfehler:', err);
-        setError('Fehler bei der Authentifizierung');
-      } finally {
+        console.error('[Auth] Initialisierungsfehler:', err);
+        if (isMounted) {
+          setError('Fehler bei der Authentifizierung');
+        }
+      }
+
+      // IMMER loading beenden
+      if (isMounted) {
         setLoading(false);
       }
     };
@@ -116,12 +106,16 @@ export function useAuth(): UseAuthReturn {
 
     // Auth-State Listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event: AuthChangeEvent, newSession: Session | null) => {
+      if (!isMounted) return;
+
       setSession(newSession);
       setUser(newSession?.user ?? null);
 
       if (newSession?.user) {
-        const userProfile = await fetchProfile(newSession.user.id, newSession.user.email);
-        setProfile(userProfile);
+        const userProfile = await fetchProfile(newSession.user.id);
+        if (isMounted) {
+          setProfile(userProfile);
+        }
       } else {
         setProfile(null);
       }
@@ -130,6 +124,7 @@ export function useAuth(): UseAuthReturn {
     });
 
     return () => {
+      isMounted = false;
       subscription.unsubscribe();
     };
   }, [fetchProfile]);
