@@ -3,8 +3,9 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Code2 } from 'lucide-react';
+import { Menu, X, Code2, LayoutDashboard, LogIn } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/lib/hooks/useAuth';
 
 const navigation = [
   { name: 'Start', href: '/' },
@@ -17,6 +18,7 @@ const navigation = [
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { user, loading } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -71,13 +73,32 @@ export default function Header() {
             ))}
           </div>
 
-          {/* CTA Button - Desktop */}
-          <Link
-            href="/kontakt"
-            className="hidden md:inline-flex px-6 py-2 bg-primary-600 text-white rounded-lg font-semibold hover:bg-primary-700 transition-colors"
-          >
-            Kontakt
-          </Link>
+          {/* CTA Buttons - Desktop */}
+          <div className="hidden md:flex items-center space-x-3">
+            {!loading && user ? (
+              <Link
+                href="/dashboard"
+                className="inline-flex items-center px-4 py-2 text-primary-600 hover:text-primary-700 font-medium transition-colors"
+              >
+                <LayoutDashboard className="h-4 w-4 mr-1.5" />
+                Dashboard
+              </Link>
+            ) : !loading ? (
+              <Link
+                href="/auth/login"
+                className="inline-flex items-center px-4 py-2 text-gray-600 hover:text-primary-600 font-medium transition-colors"
+              >
+                <LogIn className="h-4 w-4 mr-1.5" />
+                Login
+              </Link>
+            ) : null}
+            <Link
+              href="/kontakt"
+              className="px-6 py-2 bg-primary-600 text-white rounded-lg font-semibold hover:bg-primary-700 transition-colors"
+            >
+              Kontakt
+            </Link>
+          </div>
 
           {/* Mobile Menu Button */}
           <button
@@ -113,6 +134,25 @@ export default function Header() {
                     {item.name}
                   </Link>
                 ))}
+                {!loading && user ? (
+                  <Link
+                    href="/dashboard"
+                    onClick={handleNavClick}
+                    className="flex items-center text-primary-600 font-medium py-2"
+                  >
+                    <LayoutDashboard className="h-4 w-4 mr-2" />
+                    Dashboard
+                  </Link>
+                ) : !loading ? (
+                  <Link
+                    href="/auth/login"
+                    onClick={handleNavClick}
+                    className="flex items-center text-gray-700 hover:text-primary-600 font-medium py-2"
+                  >
+                    <LogIn className="h-4 w-4 mr-2" />
+                    Login
+                  </Link>
+                ) : null}
                 <Link
                   href="/kontakt"
                   onClick={handleNavClick}
