@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import type { User, Session } from '@supabase/supabase-js';
+import type { User, Session, AuthChangeEvent } from '@supabase/supabase-js';
 import type { Profile, UserRole, AuthUser } from '@/types/dashboard';
 
 interface UseAuthReturn {
@@ -21,6 +21,9 @@ interface UseAuthReturn {
   refreshProfile: () => Promise<void>;
 }
 
+// Create singleton outside component to ensure stable reference
+const supabase = createClient();
+
 export function useAuth(): UseAuthReturn {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
@@ -28,10 +31,8 @@ export function useAuth(): UseAuthReturn {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const supabase = createClient();
-
-  // Profil laden
-  const fetchProfile = useCallback(async (userId: string) => {
+  // Profil laden oder erstellen
+  const fetchProfile = useCallback(async (userId: string, userEmail?: string) => {
     try {
       const { data, error } = await supabase
         .from('profiles')
@@ -40,6 +41,29 @@ export function useAuth(): UseAuthReturn {
         .single();
 
       if (error) {
+        // Profil existiert nicht - erstelle es
+        if (error.code === 'PGRST116') {
+          console.log('[Auth] Profil nicht gefunden, erstelle neues Profil...');
+          const { data: newProfile, error: insertError } = await supabase
+            .from('profiles')
+            .insert({
+              id: userId,
+              email: userEmail || '',
+              role: 'user',
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            })
+            .select()
+            .single();
+
+          if (insertError) {
+            console.error('Fehler beim Erstellen des Profils:', insertError);
+            return null;
+          }
+
+          return newProfile as Profile;
+        }
+
         console.error('Fehler beim Laden des Profils:', error);
         return null;
       }
@@ -49,7 +73,7 @@ export function useAuth(): UseAuthReturn {
       console.error('Fehler beim Laden des Profils:', err);
       return null;
     }
-  }, [supabase]);
+  }, []);
 
   // Profil neu laden
   const refreshProfile = useCallback(async () => {
@@ -77,7 +101,7 @@ export function useAuth(): UseAuthReturn {
 
         // Profil laden wenn eingeloggt
         if (currentSession?.user) {
-          const userProfile = await fetchProfile(currentSession.user.id);
+          const userProfile = await fetchProfile(currentSession.user.id, currentSession.user.email);
           setProfile(userProfile);
         }
       } catch (err) {
@@ -91,12 +115,12 @@ export function useAuth(): UseAuthReturn {
     initAuth();
 
     // Auth-State Listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, newSession) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event: AuthChangeEvent, newSession: Session | null) => {
       setSession(newSession);
       setUser(newSession?.user ?? null);
 
       if (newSession?.user) {
-        const userProfile = await fetchProfile(newSession.user.id);
+        const userProfile = await fetchProfile(newSession.user.id, newSession.user.email);
         setProfile(userProfile);
       } else {
         setProfile(null);
@@ -108,7 +132,7 @@ export function useAuth(): UseAuthReturn {
     return () => {
       subscription.unsubscribe();
     };
-  }, [supabase, fetchProfile]);
+  }, [fetchProfile]);
 
   // Sign In
   const signIn = useCallback(async (email: string, password: string) => {
@@ -137,7 +161,7 @@ export function useAuth(): UseAuthReturn {
       setError(message);
       return { error: message };
     }
-  }, [supabase]);
+  }, []);
 
   // Sign Up
   const signUp = useCallback(async (email: string, password: string, fullName?: string) => {
@@ -165,7 +189,7 @@ export function useAuth(): UseAuthReturn {
       setError(message);
       return { error: message };
     }
-  }, [supabase]);
+  }, []);
 
   // Sign Out
   const signOut = useCallback(async () => {
@@ -177,7 +201,7 @@ export function useAuth(): UseAuthReturn {
     } catch (err) {
       console.error('Logout Fehler:', err);
     }
-  }, [supabase]);
+  }, []);
 
   // Rolle ermitteln
   const role: UserRole = profile?.role ?? 'user';

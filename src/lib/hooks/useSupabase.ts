@@ -49,7 +49,7 @@ export function useProjects() {
       if (error) throw error;
 
       // Transform data to match our types
-      const transformedData = (data || []).map(project => ({
+      const transformedData = (data || []).map((project: any) => ({
         ...project,
         technologies: project.technologies || [],
         imageUrl: project.project_images?.find((img: any) => img.is_primary)?.image_url || project.image_url || '',
