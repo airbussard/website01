@@ -16,7 +16,9 @@
       "Bash(npm show:*)",
       "Bash(for pkg in next react framer-motion tailwindcss @supabase/supabase-js nodemailer)",
       "Bash(do echo '=== $pkg ===' cat /Users/oscar/Documents/xcode/website01/node_modules/$pkg/LICENSE*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(grep:*)",
+      "Bash(sed:*)"
     ],
     "deny": [],
     "ask": []

@@ -137,7 +137,16 @@ export default function ActivityPage() {
     return date.toLocaleDateString('de-DE');
   };
 
-  // Access restriction for non-managers
+  // Loading check MUST come first (before role check)
+  if (authLoading || loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
+      </div>
+    );
+  }
+
+  // Access restriction for non-managers (only after auth is loaded)
   if (!isManagerOrAdmin) {
     return (
       <div className="bg-white rounded-xl border border-gray-100 p-12 text-center">
@@ -146,14 +155,6 @@ export default function ActivityPage() {
         <p className="text-gray-500">
           Nur Manager und Administratoren haben Zugriff auf das Aktivitätsprotokoll.
         </p>
-      </div>
-    );
-  }
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
       </div>
     );
   }
