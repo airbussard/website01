@@ -142,6 +142,14 @@ export default function Footer() {
                   IT-Beratung
                 </Link>
               </li>
+              <li>
+                <Link
+                  href="/services/hosting"
+                  className="text-gray-400 hover:text-primary-400 transition-colors"
+                >
+                  Hosting
+                </Link>
+              </li>
             </ul>
           </div>
         </div>
