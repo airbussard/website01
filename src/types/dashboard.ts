@@ -17,11 +17,24 @@ export type FileType = 'upload' | 'task' | 'update' | 'invoice';
 export interface Profile {
   id: string;
   email: string;
+  first_name: string | null;
+  last_name: string | null;
   full_name: string | null;
   avatar_url: string | null;
   role: UserRole;
   company: string | null;
   phone: string | null;
+  mobile: string | null;
+  // Privatadresse
+  street: string | null;
+  postal_code: string | null;
+  city: string | null;
+  country: string | null;
+  // Firmenadresse
+  company_street: string | null;
+  company_postal_code: string | null;
+  company_city: string | null;
+  company_country: string | null;
   created_at: string;
   updated_at: string;
 }

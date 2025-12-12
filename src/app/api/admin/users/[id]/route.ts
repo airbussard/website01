@@ -13,16 +13,40 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params;
     const body = await request.json();
-    const { full_name, company, phone } = body;
+    const {
+      first_name,
+      last_name,
+      company,
+      phone,
+      mobile,
+      street,
+      postal_code,
+      city,
+      country,
+      company_street,
+      company_postal_code,
+      company_city,
+      company_country,
+    } = body;
 
     const supabase = createAdminSupabaseClient();
 
     const { data, error } = await supabase
       .from('profiles')
       .update({
-        full_name,
+        first_name,
+        last_name,
         company,
         phone,
+        mobile,
+        street,
+        postal_code,
+        city,
+        country,
+        company_street,
+        company_postal_code,
+        company_city,
+        company_country,
         updated_at: new Date().toISOString(),
       })
       .eq('id', id)
