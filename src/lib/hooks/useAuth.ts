@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import type { User, Session, AuthChangeEvent } from '@supabase/supabase-js';
+import type { User, Session, AuthChangeEvent, AuthResponse } from '@supabase/supabase-js';
 import type { Profile, UserRole, AuthUser } from '@/types/dashboard';
 
 interface UseAuthReturn {
@@ -23,6 +23,17 @@ interface UseAuthReturn {
 
 // Create singleton outside component to ensure stable reference
 const supabase = createClient();
+
+// Timeout für Auth-Aufrufe (verhindert endloses Laden bei Netzwerkproblemen)
+const AUTH_TIMEOUT = 10000; // 10 Sekunden
+
+// Promise mit Timeout wrappen
+async function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  const timeoutPromise = new Promise<never>((_, reject) =>
+    setTimeout(() => reject(new Error('Auth timeout')), ms)
+  );
+  return Promise.race([promise, timeoutPromise]);
+}
 
 export function useAuth(): UseAuthReturn {
   const [user, setUser] = useState<User | null>(null);
@@ -67,8 +78,13 @@ export function useAuth(): UseAuthReturn {
 
     const initAuth = async () => {
       try {
-        // Session abrufen
-        const { data: { session: currentSession }, error: sessionError } = await supabase.auth.getSession();
+        // Session abrufen mit Timeout
+        const sessionResult = await withTimeout<{ data: { session: Session | null }; error: Error | null }>(
+          supabase.auth.getSession(),
+          AUTH_TIMEOUT
+        );
+        const currentSession = sessionResult.data.session;
+        const sessionError = sessionResult.error;
 
         if (!isMounted) return;
 
@@ -82,23 +98,31 @@ export function useAuth(): UseAuthReturn {
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
 
-        // Profil laden wenn eingeloggt
+        // Profil laden wenn eingeloggt (mit eigenem Timeout)
         if (currentSession?.user) {
-          const userProfile = await fetchProfile(currentSession.user.id);
-          if (isMounted) {
-            setProfile(userProfile);
+          try {
+            const userProfile = await withTimeout(
+              fetchProfile(currentSession.user.id),
+              AUTH_TIMEOUT
+            );
+            if (isMounted) {
+              setProfile(userProfile);
+            }
+          } catch (profileErr) {
+            // Profile-Fehler sollte Dashboard nicht blockieren
+            console.warn('[Auth] Profil konnte nicht geladen werden:', profileErr);
           }
         }
       } catch (err) {
-        console.error('[Auth] Initialisierungsfehler:', err);
+        console.error('[Auth] Initialisierungsfehler (möglicherweise Timeout):', err);
         if (isMounted) {
-          setError('Fehler bei der Authentifizierung');
+          setError('Verbindungsproblem - bitte Seite neu laden');
         }
-      }
-
-      // IMMER loading beenden
-      if (isMounted) {
-        setLoading(false);
+      } finally {
+        // IMMER loading beenden - auch bei Timeout/Fehler
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     };
 
@@ -112,9 +136,16 @@ export function useAuth(): UseAuthReturn {
       setUser(newSession?.user ?? null);
 
       if (newSession?.user) {
-        const userProfile = await fetchProfile(newSession.user.id);
-        if (isMounted) {
-          setProfile(userProfile);
+        try {
+          const userProfile = await withTimeout(
+            fetchProfile(newSession.user.id),
+            AUTH_TIMEOUT
+          );
+          if (isMounted) {
+            setProfile(userProfile);
+          }
+        } catch (err) {
+          console.warn('[Auth] Profil-Laden in onAuthStateChange fehlgeschlagen:', err);
         }
       } else {
         setProfile(null);
