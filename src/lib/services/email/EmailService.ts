@@ -1,4 +1,4 @@
-import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { createAdminSupabaseClient } from '@/lib/supabase/admin';
 import type {
   EmailSettings,
   UpdateEmailSettings,
@@ -23,7 +23,7 @@ export class EmailService {
    */
   static async getSettings(): Promise<EmailSettings | null> {
     try {
-      const supabase = await createServerSupabaseClient();
+      const supabase = createAdminSupabaseClient();
 
       const { data, error } = await supabase
         .from('email_settings')
@@ -48,7 +48,7 @@ export class EmailService {
    */
   static async updateSettings(settings: UpdateEmailSettings): Promise<boolean> {
     try {
-      const supabase = await createServerSupabaseClient();
+      const supabase = createAdminSupabaseClient();
 
       // Ersten (und einzigen) Eintrag holen
       const { data: existing } = await supabase
@@ -96,7 +96,7 @@ export class EmailService {
    */
   static async queueEmail(item: CreateEmailQueueItem): Promise<EmailQueueItem | null> {
     try {
-      const supabase = await createServerSupabaseClient();
+      const supabase = createAdminSupabaseClient();
 
       const queueItem = {
         recipient_email: item.recipient_email,
@@ -136,7 +136,7 @@ export class EmailService {
    */
   static async claimPendingEmails(limit: number = 10): Promise<EmailQueueItem[]> {
     try {
-      const supabase = await createServerSupabaseClient();
+      const supabase = createAdminSupabaseClient();
 
       const { data, error } = await supabase
         .rpc('claim_pending_emails', { max_count: limit });
@@ -165,7 +165,7 @@ export class EmailService {
     }
   ): Promise<boolean> {
     try {
-      const supabase = await createServerSupabaseClient();
+      const supabase = createAdminSupabaseClient();
 
       const updateData: Record<string, unknown> = { status };
 
@@ -198,7 +198,7 @@ export class EmailService {
    */
   static async getQueueStats(): Promise<QueueStats> {
     try {
-      const supabase = await createServerSupabaseClient();
+      const supabase = createAdminSupabaseClient();
 
       const [total, pending, processing, sent, failed] = await Promise.all([
         supabase.from('email_queue').select('*', { count: 'exact', head: true }),
@@ -229,7 +229,7 @@ export class EmailService {
     limit?: number;
   }): Promise<EmailQueueItem[]> {
     try {
-      const supabase = await createServerSupabaseClient();
+      const supabase = createAdminSupabaseClient();
 
       let query = supabase
         .from('email_queue')
@@ -263,7 +263,7 @@ export class EmailService {
    */
   static async retryQueueItem(id: string): Promise<boolean> {
     try {
-      const supabase = await createServerSupabaseClient();
+      const supabase = createAdminSupabaseClient();
 
       const { error } = await supabase
         .from('email_queue')
@@ -291,7 +291,7 @@ export class EmailService {
    */
   static async deleteQueueItem(id: string): Promise<boolean> {
     try {
-      const supabase = await createServerSupabaseClient();
+      const supabase = createAdminSupabaseClient();
 
       const { error } = await supabase
         .from('email_queue')
@@ -315,7 +315,7 @@ export class EmailService {
    */
   static async resetStuckProcessingEmails(olderThanMinutes: number = 30): Promise<number> {
     try {
-      const supabase = await createServerSupabaseClient();
+      const supabase = createAdminSupabaseClient();
 
       const cutoffTime = new Date();
       cutoffTime.setMinutes(cutoffTime.getMinutes() - olderThanMinutes);
