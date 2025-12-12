@@ -30,35 +30,24 @@ export function replyTemplate(options: ReplyTemplateOptions): string {
   <table role="presentation" style="width: 100%; border-collapse: collapse;">
     <tr>
       <td style="padding: 40px 20px;">
-        <table role="presentation" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
-          <!-- Header -->
+        <table role="presentation" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; border: 2px solid #3b82f6;">
+          <!-- Header mit Logo -->
           <tr>
-            <td style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); padding: 30px 40px; text-align: center;">
-              <h1 style="margin: 0; color: #ffffff; font-size: 24px; font-weight: 600;">
-                Antwort auf Ihre Anfrage
-              </h1>
+            <td style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); padding: 24px 40px; text-align: center;">
+              <div style="font-size: 24px; font-weight: 700; color: #ffffff; letter-spacing: -0.5px;">
+                getemergence<span style="color: rgba(255,255,255,0.7);">.com</span>
+              </div>
             </td>
           </tr>
 
           <!-- Content -->
           <tr>
-            <td style="padding: 40px;">
-              <p style="margin: 0 0 20px; color: #374151; font-size: 16px; line-height: 1.6;">
-                Guten Tag ${escapeHtml(recipientName)},
+            <td style="padding: 40px; background-color: #ffffff;">
+              <p style="margin: 0 0 24px; color: #374151; font-size: 15px; line-height: 1.7;">
+                ${formattedMessage}
               </p>
 
-              <p style="margin: 0 0 24px; color: #374151; font-size: 16px; line-height: 1.6;">
-                vielen Dank für Ihre Anfrage. Hier ist unsere Antwort:
-              </p>
-
-              <!-- Message Box -->
-              <div style="background-color: #f9fafb; border-left: 4px solid #3b82f6; padding: 20px; margin-bottom: 24px; border-radius: 0 8px 8px 0;">
-                <p style="margin: 0; color: #374151; font-size: 15px; line-height: 1.7;">
-                  ${formattedMessage}
-                </p>
-              </div>
-
-              <p style="margin: 0 0 8px; color: #374151; font-size: 16px; line-height: 1.6;">
+              <p style="margin: 24px 0 8px; color: #374151; font-size: 16px; line-height: 1.6;">
                 Mit freundlichen Grüßen,
               </p>
               <p style="margin: 0; color: #374151; font-size: 16px; font-weight: 600;">
@@ -93,11 +82,7 @@ export function replyTemplate(options: ReplyTemplateOptions): string {
 export function replyTextTemplate(options: ReplyTemplateOptions): string {
   const { recipientName, message, ticketNumber, senderName = 'getemergence.com' } = options;
 
-  let text = `Guten Tag ${recipientName},\n\n`;
-  text += `vielen Dank für Ihre Anfrage. Hier ist unsere Antwort:\n\n`;
-  text += `---\n`;
-  text += `${message}\n`;
-  text += `---\n\n`;
+  let text = `${message}\n\n`;
   text += `Mit freundlichen Grüßen,\n`;
   text += `${senderName}\n\n`;
   text += `---\n`;

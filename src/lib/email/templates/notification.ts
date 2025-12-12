@@ -29,22 +29,22 @@ export function contactNotificationTemplate(data: ContactNotificationData): stri
   <table role="presentation" style="width: 100%; border-collapse: collapse;">
     <tr>
       <td style="padding: 40px 20px;">
-        <table role="presentation" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
-          <!-- Header -->
+        <table role="presentation" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; border: 2px solid #3b82f6;">
+          <!-- Header mit Logo -->
           <tr>
-            <td style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); padding: 30px 40px; text-align: center;">
-              <h1 style="margin: 0; color: #ffffff; font-size: 24px; font-weight: 600;">
-                Neue Kontaktanfrage
-              </h1>
+            <td style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); padding: 24px 40px; text-align: center;">
+              <div style="font-size: 24px; font-weight: 700; color: #ffffff; letter-spacing: -0.5px;">
+                getemergence<span style="color: rgba(255,255,255,0.7);">.com</span>
+              </div>
             </td>
           </tr>
 
           <!-- Content -->
           <tr>
-            <td style="padding: 40px;">
-              <p style="margin: 0 0 20px; color: #374151; font-size: 16px; line-height: 1.6;">
-                Sie haben eine neue Anfrage über das Kontaktformular erhalten:
-              </p>
+            <td style="padding: 40px; background-color: #ffffff;">
+              <h2 style="margin: 0 0 20px; color: #111827; font-size: 20px; font-weight: 600;">
+                Neue Kontaktanfrage
+              </h2>
 
               <!-- Info Box -->
               <table role="presentation" style="width: 100%; background-color: #f9fafb; border-radius: 8px; margin-bottom: 24px;">
