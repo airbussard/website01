@@ -1,10 +1,43 @@
 -- =====================================================
 -- CONTACT SYSTEM MIGRATION
--- Erweitert contact_requests und fügt email_messages hinzu
+-- Erstellt/Erweitert contact_requests und fügt email_messages hinzu
 -- =====================================================
 
 -- =====================================================
--- 1. CONTACT_REQUESTS ERWEITERN
+-- 1. CONTACT_REQUESTS TABELLE ERSTELLEN (falls nicht vorhanden)
+-- =====================================================
+
+CREATE TABLE IF NOT EXISTS contact_requests (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name TEXT NOT NULL,
+  email TEXT NOT NULL,
+  company TEXT,
+  subject TEXT NOT NULL,
+  message TEXT NOT NULL,
+  project_type TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- RLS aktivieren
+ALTER TABLE contact_requests ENABLE ROW LEVEL SECURITY;
+
+-- Policies für contact_requests (Service-Role für Admin-Zugriff)
+DROP POLICY IF EXISTS "contact_requests_service_role_select" ON contact_requests;
+DROP POLICY IF EXISTS "contact_requests_service_role_insert" ON contact_requests;
+DROP POLICY IF EXISTS "contact_requests_service_role_update" ON contact_requests;
+DROP POLICY IF EXISTS "contact_requests_service_role_delete" ON contact_requests;
+
+CREATE POLICY "contact_requests_service_role_select" ON contact_requests
+  FOR SELECT USING (auth.role() = 'service_role');
+CREATE POLICY "contact_requests_service_role_insert" ON contact_requests
+  FOR INSERT WITH CHECK (true);  -- Jeder kann Anfragen erstellen (Kontaktformular)
+CREATE POLICY "contact_requests_service_role_update" ON contact_requests
+  FOR UPDATE USING (auth.role() = 'service_role');
+CREATE POLICY "contact_requests_service_role_delete" ON contact_requests
+  FOR DELETE USING (auth.role() = 'service_role');
+
+-- =====================================================
+-- 2. CONTACT_REQUESTS ERWEITERN
 -- =====================================================
 
 -- Ticket-Nummer (auto-increment)
@@ -60,7 +93,7 @@ CREATE INDEX IF NOT EXISTS idx_contact_requests_status ON contact_requests(statu
 CREATE INDEX IF NOT EXISTS idx_contact_requests_created_at ON contact_requests(created_at DESC);
 
 -- =====================================================
--- 2. EMAIL_MESSAGES TABELLE (Konversationsverlauf)
+-- 3. EMAIL_MESSAGES TABELLE (Konversationsverlauf)
 -- =====================================================
 
 CREATE TABLE IF NOT EXISTS email_messages (
@@ -81,13 +114,13 @@ CREATE INDEX IF NOT EXISTS idx_email_messages_contact_request ON email_messages(
 CREATE INDEX IF NOT EXISTS idx_email_messages_created_at ON email_messages(created_at);
 
 -- =====================================================
--- 3. EMAIL_QUEUE ERWEITERN
+-- 4. EMAIL_QUEUE ERWEITERN
 -- =====================================================
 
 ALTER TABLE email_queue ADD COLUMN IF NOT EXISTS contact_request_id UUID REFERENCES contact_requests(id) ON DELETE SET NULL;
 
 -- =====================================================
--- 4. ROW LEVEL SECURITY
+-- 5. ROW LEVEL SECURITY (email_messages)
 -- =====================================================
 
 -- RLS für email_messages aktivieren
@@ -109,7 +142,7 @@ CREATE POLICY "email_messages_service_role_delete" ON email_messages
   FOR DELETE USING (auth.role() = 'service_role');
 
 -- =====================================================
--- 5. BESTEHENDE ANFRAGEN AKTUALISIEREN
+-- 6. BESTEHENDE ANFRAGEN AKTUALISIEREN
 -- =====================================================
 
 -- Alle bestehenden Anfragen ohne Status auf 'neu' setzen
