@@ -33,9 +33,7 @@ export function contactNotificationTemplate(data: ContactNotificationData): stri
           <!-- Header mit Logo -->
           <tr>
             <td style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); padding: 24px 40px; text-align: center;">
-              <div style="font-size: 24px; font-weight: 700; color: #ffffff; letter-spacing: -0.5px;">
-                getemergence<span style="color: rgba(255,255,255,0.7);">.com</span>
-              </div>
+              <img src="https://oscarknabe.de/getemergence-logo.png" alt="getemergence.com" style="height: 40px; width: auto;" />
             </td>
           </tr>
 

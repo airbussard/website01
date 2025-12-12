@@ -9,7 +9,6 @@ import {
   Shield,
   UserCheck,
   User,
-  MoreVertical,
   Mail,
   Building2,
   Calendar,
@@ -19,6 +18,8 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { createClient } from '@/lib/supabase/client';
+import UserActionsMenu from '@/components/admin/UserActionsMenu';
+import UserEditModal from '@/components/admin/UserEditModal';
 import type { Profile, UserRole } from '@/types/dashboard';
 
 const roleOptions: { value: UserRole | 'all'; label: string }[] = [
@@ -57,6 +58,8 @@ export default function AdminUsersPage() {
   const [page, setPage] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
   const [editingUser, setEditingUser] = useState<string | null>(null);
+  const [editModalUser, setEditModalUser] = useState<Profile | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -120,6 +123,42 @@ export default function AdminUsersPage() {
   };
 
   const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
+
+  const refreshUsers = () => {
+    // Trigger re-fetch by toggling a dependency
+    setPage((p) => p);
+    // Force re-fetch
+    const fetchUsers = async () => {
+      const supabase = createClient();
+      let query = supabase
+        .from('profiles')
+        .select('*', { count: 'exact' })
+        .order('created_at', { ascending: false })
+        .range(page * ITEMS_PER_PAGE, (page + 1) * ITEMS_PER_PAGE - 1);
+
+      if (roleFilter !== 'all') {
+        query = query.eq('role', roleFilter);
+      }
+      if (searchQuery) {
+        query = query.or(`full_name.ilike.%${searchQuery}%,email.ilike.%${searchQuery}%,company.ilike.%${searchQuery}%`);
+      }
+
+      const { data, count } = await query;
+      setUsers(data || []);
+      setTotalCount(count || 0);
+    };
+    fetchUsers();
+  };
+
+  const handleEditUser = (user: Profile) => {
+    setEditModalUser(user);
+    setIsEditModalOpen(true);
+  };
+
+  const handleDeleteUser = (userId: string) => {
+    setUsers(users.filter(u => u.id !== userId));
+    setTotalCount(prev => prev - 1);
+  };
 
   // Access restriction
   if (!isAdmin) {
@@ -321,9 +360,11 @@ export default function AdminUsersPage() {
                         </div>
                       </td>
                       <td className="px-6 py-4 text-right">
-                        <button className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
-                          <MoreVertical className="h-4 w-4" />
-                        </button>
+                        <UserActionsMenu
+                          user={user}
+                          onEdit={handleEditUser}
+                          onDelete={() => handleDeleteUser(user.id)}
+                        />
                       </td>
                     </motion.tr>
                   );
@@ -375,6 +416,17 @@ export default function AdminUsersPage() {
           </p>
         </motion.div>
       )}
+
+      {/* Edit Modal */}
+      <UserEditModal
+        user={editModalUser}
+        isOpen={isEditModalOpen}
+        onClose={() => {
+          setIsEditModalOpen(false);
+          setEditModalUser(null);
+        }}
+        onSave={refreshUsers}
+      />
     </div>
   );
 }
