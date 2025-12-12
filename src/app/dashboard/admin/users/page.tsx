@@ -15,11 +15,13 @@ import {
   Loader2,
   ChevronLeft,
   ChevronRight,
+  UserPlus,
 } from 'lucide-react';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { createClient } from '@/lib/supabase/client';
 import UserActionsMenu from '@/components/admin/UserActionsMenu';
 import UserEditModal from '@/components/admin/UserEditModal';
+import InviteUserModal from '@/components/admin/InviteUserModal';
 import type { Profile, UserRole } from '@/types/dashboard';
 
 const roleOptions: { value: UserRole | 'all'; label: string }[] = [
@@ -60,6 +62,7 @@ export default function AdminUsersPage() {
   const [editingUser, setEditingUser] = useState<string | null>(null);
   const [editModalUser, setEditModalUser] = useState<Profile | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -184,11 +187,20 @@ export default function AdminUsersPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Nutzerverwaltung</h1>
-        <p className="text-gray-600">
-          Benutzer verwalten und Rollen zuweisen
-        </p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Nutzerverwaltung</h1>
+          <p className="text-gray-600">
+            Benutzer verwalten und Rollen zuweisen
+          </p>
+        </div>
+        <button
+          onClick={() => setIsInviteModalOpen(true)}
+          className="flex items-center gap-2 px-4 py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-medium transition-colors"
+        >
+          <UserPlus className="h-5 w-5" />
+          Benutzer einladen
+        </button>
       </div>
 
       {/* Stats */}
@@ -426,6 +438,13 @@ export default function AdminUsersPage() {
           setEditModalUser(null);
         }}
         onSave={refreshUsers}
+      />
+
+      {/* Invite Modal */}
+      <InviteUserModal
+        isOpen={isInviteModalOpen}
+        onClose={() => setIsInviteModalOpen(false)}
+        onSuccess={refreshUsers}
       />
     </div>
   );

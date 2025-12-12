@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { MoreVertical, Edit, Key, Trash2, Loader2 } from 'lucide-react';
+import { createPortal } from 'react-dom';
+import { MoreVertical, Edit, Key, Trash2, Loader2, Wand2 } from 'lucide-react';
 import type { Profile } from '@/types/dashboard';
 
 interface UserActionsMenuProps {
@@ -13,14 +14,27 @@ interface UserActionsMenuProps {
 export default function UserActionsMenu({ user, onEdit, onDelete }: UserActionsMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
+  const [isSendingMagicLink, setIsSendingMagicLink] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [menuPosition, setMenuPosition] = useState({ top: 0, right: 0 });
+  const [isMounted, setIsMounted] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+
+  // Client-side only für Portal
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   // Click outside schließt Menü
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+      const target = e.target as Node;
+      const isOutsideButton = buttonRef.current && !buttonRef.current.contains(target);
+      const isOutsideMenu = menuRef.current && !menuRef.current.contains(target);
+
+      if (isOutsideButton && isOutsideMenu) {
         setIsOpen(false);
         setShowDeleteConfirm(false);
       }
@@ -29,6 +43,19 @@ export default function UserActionsMenu({ user, onEdit, onDelete }: UserActionsM
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  const handleToggle = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!isOpen && buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      setMenuPosition({
+        top: rect.bottom + 4,
+        right: window.innerWidth - rect.right,
+      });
+    }
+    setIsOpen(!isOpen);
+    setShowDeleteConfirm(false);
+  };
 
   const handleResetPassword = async () => {
     setIsResetting(true);
@@ -47,6 +74,28 @@ export default function UserActionsMenu({ user, onEdit, onDelete }: UserActionsM
       alert('Ein Fehler ist aufgetreten');
     } finally {
       setIsResetting(false);
+      setIsOpen(false);
+    }
+  };
+
+  const handleSendMagicLink = async () => {
+    setIsSendingMagicLink(true);
+    try {
+      const res = await fetch(`/api/admin/users/${user.id}/magic-link`, {
+        method: 'POST',
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        alert(`Magic Link wurde an ${user.email} gesendet.`);
+      } else {
+        alert(data.error || 'Fehler beim Senden des Magic Links');
+      }
+    } catch (err) {
+      alert('Ein Fehler ist aufgetreten');
+    } finally {
+      setIsSendingMagicLink(false);
       setIsOpen(false);
     }
   };
@@ -78,77 +127,97 @@ export default function UserActionsMenu({ user, onEdit, onDelete }: UserActionsM
     }
   };
 
-  return (
-    <div className="relative" ref={menuRef}>
+  const dropdownMenu = (
+    <div
+      ref={menuRef}
+      className="fixed w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-[9999]"
+      style={{ top: menuPosition.top, right: menuPosition.right }}
+    >
+      {/* Bearbeiten */}
       <button
         onClick={(e) => {
           e.stopPropagation();
-          setIsOpen(!isOpen);
-          setShowDeleteConfirm(false);
+          onEdit(user);
+          setIsOpen(false);
         }}
+        className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+      >
+        <Edit className="h-4 w-4" />
+        Bearbeiten
+      </button>
+
+      {/* Passwort zurücksetzen */}
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          handleResetPassword();
+        }}
+        disabled={isResetting}
+        className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+      >
+        {isResetting ? (
+          <Loader2 className="h-4 w-4 animate-spin" />
+        ) : (
+          <Key className="h-4 w-4" />
+        )}
+        Passwort zurücksetzen
+      </button>
+
+      {/* Magic Link senden */}
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          handleSendMagicLink();
+        }}
+        disabled={isSendingMagicLink}
+        className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+      >
+        {isSendingMagicLink ? (
+          <Loader2 className="h-4 w-4 animate-spin" />
+        ) : (
+          <Wand2 className="h-4 w-4" />
+        )}
+        Magic Link senden
+      </button>
+
+      {/* Divider */}
+      <div className="border-t border-gray-100 my-1" />
+
+      {/* Löschen */}
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          handleDelete();
+        }}
+        disabled={isDeleting}
+        className={`w-full flex items-center gap-3 px-4 py-2 text-sm transition-colors disabled:opacity-50 ${
+          showDeleteConfirm
+            ? 'bg-red-50 text-red-700 hover:bg-red-100'
+            : 'text-red-600 hover:bg-red-50'
+        }`}
+      >
+        {isDeleting ? (
+          <Loader2 className="h-4 w-4 animate-spin" />
+        ) : (
+          <Trash2 className="h-4 w-4" />
+        )}
+        {showDeleteConfirm ? 'Wirklich löschen?' : 'Löschen'}
+      </button>
+    </div>
+  );
+
+  return (
+    <div className="relative">
+      <button
+        ref={buttonRef}
+        onClick={handleToggle}
         className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
       >
         <MoreVertical className="h-4 w-4" />
       </button>
 
-      {/* Dropdown Menu */}
-      {isOpen && (
-        <div className="absolute right-0 mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
-          {/* Bearbeiten */}
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onEdit(user);
-              setIsOpen(false);
-            }}
-            className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-          >
-            <Edit className="h-4 w-4" />
-            Bearbeiten
-          </button>
-
-          {/* Passwort zurücksetzen */}
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              handleResetPassword();
-            }}
-            disabled={isResetting}
-            className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50"
-          >
-            {isResetting ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Key className="h-4 w-4" />
-            )}
-            Passwort zurücksetzen
-          </button>
-
-          {/* Divider */}
-          <div className="border-t border-gray-100 my-1" />
-
-          {/* Löschen */}
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              handleDelete();
-            }}
-            disabled={isDeleting}
-            className={`w-full flex items-center gap-3 px-4 py-2 text-sm transition-colors disabled:opacity-50 ${
-              showDeleteConfirm
-                ? 'bg-red-50 text-red-700 hover:bg-red-100'
-                : 'text-red-600 hover:bg-red-50'
-            }`}
-          >
-            {isDeleting ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Trash2 className="h-4 w-4" />
-            )}
-            {showDeleteConfirm ? 'Wirklich löschen?' : 'Löschen'}
-          </button>
-        </div>
-      )}
+      {/* Dropdown Menu - rendered via Portal */}
+      {isOpen && isMounted && createPortal(dropdownMenu, document.body)}
     </div>
   );
 }
