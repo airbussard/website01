@@ -34,10 +34,11 @@ export interface UpdateEmailSettings {
 }
 
 export type EmailQueueStatus = 'pending' | 'processing' | 'sent' | 'failed';
-export type EmailType = 'notification' | 'contact' | 'system';
+export type EmailType = 'notification' | 'contact' | 'system' | 'reply';
 
 export interface EmailQueueItem {
   id: string;
+  contact_request_id: string | null;
   recipient_email: string;
   recipient_name: string | null;
   subject: string;
@@ -55,6 +56,7 @@ export interface EmailQueueItem {
 }
 
 export interface CreateEmailQueueItem {
+  contact_request_id?: string | null;
   recipient_email: string;
   recipient_name?: string | null;
   subject: string;

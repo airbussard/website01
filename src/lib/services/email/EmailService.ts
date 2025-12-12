@@ -99,6 +99,7 @@ export class EmailService {
       const supabase = createAdminSupabaseClient();
 
       const queueItem = {
+        contact_request_id: item.contact_request_id || null,
         recipient_email: item.recipient_email,
         recipient_name: item.recipient_name || null,
         subject: item.subject,

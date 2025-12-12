@@ -17,6 +17,7 @@ import {
   Activity,
   Shield,
   Mail,
+  MessageSquare,
 } from 'lucide-react';
 import { useAuth } from '@/lib/hooks/useAuth';
 
@@ -37,6 +38,7 @@ const navItems: NavItem[] = [
 ];
 
 const adminItems: NavItem[] = [
+  { name: 'Anfragen', href: '/dashboard/admin/anfragen', icon: MessageSquare, managerOnly: true },
   { name: 'Nutzerverwaltung', href: '/dashboard/admin/users', icon: Users, adminOnly: true },
   { name: 'E-Mail', href: '/dashboard/admin/email', icon: Mail, adminOnly: true },
   { name: 'Einstellungen', href: '/dashboard/admin/settings', icon: Settings, adminOnly: true },
@@ -62,6 +64,7 @@ export default function DashboardSidebar() {
 
   const filteredAdminItems = adminItems.filter(item => {
     if (item.adminOnly && !isAdmin) return false;
+    if (item.managerOnly && !isManagerOrAdmin) return false;
     return true;
   });
 
