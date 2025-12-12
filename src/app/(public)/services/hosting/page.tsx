@@ -86,29 +86,6 @@ const packages = [
   },
 ];
 
-const features = [
-  {
-    icon: Server,
-    title: 'Deutsche Server',
-    description: 'Hosting auf zuverlässigen deutschen Servern für maximale Performance',
-  },
-  {
-    icon: Database,
-    title: 'PostgreSQL Datenbank',
-    description: 'Leistungsstarke Supabase PostgreSQL Datenbank inklusive',
-  },
-  {
-    icon: Shield,
-    title: 'SSL-Zertifikat',
-    description: 'Kostenlose SSL-Verschlüsselung für sichere Verbindungen',
-  },
-  {
-    icon: Clock,
-    title: '99.9% Uptime',
-    description: 'Garantierte Verfügbarkeit für Ihre Website',
-  },
-];
-
 const faqs = [
   {
     question: 'Was sind Revisionsstunden?',
@@ -137,64 +114,130 @@ export default function HostingPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      {/* Hero Section */}
-      <section className="pt-32 pb-20">
-        <div className="container mx-auto px-6">
+      {/* Hero Section - Grid Design */}
+      <section className="pt-24">
+        <div className="container mx-auto px-6 pb-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="text-center max-w-4xl mx-auto"
+            className="text-center"
           >
-            <div className="inline-flex items-center px-4 py-2 bg-primary-100 text-primary-700 rounded-full text-sm font-medium mb-6">
-              <Server className="h-4 w-4 mr-2" />
-              Managed Hosting
-            </div>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
+            <h1 className="text-4xl md:text-5xl font-bold mb-4">
               <span className="bg-gradient-to-r from-primary-600 to-primary-400 bg-clip-text text-transparent">
-                Rundum-sorglos-Hosting
+                Managed Hosting für Ihre Website
               </span>
-              <br />
-              <span className="text-gray-900">für Ihre Website</span>
             </h1>
-            <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-              Schnelles Hosting auf deutschen Servern mit PostgreSQL-Datenbank.
-              Wählen Sie das passende Paket für Ihre Anforderungen.
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Schnelles Hosting auf deutschen Servern mit PostgreSQL-Datenbank
             </p>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Hero Banner with Grid Pattern */}
+      <section className="relative bg-white border-y-2 border-primary-500 overflow-hidden">
+        {/* Background Grid Pattern */}
+        <div className="absolute inset-0 opacity-5">
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage: `linear-gradient(0deg, rgb(59, 130, 246) 1px, transparent 1px), linear-gradient(90deg, rgb(59, 130, 246) 1px, transparent 1px)`,
+              backgroundSize: '40px 40px'
+            }}
+          />
+        </div>
+
+        <div className="relative container mx-auto px-6 py-12">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            {/* Server */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0 }}
+              className="flex flex-col items-center text-center p-6"
+            >
+              <motion.div
+                animate={{ y: [0, -8, 0] }}
+                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                className="w-16 h-16 border-2 border-primary-500 rounded-2xl flex items-center justify-center mb-4"
+              >
+                <Server className="h-8 w-8 text-primary-600" />
+              </motion.div>
+              <h3 className="font-bold text-gray-900 mb-1">Deutsche Server</h3>
+              <p className="text-sm text-gray-500">Maximale Performance</p>
+            </motion.div>
+
+            {/* Database */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              className="flex flex-col items-center text-center p-6"
+            >
+              <motion.div
+                animate={{ y: [0, -8, 0] }}
+                transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+                className="w-16 h-16 border-2 border-primary-500 rounded-2xl flex items-center justify-center mb-4"
+              >
+                <Database className="h-8 w-8 text-primary-600" />
+              </motion.div>
+              <h3 className="font-bold text-gray-900 mb-1">PostgreSQL</h3>
+              <p className="text-sm text-gray-500">Supabase Datenbank</p>
+            </motion.div>
+
+            {/* Shield */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="flex flex-col items-center text-center p-6"
+            >
+              <motion.div
+                animate={{ y: [0, -8, 0] }}
+                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+                className="w-16 h-16 border-2 border-primary-500 rounded-2xl flex items-center justify-center mb-4"
+              >
+                <Shield className="h-8 w-8 text-primary-600" />
+              </motion.div>
+              <h3 className="font-bold text-gray-900 mb-1">SSL inklusive</h3>
+              <p className="text-sm text-gray-500">Sichere Verbindung</p>
+            </motion.div>
+
+            {/* Clock */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+              className="flex flex-col items-center text-center p-6"
+            >
+              <motion.div
+                animate={{ y: [0, -8, 0] }}
+                transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut", delay: 1.5 }}
+                className="w-16 h-16 border-2 border-primary-500 rounded-2xl flex items-center justify-center mb-4"
+              >
+                <Clock className="h-8 w-8 text-primary-600" />
+              </motion.div>
+              <h3 className="font-bold text-gray-900 mb-1">99.9% Uptime</h3>
+              <p className="text-sm text-gray-500">Garantierte Verfügbarkeit</p>
+            </motion.div>
+          </div>
+
+          {/* CTA Button */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+            className="text-center mt-8"
+          >
             <a
               href="#pakete"
-              className="inline-flex items-center px-8 py-4 bg-primary-600 text-white rounded-xl font-semibold hover:bg-primary-700 transition-colors"
+              className="inline-flex items-center px-8 py-4 bg-primary-600 text-white rounded-xl font-semibold hover:bg-primary-700 hover:scale-105 transition-all duration-300"
             >
               Pakete ansehen
               <ArrowRight className="ml-2 h-5 w-5" />
             </a>
           </motion.div>
-        </div>
-      </section>
-
-      {/* Features */}
-      <section className="py-16 bg-white border-y border-gray-100">
-        <div className="container mx-auto px-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {features.map((feature, index) => {
-              const Icon = feature.icon;
-              return (
-                <motion.div
-                  key={feature.title}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                  className="text-center"
-                >
-                  <div className="w-14 h-14 bg-primary-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                    <Icon className="h-7 w-7 text-primary-600" />
-                  </div>
-                  <h3 className="font-semibold text-gray-900 mb-2">{feature.title}</h3>
-                  <p className="text-sm text-gray-500">{feature.description}</p>
-                </motion.div>
-              );
-            })}
-          </div>
         </div>
       </section>
 
@@ -437,30 +480,105 @@ export default function HostingPage() {
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="py-20 bg-white">
+      {/* CTA Section - Grid Design */}
+      <section className="py-20">
         <div className="container mx-auto px-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
             viewport={{ once: true }}
-            className="bg-gradient-to-r from-primary-600 to-primary-500 rounded-2xl p-8 md:p-12 text-center text-white"
+            className="relative bg-white rounded-2xl border-2 border-primary-500 overflow-hidden"
           >
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Bereit für stressfreies Hosting?
-            </h2>
-            <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
-              Kontaktieren Sie uns für ein unverbindliches Angebot.
-              Wir beraten Sie gerne bei der Wahl des richtigen Pakets.
-            </p>
-            <Link
-              href="/kontakt"
-              className="inline-flex items-center px-8 py-4 bg-white text-primary-600 rounded-xl font-semibold hover:bg-gray-100 transition-colors"
-            >
-              Jetzt Kontakt aufnehmen
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Link>
+            {/* Background Grid Pattern */}
+            <div className="absolute inset-0 opacity-5">
+              <div
+                className="absolute inset-0"
+                style={{
+                  backgroundImage: `linear-gradient(0deg, rgb(59, 130, 246) 1px, transparent 1px), linear-gradient(90deg, rgb(59, 130, 246) 1px, transparent 1px)`,
+                  backgroundSize: '40px 40px'
+                }}
+              />
+            </div>
+
+            <div className="relative grid md:grid-cols-2 gap-8 p-8 md:p-12">
+              {/* Left: Decorative Elements */}
+              <div className="hidden md:flex items-center justify-center relative">
+                <motion.div
+                  animate={{
+                    y: [0, -20, 0],
+                  }}
+                  transition={{
+                    duration: 4,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }}
+                  className="absolute top-0 left-0"
+                >
+                  <div className="w-20 h-20 border-2 border-primary-500 rounded-2xl flex items-center justify-center">
+                    <Server className="h-10 w-10 text-primary-600" />
+                  </div>
+                </motion.div>
+
+                <motion.div
+                  animate={{
+                    y: [0, 20, 0],
+                  }}
+                  transition={{
+                    duration: 3,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                    delay: 0.5
+                  }}
+                  className="absolute bottom-4 right-4"
+                >
+                  <div className="w-16 h-16 border-2 border-primary-500 rounded-2xl flex items-center justify-center">
+                    <Shield className="h-8 w-8 text-primary-600" />
+                  </div>
+                </motion.div>
+
+                <motion.div
+                  animate={{
+                    y: [0, -15, 0],
+                  }}
+                  transition={{
+                    duration: 3.5,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                    delay: 1
+                  }}
+                  className="absolute top-1/3 right-1/4"
+                >
+                  <div className="w-14 h-14 border-2 border-primary-500 rounded-xl flex items-center justify-center">
+                    <Zap className="h-7 w-7 text-primary-600" />
+                  </div>
+                </motion.div>
+
+                <div className="w-32 h-32 border-2 border-primary-500 rounded-3xl flex items-center justify-center">
+                  <Database className="h-16 w-16 text-primary-600" />
+                </div>
+              </div>
+
+              {/* Right: Content */}
+              <div className="flex flex-col justify-center text-center md:text-left">
+                <h2 className="text-3xl font-bold mb-4 text-gray-900">
+                  Bereit für stressfreies Hosting?
+                </h2>
+                <p className="text-xl mb-8 text-gray-600">
+                  Kontaktieren Sie uns für ein unverbindliches Angebot.
+                  Wir beraten Sie gerne bei der Wahl des richtigen Pakets.
+                </p>
+                <div>
+                  <Link
+                    href="/kontakt"
+                    className="inline-flex items-center px-8 py-4 bg-primary-600 text-white rounded-xl font-semibold hover:bg-primary-700 hover:scale-105 hover:shadow-xl transition-all duration-300 text-lg"
+                  >
+                    Jetzt Kontakt aufnehmen
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Link>
+                </div>
+              </div>
+            </div>
           </motion.div>
         </div>
       </section>
