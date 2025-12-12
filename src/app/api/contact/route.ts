@@ -1,6 +1,10 @@
 import { NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
-import nodemailer from 'nodemailer';
+import { EmailService } from '@/lib/services/email/EmailService';
+import {
+  contactNotificationTemplate,
+  contactNotificationTextTemplate,
+} from '@/lib/email/templates/notification';
 
 export async function POST(request: Request) {
   try {
@@ -49,38 +53,39 @@ export async function POST(request: Request) {
       }
     }
 
-    // Send email notification via SMTP (Strato)
-    if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
-      try {
-        const transporter = nodemailer.createTransport({
-          host: process.env.SMTP_HOST,
-          port: parseInt(process.env.SMTP_PORT || '465'),
-          secure: true, // SSL/TLS
-          auth: {
-            user: process.env.SMTP_USER,
-            pass: process.env.SMTP_PASS,
-          },
-        });
+    // E-Mail zur Queue hinzufügen (statt direktem Versand)
+    try {
+      const templateData = {
+        name,
+        email,
+        company,
+        subject,
+        message,
+        projectType,
+      };
 
-        await transporter.sendMail({
-          from: `"Kontaktformular" <${process.env.SMTP_USER}>`,
-          to: 'hello@getemergence.com',
-          replyTo: email,
-          subject: `Neue Kontaktanfrage: ${subject}`,
-          html: `
-            <h2>Neue Kontaktanfrage</h2>
-            <p><strong>Von:</strong> ${name}</p>
-            <p><strong>E-Mail:</strong> ${email}</p>
-            ${company ? `<p><strong>Firma:</strong> ${company}</p>` : ''}
-            ${projectType ? `<p><strong>Projekttyp:</strong> ${projectType}</p>` : ''}
-            <p><strong>Betreff:</strong> ${subject}</p>
-            <p><strong>Nachricht:</strong></p>
-            <p>${message.replace(/\n/g, '<br>')}</p>
-          `,
-        });
-      } catch (emailError) {
-        console.error('Failed to send email:', emailError);
+      const queueResult = await EmailService.queueEmail({
+        recipient_email: 'hello@getemergence.com',
+        subject: `Neue Kontaktanfrage: ${subject}`,
+        content_html: contactNotificationTemplate(templateData),
+        content_text: contactNotificationTextTemplate(templateData),
+        type: 'contact',
+        metadata: {
+          sender_name: name,
+          sender_email: email,
+          sender_company: company || null,
+          project_type: projectType || null,
+        },
+      });
+
+      if (!queueResult) {
+        console.error('[Contact] Fehler beim Queuen der E-Mail');
+      } else {
+        console.log('[Contact] E-Mail gequeued:', queueResult.id);
       }
+    } catch (emailError) {
+      console.error('[Contact] E-Mail Queue Fehler:', emailError);
+      // Kein Fehler an Client - Anfrage wurde trotzdem gespeichert
     }
 
     return NextResponse.json(

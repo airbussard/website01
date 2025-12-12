@@ -16,6 +16,7 @@ import {
   Code2,
   Activity,
   Shield,
+  Mail,
 } from 'lucide-react';
 import { useAuth } from '@/lib/hooks/useAuth';
 
@@ -37,6 +38,7 @@ const navItems: NavItem[] = [
 
 const adminItems: NavItem[] = [
   { name: 'Nutzerverwaltung', href: '/dashboard/admin/users', icon: Users, adminOnly: true },
+  { name: 'E-Mail', href: '/dashboard/admin/email', icon: Mail, adminOnly: true },
   { name: 'Einstellungen', href: '/dashboard/admin/settings', icon: Settings, adminOnly: true },
 ];
 
