@@ -19,7 +19,8 @@
       "Bash(curl:*)",
       "Bash(grep:*)",
       "Bash(sed:*)",
-      "Bash(xargs:*)"
+      "Bash(xargs:*)",
+      "Bash(wc:*)"
     ],
     "deny": [],
     "ask": []

@@ -19,14 +19,18 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Manager/Admin-Rolle prüfen
-    const { data: profile } = await supabase
+    // Admin Client erstellen (umgeht RLS)
+    const adminSupabase = createAdminSupabaseClient();
+
+    // Manager/Admin-Rolle prüfen (mit Admin-Client um RLS zu umgehen)
+    const { data: profile, error: profileError } = await adminSupabase
       .from('profiles')
       .select('role')
       .eq('id', user.id)
       .single();
 
-    if (profile?.role !== 'admin' && profile?.role !== 'manager') {
+    if (profileError || (profile?.role !== 'admin' && profile?.role !== 'manager')) {
+      console.error('[Activity API] Role check failed:', profileError, 'Role:', profile?.role);
       return NextResponse.json(
         { error: 'Keine Berechtigung' },
         { status: 403 }
@@ -39,9 +43,6 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '20');
     const entityType = searchParams.get('entityType');
     const search = searchParams.get('search');
-
-    // Admin Client für Abfrage verwenden (umgeht RLS)
-    const adminSupabase = createAdminSupabaseClient();
 
     let query = adminSupabase
       .from('activity_log')
