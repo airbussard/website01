@@ -94,8 +94,22 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Profil wird automatisch durch DB-Trigger erstellt (on_auth_user_created)
-    // Kein manueller upsert noetig - Trigger liest first_name/last_name/role aus user_meta_data
+    // Profil direkt erstellen (DB-Trigger ist deaktiviert in Supabase)
+    if (data.user) {
+      const { error: profileError } = await adminSupabase.from('profiles').upsert({
+        id: data.user.id,
+        email: data.user.email,
+        full_name: full_name || '',
+        first_name: first_name || '',
+        last_name: last_name || '',
+        role: role,
+      }, { onConflict: 'id' });
+
+      if (profileError) {
+        console.error('Profile creation error:', profileError);
+        // Nicht abbrechen - User wurde erstellt, nur Profil fehlt
+      }
+    }
 
     return NextResponse.json({
       success: true,
