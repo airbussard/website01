@@ -18,7 +18,6 @@ import {
   UserPlus,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { createClient } from '@/lib/supabase/client';
 import UserActionsMenu from '@/components/admin/UserActionsMenu';
 import UserEditModal from '@/components/admin/UserEditModal';
 import InviteUserModal from '@/components/admin/InviteUserModal';
@@ -64,56 +63,57 @@ export default function AdminUsersPage() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
 
-  useEffect(() => {
-    const fetchUsers = async () => {
-      if (!isAdmin) return;
+  const fetchUsers = async () => {
+    if (!isAdmin) return;
 
-      setLoading(true);
-      const supabase = createClient();
+    setLoading(true);
 
-      try {
-        let query = supabase
-          .from('profiles')
-          .select('*', { count: 'exact' })
-          .order('created_at', { ascending: false })
-          .range(page * ITEMS_PER_PAGE, (page + 1) * ITEMS_PER_PAGE - 1);
+    try {
+      const params = new URLSearchParams({
+        page: page.toString(),
+        limit: ITEMS_PER_PAGE.toString(),
+      });
 
-        // Filter by role
-        if (roleFilter !== 'all') {
-          query = query.eq('role', roleFilter);
-        }
-
-        // Search
-        if (searchQuery) {
-          query = query.or(`full_name.ilike.%${searchQuery}%,email.ilike.%${searchQuery}%,company.ilike.%${searchQuery}%`);
-        }
-
-        const { data, error, count } = await query;
-
-        if (error) throw error;
-
-        setUsers(data || []);
-        setTotalCount(count || 0);
-      } catch (error) {
-        console.error('Error fetching users:', error);
-      } finally {
-        setLoading(false);
+      if (roleFilter !== 'all') {
+        params.set('role', roleFilter);
       }
-    };
 
+      if (searchQuery) {
+        params.set('search', searchQuery);
+      }
+
+      const res = await fetch(`/api/admin/users?${params.toString()}`);
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Fehler beim Laden');
+      }
+
+      setUsers(data.users || []);
+      setTotalCount(data.totalCount || 0);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchUsers();
   }, [isAdmin, roleFilter, searchQuery, page]);
 
   const handleRoleChange = async (userId: string, newRole: UserRole) => {
-    const supabase = createClient();
-
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({ role: newRole, updated_at: new Date().toISOString() })
-        .eq('id', userId);
+      const res = await fetch(`/api/admin/users/${userId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ role: newRole }),
+      });
 
-      if (error) throw error;
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Fehler beim Aktualisieren');
+      }
 
       // Update local state
       setUsers(users.map(user =>
@@ -128,28 +128,6 @@ export default function AdminUsersPage() {
   const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
 
   const refreshUsers = () => {
-    // Trigger re-fetch by toggling a dependency
-    setPage((p) => p);
-    // Force re-fetch
-    const fetchUsers = async () => {
-      const supabase = createClient();
-      let query = supabase
-        .from('profiles')
-        .select('*', { count: 'exact' })
-        .order('created_at', { ascending: false })
-        .range(page * ITEMS_PER_PAGE, (page + 1) * ITEMS_PER_PAGE - 1);
-
-      if (roleFilter !== 'all') {
-        query = query.eq('role', roleFilter);
-      }
-      if (searchQuery) {
-        query = query.or(`full_name.ilike.%${searchQuery}%,email.ilike.%${searchQuery}%,company.ilike.%${searchQuery}%`);
-      }
-
-      const { data, count } = await query;
-      setUsers(data || []);
-      setTotalCount(count || 0);
-    };
     fetchUsers();
   };
 

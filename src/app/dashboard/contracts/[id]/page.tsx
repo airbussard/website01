@@ -80,7 +80,7 @@ export default function ContractDetailPage({
   }, [id, router]);
 
   const handleDelete = async () => {
-    if (!confirm('Moechten Sie diesen Vertrag wirklich loeschen?')) return;
+    if (!confirm('Möchten Sie diesen Vertrag wirklich löschen?')) return;
 
     setDeleting(true);
 
@@ -91,13 +91,13 @@ export default function ContractDetailPage({
 
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.error || 'Fehler beim Loeschen');
+        throw new Error(data.error || 'Fehler beim Löschen');
       }
 
       router.push('/dashboard/contracts');
     } catch (error) {
       console.error('Delete error:', error);
-      alert('Fehler beim Loeschen des Vertrags');
+      alert('Fehler beim Löschen des Vertrags');
       setDeleting(false);
     }
   };
@@ -140,7 +140,7 @@ export default function ContractDetailPage({
         className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900"
       >
         <ArrowLeft className="h-4 w-4 mr-1" />
-        Zurueck zu Vertraege
+        Zurück zu Verträge
       </Link>
 
       {/* Header */}
@@ -219,7 +219,7 @@ export default function ContractDetailPage({
                 ) : (
                   <Trash2 className="h-5 w-5 mr-2" />
                 )}
-                Loeschen
+                Löschen
               </button>
             )}
           </div>

@@ -166,7 +166,7 @@ export default function ContractsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Vertraege</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Verträge</h1>
           <p className="text-gray-500 mt-1">
             {contracts.length} Vertrag{contracts.length !== 1 ? 'e' : ''} gefunden
           </p>
@@ -218,12 +218,12 @@ export default function ContractsPage() {
         <div className="text-center py-12 bg-white rounded-xl border border-gray-200">
           <FileText className="h-12 w-12 text-gray-300 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">
-            Keine Vertraege gefunden
+            Keine Verträge gefunden
           </h3>
           <p className="text-gray-500">
             {searchQuery || statusFilter !== 'all'
               ? 'Versuchen Sie andere Suchkriterien'
-              : 'Es wurden noch keine Vertraege erstellt'}
+              : 'Es wurden noch keine Verträge erstellt'}
           </p>
         </div>
       ) : (

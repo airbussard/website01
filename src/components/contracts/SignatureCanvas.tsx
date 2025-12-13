@@ -145,7 +145,7 @@ export default function SignatureCanvas({
           className="inline-flex items-center px-3 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
         >
           <Eraser className="h-4 w-4 mr-2" />
-          Loeschen
+          Löschen
         </button>
 
         <div className="flex space-x-3">

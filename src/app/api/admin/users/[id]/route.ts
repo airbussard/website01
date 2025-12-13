@@ -27,28 +27,34 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       company_postal_code,
       company_city,
       company_country,
+      role,
     } = body;
 
     const supabase = createAdminSupabaseClient();
 
+    // Nur definierte Felder updaten
+    const updateData: Record<string, unknown> = {
+      updated_at: new Date().toISOString(),
+    };
+
+    if (first_name !== undefined) updateData.first_name = first_name;
+    if (last_name !== undefined) updateData.last_name = last_name;
+    if (company !== undefined) updateData.company = company;
+    if (phone !== undefined) updateData.phone = phone;
+    if (mobile !== undefined) updateData.mobile = mobile;
+    if (street !== undefined) updateData.street = street;
+    if (postal_code !== undefined) updateData.postal_code = postal_code;
+    if (city !== undefined) updateData.city = city;
+    if (country !== undefined) updateData.country = country;
+    if (company_street !== undefined) updateData.company_street = company_street;
+    if (company_postal_code !== undefined) updateData.company_postal_code = company_postal_code;
+    if (company_city !== undefined) updateData.company_city = company_city;
+    if (company_country !== undefined) updateData.company_country = company_country;
+    if (role !== undefined) updateData.role = role;
+
     const { data, error } = await supabase
       .from('profiles')
-      .update({
-        first_name,
-        last_name,
-        company,
-        phone,
-        mobile,
-        street,
-        postal_code,
-        city,
-        country,
-        company_street,
-        company_postal_code,
-        company_city,
-        company_country,
-        updated_at: new Date().toISOString(),
-      })
+      .update(updateData)
       .eq('id', id)
       .select()
       .single();

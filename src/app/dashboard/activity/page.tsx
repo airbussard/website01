@@ -19,7 +19,6 @@ import {
   FileSignature,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { createClient } from '@/lib/supabase/client';
 import type { ActivityLog, ActivityAction, ActivityEntityType } from '@/types/dashboard';
 
 const actionLabels: Record<ActivityAction, string> = {
@@ -93,30 +92,30 @@ export default function ActivityPage() {
       }
 
       setLoading(true);
-      const supabase = createClient();
 
       try {
-        let query = supabase
-          .from('activity_log')
-          .select(`
-            *,
-            user:profiles(id, full_name, avatar_url),
-            project:pm_projects(id, name)
-          `, { count: 'exact' })
-          .order('created_at', { ascending: false })
-          .range(page * ITEMS_PER_PAGE, (page + 1) * ITEMS_PER_PAGE - 1);
+        const params = new URLSearchParams({
+          page: page.toString(),
+          limit: ITEMS_PER_PAGE.toString(),
+        });
 
-        // Filter by entity type
         if (entityFilter !== 'all') {
-          query = query.eq('entity_type', entityFilter);
+          params.set('entityType', entityFilter);
         }
 
-        const { data, error, count } = await query;
+        if (searchQuery) {
+          params.set('search', searchQuery);
+        }
 
-        if (error) throw error;
+        const res = await fetch(`/api/admin/activity?${params.toString()}`);
+        const data = await res.json();
 
-        setActivities(data || []);
-        setTotalCount(count || 0);
+        if (!res.ok) {
+          throw new Error(data.error || 'Fehler beim Laden');
+        }
+
+        setActivities(data.activities || []);
+        setTotalCount(data.totalCount || 0);
       } catch (error) {
         console.error('Error fetching activities:', error);
       } finally {
@@ -125,7 +124,7 @@ export default function ActivityPage() {
     };
 
     fetchActivities();
-  }, [user?.id, isManagerOrAdmin, authLoading, entityFilter, page]);
+  }, [user?.id, isManagerOrAdmin, authLoading, entityFilter, searchQuery, page]);
 
   const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
 
