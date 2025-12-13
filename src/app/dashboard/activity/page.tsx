@@ -25,10 +25,10 @@ import type { ActivityLog, ActivityAction, ActivityEntityType } from '@/types/da
 const actionLabels: Record<ActivityAction, string> = {
   created: 'erstellt',
   updated: 'aktualisiert',
-  deleted: 'geloescht',
+  deleted: 'gelöscht',
   commented: 'kommentiert',
   uploaded: 'hochgeladen',
-  status_changed: 'Status geaendert',
+  status_changed: 'Status geändert',
   assigned: 'zugewiesen',
   completed: 'abgeschlossen',
   invoice_sent: 'Rechnung gesendet',

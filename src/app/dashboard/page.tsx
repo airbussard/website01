@@ -258,7 +258,7 @@ export default function DashboardPage() {
                     {stats.pendingContracts} Vertrag{stats.pendingContracts > 1 ? 'e' : ''} warten auf Ihre Unterschrift
                   </p>
                   <p className="text-sm text-amber-600">
-                    Bitte pruefen und unterschreiben Sie die ausstehenden Dokumente.
+                    Bitte prüfen und unterschreiben Sie die ausstehenden Dokumente.
                   </p>
                 </div>
               </div>

@@ -12,7 +12,7 @@ interface UserEditModalProps {
 }
 
 export default function UserEditModal({ user, isOpen, onClose, onSave }: UserEditModalProps) {
-  // Persoenliche Daten
+  // Persönliche Daten
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [company, setCompany] = useState('');
@@ -54,7 +54,7 @@ export default function UserEditModal({ user, isOpen, onClose, onSave }: UserEdi
       setCompanyCountry(user.company_country || 'Deutschland');
       setError(null);
 
-      // Sektionen oeffnen wenn Daten vorhanden
+      // Sektionen öffnen wenn Daten vorhanden
       setShowPrivateAddress(!!(user.street || user.city));
       setShowCompanyAddress(!!(user.company_street || user.company_city));
     }

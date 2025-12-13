@@ -145,7 +145,7 @@ export default function ContractsPage() {
     window.location.reload();
   };
 
-  // Pruefen ob User ein Vertrag unterschreiben kann
+  // Prüfen ob User ein Vertrag unterschreiben kann
   const canSign = (contract: Contract): boolean => {
     if (contract.status !== 'pending_signature') return false;
     // Client des Projekts oder Manager/Admin

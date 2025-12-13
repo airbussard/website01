@@ -37,7 +37,7 @@ export default function ProfilePage() {
   const [error, setError] = useState<string | null>(null);
   const [initialized, setInitialized] = useState(false);
 
-  // Persoenliche Daten
+  // Persönliche Daten
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [company, setCompany] = useState('');
@@ -143,7 +143,7 @@ export default function ProfilePage() {
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Mein Profil</h1>
         <p className="text-gray-600">
-          Verwalten Sie Ihre persoenlichen Informationen
+          Verwalten Sie Ihre persönlichen Informationen
         </p>
       </div>
 
@@ -197,10 +197,10 @@ export default function ProfilePage() {
             </div>
           )}
 
-          {/* Persoenliche Daten */}
+          {/* Persönliche Daten */}
           <div className="space-y-4">
             <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-100 pb-2">
-              Persoenliche Daten
+              Persönliche Daten
             </h3>
 
             {/* Vorname / Nachname */}
@@ -252,7 +252,7 @@ export default function ProfilePage() {
                 />
               </div>
               <p className="mt-1 text-xs text-gray-500">
-                Die E-Mail-Adresse kann in den Einstellungen geaendert werden
+                Die E-Mail-Adresse kann in den Einstellungen geändert werden
               </p>
             </div>
 
@@ -460,7 +460,7 @@ export default function ProfilePage() {
               ) : (
                 <>
                   <Save className="h-5 w-5 mr-2" />
-                  Aenderungen speichern
+                  Änderungen speichern
                 </>
               )}
             </button>
