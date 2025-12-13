@@ -16,22 +16,25 @@ import {
   Loader2,
   ChevronLeft,
   ChevronRight,
+  FileSignature,
 } from 'lucide-react';
-import { useAuth } from '@/lib/hooks/useAuth';
+import { useAuth } from '@/contexts/AuthContext';
 import { createClient } from '@/lib/supabase/client';
 import type { ActivityLog, ActivityAction, ActivityEntityType } from '@/types/dashboard';
 
 const actionLabels: Record<ActivityAction, string> = {
   created: 'erstellt',
   updated: 'aktualisiert',
-  deleted: 'gelöscht',
+  deleted: 'geloescht',
   commented: 'kommentiert',
   uploaded: 'hochgeladen',
-  status_changed: 'Status geändert',
+  status_changed: 'Status geaendert',
   assigned: 'zugewiesen',
   completed: 'abgeschlossen',
   invoice_sent: 'Rechnung gesendet',
   invoice_paid: 'Rechnung bezahlt',
+  contract_uploaded: 'Vertrag hochgeladen',
+  contract_signed: 'Vertrag unterschrieben',
 };
 
 const entityLabels: Record<ActivityEntityType, string> = {
@@ -41,6 +44,7 @@ const entityLabels: Record<ActivityEntityType, string> = {
   file: 'Datei',
   invoice: 'Rechnung',
   progress_update: 'Update',
+  contract: 'Vertrag',
 };
 
 const entityIcons: Record<ActivityEntityType, React.ElementType> = {
@@ -50,6 +54,7 @@ const entityIcons: Record<ActivityEntityType, React.ElementType> = {
   file: Upload,
   invoice: FileText,
   progress_update: Activity,
+  contract: FileSignature,
 };
 
 const actionColors: Record<ActivityAction, string> = {
@@ -63,6 +68,8 @@ const actionColors: Record<ActivityAction, string> = {
   completed: 'bg-emerald-100 text-emerald-600',
   invoice_sent: 'bg-cyan-100 text-cyan-600',
   invoice_paid: 'bg-green-100 text-green-600',
+  contract_uploaded: 'bg-amber-100 text-amber-600',
+  contract_signed: 'bg-green-100 text-green-600',
 };
 
 const ITEMS_PER_PAGE = 20;

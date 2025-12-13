@@ -18,8 +18,9 @@ import {
   Shield,
   Mail,
   MessageSquare,
+  FileSignature,
 } from 'lucide-react';
-import { useAuth } from '@/lib/hooks/useAuth';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface NavItem {
   name: string;
@@ -33,8 +34,9 @@ const navItems: NavItem[] = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Projekte', href: '/dashboard/projects', icon: FolderKanban },
   { name: 'Aufgaben', href: '/dashboard/tasks', icon: CheckSquare },
+  { name: 'Vertraege', href: '/dashboard/contracts', icon: FileSignature },
   { name: 'Rechnungen', href: '/dashboard/invoices', icon: FileText },
-  { name: 'Aktivität', href: '/dashboard/activity', icon: Activity, managerOnly: true },
+  { name: 'Aktivitaet', href: '/dashboard/activity', icon: Activity, managerOnly: true },
 ];
 
 const adminItems: NavItem[] = [

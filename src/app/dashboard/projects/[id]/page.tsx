@@ -17,7 +17,7 @@ import {
   ExternalLink,
   Loader2,
 } from 'lucide-react';
-import { useAuth } from '@/lib/hooks/useAuth';
+import { useAuth } from '@/contexts/AuthContext';
 import { createClient } from '@/lib/supabase/client';
 import type { PMProject, Task, ProgressUpdate, ProjectStatus, Priority } from '@/types/dashboard';
 

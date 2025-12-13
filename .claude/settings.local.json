@@ -18,7 +18,8 @@
       "Bash(do echo '=== $pkg ===' cat /Users/oscar/Documents/xcode/website01/node_modules/$pkg/LICENSE*)",
       "Bash(curl:*)",
       "Bash(grep:*)",
-      "Bash(sed:*)"
+      "Bash(sed:*)",
+      "Bash(xargs:*)"
     ],
     "deny": [],
     "ask": []

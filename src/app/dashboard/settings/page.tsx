@@ -13,7 +13,7 @@ import {
   EyeOff,
   CheckCircle,
 } from 'lucide-react';
-import { useAuth } from '@/lib/hooks/useAuth';
+import { useAuth } from '@/contexts/AuthContext';
 import { createClient } from '@/lib/supabase/client';
 
 export default function SettingsPage() {

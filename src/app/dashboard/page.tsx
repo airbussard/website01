@@ -12,8 +12,9 @@ import {
   TrendingUp,
   AlertCircle,
   Calendar,
+  FileSignature,
 } from 'lucide-react';
-import { useAuth } from '@/lib/hooks/useAuth';
+import { useAuth } from '@/contexts/AuthContext';
 import { createClient } from '@/lib/supabase/client';
 import type { PMProject, Task, ActivityLog } from '@/types/dashboard';
 
@@ -22,6 +23,7 @@ interface DashboardStats {
   activeProjects: number;
   pendingTasks: number;
   overdueTasks: number;
+  pendingContracts: number;
 }
 
 const containerVariants = {
@@ -46,6 +48,7 @@ export default function DashboardPage() {
     activeProjects: 0,
     pendingTasks: 0,
     overdueTasks: 0,
+    pendingContracts: 0,
   });
   const [recentProjects, setRecentProjects] = useState<PMProject[]>([]);
   const [upcomingTasks, setUpcomingTasks] = useState<Task[]>([]);
@@ -118,11 +121,18 @@ export default function DashboardPage() {
           setRecentActivity(activity || []);
         }
 
+        // Fetch pending contracts count
+        const { count: pendingContracts } = await supabase
+          .from('contracts')
+          .select('*', { count: 'exact', head: true })
+          .eq('status', 'pending_signature');
+
         setStats({
           totalProjects: totalProjects || 0,
           activeProjects: activeProjects || 0,
           pendingTasks: pendingTasks || 0,
           overdueTasks: overdueTasks || 0,
+          pendingContracts: pendingContracts || 0,
         });
 
         setRecentProjects(projects || []);
@@ -230,6 +240,33 @@ export default function DashboardPage() {
           Willkommen zurück, {profile?.full_name || 'Gast'}. Hier ist Ihre Projektübersicht.
         </p>
       </motion.div>
+
+      {/* Contract Warning */}
+      {stats.pendingContracts > 0 && (
+        <motion.div variants={itemVariants}>
+          <Link
+            href="/dashboard/contracts?status=pending_signature"
+            className="block bg-amber-50 border border-amber-200 rounded-xl p-4 hover:bg-amber-100 transition-colors"
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="flex-shrink-0 p-2 bg-amber-100 rounded-lg">
+                  <FileSignature className="h-6 w-6 text-amber-600" />
+                </div>
+                <div>
+                  <p className="font-semibold text-amber-800">
+                    {stats.pendingContracts} Vertrag{stats.pendingContracts > 1 ? 'e' : ''} warten auf Ihre Unterschrift
+                  </p>
+                  <p className="text-sm text-amber-600">
+                    Bitte pruefen und unterschreiben Sie die ausstehenden Dokumente.
+                  </p>
+                </div>
+              </div>
+              <ArrowRight className="h-5 w-5 text-amber-600" />
+            </div>
+          </Link>
+        </motion.div>
+      )}
 
       {/* Stats Cards */}
       <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

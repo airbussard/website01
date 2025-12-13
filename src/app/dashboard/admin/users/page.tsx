@@ -17,7 +17,7 @@ import {
   ChevronRight,
   UserPlus,
 } from 'lucide-react';
-import { useAuth } from '@/lib/hooks/useAuth';
+import { useAuth } from '@/contexts/AuthContext';
 import { createClient } from '@/lib/supabase/client';
 import UserActionsMenu from '@/components/admin/UserActionsMenu';
 import UserEditModal from '@/components/admin/UserEditModal';

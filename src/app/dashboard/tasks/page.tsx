@@ -13,7 +13,7 @@ import {
   List,
   Loader2,
 } from 'lucide-react';
-import { useAuth } from '@/lib/hooks/useAuth';
+import { useAuth } from '@/contexts/AuthContext';
 import { createClient } from '@/lib/supabase/client';
 import type { Task, TaskStatus, Priority } from '@/types/dashboard';
 import KanbanBoard from '@/components/dashboard/KanbanBoard';

@@ -211,7 +211,9 @@ export type ActivityAction =
   | 'assigned'
   | 'completed'
   | 'invoice_sent'
-  | 'invoice_paid';
+  | 'invoice_paid'
+  | 'contract_uploaded'
+  | 'contract_signed';
 
 export type ActivityEntityType =
   | 'project'
@@ -219,7 +221,8 @@ export type ActivityEntityType =
   | 'comment'
   | 'file'
   | 'invoice'
-  | 'progress_update';
+  | 'progress_update'
+  | 'contract';
 
 export interface ActivityLog {
   id: string;
@@ -339,4 +342,43 @@ export interface DashboardStats {
   pending_tasks: number;
   overdue_tasks: number;
   recent_activity: ActivityLog[];
+}
+
+// =====================================================
+// CONTRACTS (Vertraege)
+// =====================================================
+export type ContractStatus = 'pending_signature' | 'signed' | 'expired' | 'cancelled';
+
+export interface Contract {
+  id: string;
+  project_id: string;
+  title: string;
+  description: string | null;
+  status: ContractStatus;
+
+  // PDFs
+  original_pdf_path: string;
+  original_pdf_url: string | null;
+  signed_pdf_path: string | null;
+  signed_pdf_url: string | null;
+
+  // Signatur
+  signature_data: string | null;
+  signed_at: string | null;
+  signed_by: string | null;
+  signer_ip: string | null;
+  signer_user_agent: string | null;
+
+  // Termine
+  valid_until: string | null;
+
+  // Metadaten
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+
+  // Relationen
+  project?: PMProject;
+  signer?: Profile;
+  creator?: Profile;
 }
