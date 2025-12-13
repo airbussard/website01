@@ -125,7 +125,7 @@ export default function ActivityPage() {
     };
 
     fetchActivities();
-  }, [user, isManagerOrAdmin, authLoading, entityFilter, page]);
+  }, [user?.id, isManagerOrAdmin, authLoading, entityFilter, page]);
 
   const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
 

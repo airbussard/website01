@@ -4,11 +4,6 @@ import { NextResponse, type NextRequest } from 'next/server';
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Debug logging for server-side
-  console.log('[Middleware] Request:', pathname);
-  console.log('[Middleware] SUPABASE_URL:', process.env.NEXT_PUBLIC_SUPABASE_URL || 'NOT SET');
-  console.log('[Middleware] Has ANON_KEY:', !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
-
   let supabaseResponse = NextResponse.next({
     request,
   });
@@ -17,7 +12,6 @@ export async function middleware(request: NextRequest) {
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (!supabaseUrl || !supabaseAnonKey) {
-    console.error('[Middleware] ERROR: Supabase env vars not set!');
     return supabaseResponse;
   }
 
@@ -45,13 +39,9 @@ export async function middleware(request: NextRequest) {
   );
 
   // Refresh session if expired
-  console.log('[Middleware] Getting user...');
   const {
     data: { user },
-    error: userError,
   } = await supabase.auth.getUser();
-
-  console.log('[Middleware] User:', user?.email || 'null', 'Error:', userError?.message || 'none');
 
   // =====================================================
   // GESCHÜTZTE ROUTEN

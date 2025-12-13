@@ -35,7 +35,8 @@ export async function POST(request: NextRequest) {
 
     // Request Body parsen
     const body = await request.json();
-    const { email, full_name, role = 'user' } = body;
+    const { email, first_name, last_name, role = 'user' } = body;
+    const full_name = [first_name, last_name].filter(Boolean).join(' ');
 
     if (!email) {
       return NextResponse.json(
