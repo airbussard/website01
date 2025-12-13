@@ -196,24 +196,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  // Sign Up
+  // Sign Up - via API-Route (DB-Trigger ist deaktiviert)
   const signUp = useCallback(async (email: string, password: string, fullName?: string) => {
     try {
       setError(null);
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            full_name: fullName,
-            role: 'user',
-          },
-        },
+
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, fullName }),
       });
 
-      if (error) {
-        setError(error.message);
-        return { error: error.message };
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.error || 'Registrierung fehlgeschlagen');
+        return { error: data.error || 'Registrierung fehlgeschlagen' };
       }
 
       return { error: null };
