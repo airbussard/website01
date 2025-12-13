@@ -66,10 +66,12 @@ export async function POST(request: NextRequest) {
     // Admin Client für Einladung verwenden
     const adminSupabase = createAdminSupabaseClient();
 
-    // Benutzer einladen
+    // Benutzer einladen - first_name/last_name fuer DB-Trigger bereitstellen
     const { data, error } = await adminSupabase.auth.admin.inviteUserByEmail(email, {
       data: {
         full_name: full_name || '',
+        first_name: first_name || '',
+        last_name: last_name || '',
         role: role,
       },
       redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || 'https://getemergence.com'}/auth/reset-password`,
@@ -92,20 +94,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Profil mit zusätzlichen Daten erstellen/aktualisieren
-    if (data.user) {
-      await adminSupabase
-        .from('profiles')
-        .upsert({
-          id: data.user.id,
-          email: email,
-          full_name: full_name || '',
-          role: role,
-          updated_at: new Date().toISOString(),
-        }, {
-          onConflict: 'id',
-        });
-    }
+    // Profil wird automatisch durch DB-Trigger erstellt (on_auth_user_created)
+    // Kein manueller upsert noetig - Trigger liest first_name/last_name/role aus user_meta_data
 
     return NextResponse.json({
       success: true,
