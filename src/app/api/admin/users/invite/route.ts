@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
         last_name: last_name || '',
         role: role,
       },
-      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || 'https://getemergence.com'}/auth/reset-password`,
+      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || 'https://getemergence.com'}/auth/callback?next=/auth/reset-password`,
     });
 
     if (error) {
