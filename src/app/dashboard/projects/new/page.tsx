@@ -12,10 +12,15 @@ import {
   User,
   Calendar,
   DollarSign,
+  Building2,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { createClient } from '@/lib/supabase/client';
-import type { ProjectStatus, Priority, Profile } from '@/types/dashboard';
+import type { ProjectStatus, Priority, Profile, Organization } from '@/types/dashboard';
+
+interface OrganizationWithRole extends Organization {
+  user_role: string;
+}
 
 const statusOptions: { value: ProjectStatus; label: string }[] = [
   { value: 'planning', label: 'Planung' },
@@ -40,6 +45,7 @@ export default function NewProjectPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [clients, setClients] = useState<Profile[]>([]);
+  const [organizations, setOrganizations] = useState<OrganizationWithRole[]>([]);
 
   // Form state
   const [name, setName] = useState('');
@@ -47,11 +53,12 @@ export default function NewProjectPage() {
   const [status, setStatus] = useState<ProjectStatus>('planning');
   const [priority, setPriority] = useState<Priority>('medium');
   const [clientId, setClientId] = useState('');
+  const [organizationId, setOrganizationId] = useState('');
   const [startDate, setStartDate] = useState('');
   const [dueDate, setDueDate] = useState('');
   const [budget, setBudget] = useState('');
 
-  // Load clients for selection
+  // Load clients and organizations for selection
   useEffect(() => {
     const fetchClients = async () => {
       if (!isManagerOrAdmin) return;
@@ -69,8 +76,21 @@ export default function NewProjectPage() {
       }
     };
 
+    const fetchOrganizations = async () => {
+      try {
+        const res = await fetch('/api/organizations');
+        const data = await res.json();
+        if (res.ok) {
+          setOrganizations(data.organizations || []);
+        }
+      } catch (err) {
+        console.error('Error fetching organizations:', err);
+      }
+    };
+
     if (!authLoading && isManagerOrAdmin) {
       fetchClients();
+      fetchOrganizations();
     }
   }, [authLoading, isManagerOrAdmin, supabase]);
 
@@ -95,6 +115,7 @@ export default function NewProjectPage() {
         status,
         priority,
         client_id: clientId || null,
+        organization_id: organizationId || null,
         manager_id: user.id,
         start_date: startDate || null,
         due_date: dueDate || null,
@@ -245,10 +266,36 @@ export default function NewProjectPage() {
             </div>
           </div>
 
-          {/* Client */}
+          {/* Organization */}
+          <div>
+            <label htmlFor="organization" className="block text-sm font-medium text-gray-700 mb-2">
+              Organisation / Firma
+            </label>
+            <div className="relative">
+              <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <select
+                id="organization"
+                value={organizationId}
+                onChange={(e) => setOrganizationId(e.target.value)}
+                className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 bg-white text-gray-900 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors"
+              >
+                <option value="">Keine Organisation</option>
+                {organizations.map((org) => (
+                  <option key={org.id} value={org.id}>
+                    {org.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <p className="mt-1 text-xs text-gray-500">
+              Alle Mitglieder der Organisation haben Zugriff auf dieses Projekt.
+            </p>
+          </div>
+
+          {/* Client (Ansprechpartner) */}
           <div>
             <label htmlFor="client" className="block text-sm font-medium text-gray-700 mb-2">
-              Kunde
+              Ansprechpartner
             </label>
             <div className="relative">
               <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -258,7 +305,7 @@ export default function NewProjectPage() {
                 onChange={(e) => setClientId(e.target.value)}
                 className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 bg-white text-gray-900 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors"
               >
-                <option value="">Kein Kunde zugewiesen</option>
+                <option value="">Kein Ansprechpartner</option>
                 {clients.map((client) => (
                   <option key={client.id} value={client.id}>
                     {client.full_name || client.email} {client.company ? `(${client.company})` : ''}

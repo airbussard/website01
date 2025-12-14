@@ -56,6 +56,7 @@ export interface PMProject {
   priority: Priority;
   client_id: string | null;
   manager_id: string | null;
+  organization_id: string | null;
   start_date: string | null;
   due_date: string | null;
   completed_at: string | null;
@@ -68,6 +69,7 @@ export interface PMProject {
   // Relationen (optional, je nach Query)
   client?: Profile;
   manager?: Profile;
+  organization?: Organization;
   members?: ProjectMember[];
   tasks?: Task[];
   task_count?: number;
@@ -279,6 +281,7 @@ export interface CreateProjectForm {
   priority?: Priority;
   client_id?: string;
   manager_id?: string;
+  organization_id?: string;
   start_date?: string;
   due_date?: string;
   budget?: number;
@@ -342,6 +345,56 @@ export interface DashboardStats {
   pending_tasks: number;
   overdue_tasks: number;
   recent_activity: ActivityLog[];
+}
+
+// =====================================================
+// ORGANIZATIONS (Firmen/Organisationen)
+// =====================================================
+export type OrganizationMemberRole = 'owner' | 'admin' | 'member';
+
+export interface Organization {
+  id: string;
+  name: string;
+  slug: string | null;
+  logo_url: string | null;
+  // Adresse
+  street: string | null;
+  postal_code: string | null;
+  city: string | null;
+  country: string | null;
+  // Kontakt
+  email: string | null;
+  phone: string | null;
+  website: string | null;
+  // Meta
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+  // Relationen
+  members?: OrganizationMember[];
+  member_count?: number;
+}
+
+export interface OrganizationMember {
+  id: string;
+  organization_id: string;
+  user_id: string;
+  role: OrganizationMemberRole;
+  created_at: string;
+  // Relationen
+  user?: Profile;
+  organization?: Organization;
+}
+
+export interface CreateOrganizationForm {
+  name: string;
+  street?: string;
+  postal_code?: string;
+  city?: string;
+  country?: string;
+  email?: string;
+  phone?: string;
+  website?: string;
 }
 
 // =====================================================
