@@ -98,7 +98,8 @@ export default function UserEditModal({ user, isOpen, onClose, onSave }: UserEdi
 
   const fetchAllOrganizations = async () => {
     try {
-      const res = await fetch('/api/organizations');
+      // Admin-Route verwenden um ALLE Organisationen zu laden
+      const res = await fetch('/api/admin/organizations');
       const data = await res.json();
       if (res.ok) {
         setAllOrganizations(data.organizations || []);
