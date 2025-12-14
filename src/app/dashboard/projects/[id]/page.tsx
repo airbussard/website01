@@ -16,6 +16,7 @@ import {
   Plus,
   ExternalLink,
   Loader2,
+  Building2,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { createClient } from '@/lib/supabase/client';
@@ -76,7 +77,8 @@ export default function ProjectDetailPage() {
           .select(`
             *,
             client:profiles!pm_projects_client_id_fkey(id, full_name, email, avatar_url, company),
-            manager:profiles!pm_projects_manager_id_fkey(id, full_name, email, avatar_url)
+            manager:profiles!pm_projects_manager_id_fkey(id, full_name, email, avatar_url),
+            organization:organizations(id, name, slug)
           `)
           .eq('id', projectId)
           .single();
@@ -243,6 +245,18 @@ export default function ProjectDetailPage() {
               </div>
             </div>
           )}
+
+          {project.organization && (
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-indigo-100 rounded-lg">
+                <Building2 className="h-5 w-5 text-indigo-600" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Organisation</p>
+                <p className="font-semibold text-gray-900">{project.organization.name}</p>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Progress Bar */}
@@ -368,6 +382,29 @@ export default function ProjectDetailPage() {
                   )}
                 </div>
               </div>
+
+              {/* Organization */}
+              {project.organization && (
+                <div className="bg-white rounded-xl border border-gray-100 p-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Organisation</h3>
+                  <div className="flex items-center space-x-3">
+                    <div className="h-10 w-10 rounded-lg bg-indigo-100 flex items-center justify-center">
+                      <Building2 className="h-5 w-5 text-indigo-600" />
+                    </div>
+                    <div>
+                      <Link
+                        href={`/dashboard/organizations/${project.organization.id}`}
+                        className="font-medium text-gray-900 hover:text-primary-600 transition-colors"
+                      >
+                        {project.organization.name}
+                      </Link>
+                      <p className="text-sm text-gray-500">
+                        Alle Mitglieder haben Zugriff
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Budget (Manager/Admin only) */}
               {isManagerOrAdmin && project.budget && (

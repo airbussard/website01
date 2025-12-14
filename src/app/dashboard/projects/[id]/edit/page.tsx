@@ -14,10 +14,15 @@ import {
   Euro,
   User,
   Trash2,
+  Building2,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { createClient } from '@/lib/supabase/client';
-import type { ProjectStatus, Priority, Profile, PMProject } from '@/types/dashboard';
+import type { ProjectStatus, Priority, Profile, PMProject, Organization } from '@/types/dashboard';
+
+interface OrganizationWithRole extends Organization {
+  user_role: string;
+}
 
 const statusOptions: { value: ProjectStatus; label: string }[] = [
   { value: 'planning', label: 'Planung' },
@@ -46,6 +51,7 @@ export default function EditProjectPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [users, setUsers] = useState<Profile[]>([]);
+  const [organizations, setOrganizations] = useState<OrganizationWithRole[]>([]);
   const [project, setProject] = useState<PMProject | null>(null);
 
   // Form state
@@ -55,6 +61,7 @@ export default function EditProjectPage() {
   const [priority, setPriority] = useState<Priority>('medium');
   const [clientId, setClientId] = useState('');
   const [managerId, setManagerId] = useState('');
+  const [organizationId, setOrganizationId] = useState('');
   const [startDate, setStartDate] = useState('');
   const [dueDate, setDueDate] = useState('');
   const [budget, setBudget] = useState('');
@@ -83,6 +90,7 @@ export default function EditProjectPage() {
         setPriority(projectData.priority || 'medium');
         setClientId(projectData.client_id || '');
         setManagerId(projectData.manager_id || '');
+        setOrganizationId(projectData.organization_id || '');
         setStartDate(projectData.start_date?.split('T')[0] || '');
         setDueDate(projectData.due_date?.split('T')[0] || '');
         setBudget(projectData.budget?.toString() || '');
@@ -94,6 +102,17 @@ export default function EditProjectPage() {
           .order('full_name');
 
         if (usersData) setUsers(usersData);
+
+        // Fetch organizations
+        try {
+          const res = await fetch('/api/organizations');
+          const data = await res.json();
+          if (res.ok) {
+            setOrganizations(data.organizations || []);
+          }
+        } catch (err) {
+          console.error('Error fetching organizations:', err);
+        }
       } catch (err) {
         console.error('Error fetching data:', err);
         setError('Fehler beim Laden des Projekts');
@@ -126,6 +145,7 @@ export default function EditProjectPage() {
         priority,
         client_id: clientId || null,
         manager_id: managerId || null,
+        organization_id: organizationId || null,
         start_date: startDate || null,
         due_date: dueDate || null,
         budget: budget ? parseFloat(budget) : null,
@@ -306,6 +326,32 @@ export default function EditProjectPage() {
                 ))}
               </select>
             </div>
+          </div>
+
+          {/* Organization */}
+          <div>
+            <label htmlFor="organization" className="block text-sm font-medium text-gray-700 mb-2">
+              Organisation / Firma
+            </label>
+            <div className="relative">
+              <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <select
+                id="organization"
+                value={organizationId}
+                onChange={(e) => setOrganizationId(e.target.value)}
+                className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 bg-white text-gray-900 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors"
+              >
+                <option value="">Keine Organisation</option>
+                {organizations.map((org) => (
+                  <option key={org.id} value={org.id}>
+                    {org.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <p className="mt-1 text-xs text-gray-500">
+              Alle Mitglieder der Organisation haben Zugriff auf dieses Projekt.
+            </p>
           </div>
 
           {/* Client & Manager */}

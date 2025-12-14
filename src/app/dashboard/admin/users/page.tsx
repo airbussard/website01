@@ -23,6 +23,18 @@ import UserEditModal from '@/components/admin/UserEditModal';
 import InviteUserModal from '@/components/admin/InviteUserModal';
 import type { Profile, UserRole } from '@/types/dashboard';
 
+interface UserWithOrgs extends Profile {
+  organization_memberships?: {
+    id: string;
+    role: string;
+    organization: {
+      id: string;
+      name: string;
+      slug: string | null;
+    } | null;
+  }[];
+}
+
 const roleOptions: { value: UserRole | 'all'; label: string }[] = [
   { value: 'all', label: 'Alle Rollen' },
   { value: 'user', label: 'Kunde' },
@@ -52,7 +64,7 @@ const ITEMS_PER_PAGE = 15;
 
 export default function AdminUsersPage() {
   const { isAdmin } = useAuth();
-  const [users, setUsers] = useState<Profile[]>([]);
+  const [users, setUsers] = useState<UserWithOrgs[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState<UserRole | 'all'>('all');
@@ -261,6 +273,9 @@ export default function AdminUsersPage() {
                     Unternehmen
                   </th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    Organisationen
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                     Rolle
                   </th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
@@ -313,6 +328,28 @@ export default function AdminUsersPage() {
                           <div className="flex items-center text-gray-600">
                             <Building2 className="h-4 w-4 mr-1.5 text-gray-400" />
                             {user.company}
+                          </div>
+                        ) : (
+                          <span className="text-gray-400">-</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4">
+                        {user.organization_memberships && user.organization_memberships.length > 0 ? (
+                          <div className="flex flex-wrap gap-1">
+                            {user.organization_memberships.slice(0, 3).map((membership) => (
+                              <span
+                                key={membership.id}
+                                className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-primary-100 text-primary-700"
+                                title={`${membership.organization?.name || 'Unbekannt'} (${membership.role})`}
+                              >
+                                {membership.organization?.name || 'Unbekannt'}
+                              </span>
+                            ))}
+                            {user.organization_memberships.length > 3 && (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600">
+                                +{user.organization_memberships.length - 3}
+                              </span>
+                            )}
                           </div>
                         ) : (
                           <span className="text-gray-400">-</span>

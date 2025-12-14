@@ -46,7 +46,14 @@ export async function GET(request: NextRequest) {
 
     let query = adminSupabase
       .from('profiles')
-      .select('*', { count: 'exact' })
+      .select(`
+        *,
+        organization_memberships:organization_members(
+          id,
+          role,
+          organization:organizations(id, name, slug)
+        )
+      `, { count: 'exact' })
       .order('created_at', { ascending: false })
       .range(page * limit, (page + 1) * limit - 1);
 
@@ -70,8 +77,18 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Normalize organization memberships (organization kann Array sein)
+    const users = (data || []).map(user => ({
+      ...user,
+      organization_memberships: user.organization_memberships?.map((m: { id: string; role: string; organization: unknown }) => ({
+        id: m.id,
+        role: m.role,
+        organization: Array.isArray(m.organization) ? m.organization[0] : m.organization,
+      })) || [],
+    }));
+
     return NextResponse.json({
-      users: data || [],
+      users,
       totalCount: count || 0,
       page,
       limit,
