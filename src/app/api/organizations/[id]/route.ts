@@ -36,8 +36,12 @@ export async function GET(
       );
     }
 
+    // Admin-Client verwenden um RLS fuer profiles zu umgehen
+    // (normale User koennen sonst nur eigenes Profil sehen)
+    const adminSupabase = createAdminSupabaseClient();
+
     // Mitglieder laden
-    const { data: membersRaw } = await supabase
+    const { data: membersRaw } = await adminSupabase
       .from('organization_members')
       .select(`
         id,

@@ -74,7 +74,21 @@ export default function ProjectsPage() {
 
         // Filter by user role
         if (!isManagerOrAdmin) {
-          query = query.eq('client_id', user.id);
+          // User's organizations laden
+          const { data: userOrgs } = await supabase
+            .from('organization_members')
+            .select('organization_id')
+            .eq('user_id', user.id);
+
+          const orgIds = userOrgs?.map((o: { organization_id: string }) => o.organization_id) || [];
+
+          if (orgIds.length > 0) {
+            // Projekte sehen wo User Client ist ODER Organisations-Mitglied
+            query = query.or(`client_id.eq.${user.id},organization_id.in.(${orgIds.join(',')})`);
+          } else {
+            // Nur Projekte wo User Client ist
+            query = query.eq('client_id', user.id);
+          }
         }
 
         // Filter by status
