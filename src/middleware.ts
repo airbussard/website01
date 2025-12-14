@@ -73,7 +73,8 @@ export async function middleware(request: NextRequest) {
   }
 
   // Auth-Seiten: Eingeloggte User zum Dashboard weiterleiten
-  if (pathname.startsWith('/auth/') && user) {
+  // AUSNAHME: /auth/reset-password - User muss Passwort aendern koennen
+  if (pathname.startsWith('/auth/') && user && pathname !== '/auth/reset-password') {
     const url = request.nextUrl.clone();
     url.pathname = '/dashboard';
     return NextResponse.redirect(url);
