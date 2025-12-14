@@ -186,7 +186,7 @@ CREATE POLICY "org_members_select" ON organization_members
 CREATE POLICY "org_members_insert" ON organization_members
   FOR INSERT WITH CHECK (
     is_org_admin(organization_id) OR is_manager_or_admin()
-    OR NOT EXISTS (SELECT 1 FROM organization_members WHERE organization_id = NEW.organization_id)
+    OR NOT EXISTS (SELECT 1 FROM organization_members om WHERE om.organization_id = organization_members.organization_id)
   );
 
 CREATE POLICY "org_members_update" ON organization_members
