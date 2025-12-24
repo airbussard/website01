@@ -26,7 +26,6 @@ import {
   CheckCircle,
   Headphones,
   Award,
-  Euro,
   Zap,
 } from 'lucide-react';
 import ProjectCard from '@/components/ProjectCard';
@@ -64,39 +63,38 @@ const standardFeatures = [
 const erweiterungen = [
   {
     icon: Globe,
+    title: 'Makler-Website',
+    description: 'Professionelle Immobilien-Website mit automatischer Objekt-Anzeige und Suchfunktion.',
+  },
+  {
+    icon: LinkIcon,
     title: 'Website-Integration',
-    description: 'Nahtlose Integration in Ihre Makler-Website mit automatischer Objekt-Synchronisation.',
-    price: 'ab 2.500 EUR',
+    description: 'Nahtlose Integration in Ihre bestehende Website mit automatischer Objekt-Synchronisation.',
   },
   {
     icon: Mail,
     title: 'E-Mail-Automation',
     description: 'Automatische Benachrichtigungen bei neuen Objekten für passende Interessenten.',
-    price: 'ab 1.500 EUR',
   },
   {
     icon: BarChart3,
     title: 'Erweiterte Auswertungen',
     description: 'Detaillierte Statistiken, Provision-Tracking und Performance-Reports.',
-    price: 'ab 2.000 EUR',
   },
   {
     icon: Smartphone,
     title: 'Mobile App',
     description: 'Objekte und Anfragen unterwegs verwalten - iOS und Android.',
-    price: 'ab 5.000 EUR',
-  },
-  {
-    icon: LinkIcon,
-    title: 'Portal-Anbindung',
-    description: 'Automatische Synchronisation mit ImmoScout24, Immowelt & Co.',
-    price: 'ab 3.000 EUR',
   },
   {
     icon: Lock,
+    title: 'Portal-Anbindung',
+    description: 'Automatische Synchronisation mit ImmoScout24, Immowelt & Co.',
+  },
+  {
+    icon: Users,
     title: 'Mandantenfähigkeit',
     description: 'Mehrere Maklerbüros in einem System mit separaten Zugängen.',
-    price: 'ab 4.000 EUR',
   },
 ];
 
@@ -313,19 +311,14 @@ export default function ImmobilienSoftwarePage() {
             })}
           </div>
 
-          {/* Pricing Info */}
+          {/* CTA */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.4 }}
             viewport={{ once: true }}
-            className="bg-gradient-to-r from-primary-50 to-blue-50 rounded-2xl p-8 text-center border border-primary-100"
+            className="text-center"
           >
-            <div className="flex items-center justify-center gap-2 mb-2">
-              <Euro className="h-8 w-8 text-primary-600" />
-              <span className="text-4xl font-bold text-gray-900">ab 8.900 EUR</span>
-            </div>
-            <p className="text-gray-600 mb-4">Einmalige Lizenz, inklusive 1 Jahr Support & Updates</p>
             <Link
               href="/kontakt"
               className="inline-flex items-center px-6 py-3 bg-primary-600 text-white rounded-lg font-semibold hover:bg-primary-700 transition-colors"
@@ -370,15 +363,10 @@ export default function ImmobilienSoftwarePage() {
                   whileInView={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
                   viewport={{ once: true }}
-                  className="bg-white rounded-xl p-6 hover:shadow-lg transition-all border border-gray-100"
+                  className="bg-white rounded-xl p-6 hover:shadow-lg transition-all border border-gray-100 group"
                 >
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center">
-                      <Icon className="h-6 w-6 text-gray-600" />
-                    </div>
-                    <span className="text-sm font-semibold text-primary-600 bg-primary-50 px-3 py-1 rounded-full">
-                      {erweiterung.price}
-                    </span>
+                  <div className="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center mb-4 group-hover:bg-primary-600 transition-colors">
+                    <Icon className="h-6 w-6 text-primary-600 group-hover:text-white transition-colors" />
                   </div>
                   <h3 className="text-lg font-semibold mb-2 text-gray-800">
                     {erweiterung.title}
