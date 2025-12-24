@@ -12,9 +12,9 @@ export default function Footer() {
   return (
     <footer className="bg-gray-900 text-white py-12">
       <div className="container mx-auto px-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 mb-8">
           {/* Branding */}
-          <div className="md:col-span-2">
+          <div className="md:col-span-2 lg:col-span-1">
             <Link href="/" className="flex items-center space-x-2 mb-4">
               <div className="relative">
                 <Code2 className="h-8 w-8 text-primary-600" />
@@ -148,6 +148,37 @@ export default function Footer() {
                   className="text-gray-400 hover:text-primary-400 transition-colors"
                 >
                   Hosting
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Branchen */}
+          <div>
+            <h4 className="text-lg font-semibold mb-4">Branchen</h4>
+            <ul className="space-y-2">
+              <li>
+                <Link
+                  href="/webdesign-rechtsanwaelte"
+                  className="text-gray-400 hover:text-primary-400 transition-colors"
+                >
+                  Rechtsanwälte
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/webdesign-aerzte"
+                  className="text-gray-400 hover:text-primary-400 transition-colors"
+                >
+                  Ärzte & Praxen
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/immobilien-software"
+                  className="text-gray-400 hover:text-primary-400 transition-colors"
+                >
+                  Immobilienmakler
                 </Link>
               </li>
             </ul>
