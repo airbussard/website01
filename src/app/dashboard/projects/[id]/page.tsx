@@ -17,6 +17,7 @@ import {
   ExternalLink,
   Loader2,
   Building2,
+  Rocket,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { createClient } from '@/lib/supabase/client';
@@ -63,6 +64,8 @@ export default function ProjectDetailPage() {
   const [updates, setUpdates] = useState<ProgressUpdate[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'overview' | 'tasks' | 'updates' | 'files'>('overview');
+  const [triggering, setTriggering] = useState(false);
+  const [triggerResult, setTriggerResult] = useState<'success' | 'error' | null>(null);
 
   useEffect(() => {
     const fetchProjectData = async () => {
@@ -153,6 +156,28 @@ export default function ProjectDetailPage() {
     { id: 'files', label: 'Dateien' },
   ] as const;
 
+  const handleTriggerBuild = async () => {
+    const buildUrl = (project?.settings as Record<string, string>)?.build_trigger_url;
+    if (!buildUrl) return;
+
+    setTriggering(true);
+    setTriggerResult(null);
+
+    try {
+      const res = await fetch(buildUrl, { method: 'POST' });
+      if (res.ok) {
+        setTriggerResult('success');
+      } else {
+        setTriggerResult('error');
+      }
+    } catch {
+      setTriggerResult('error');
+    } finally {
+      setTriggering(false);
+      setTimeout(() => setTriggerResult(null), 3000);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Breadcrumb */}
@@ -188,20 +213,42 @@ export default function ProjectDetailPage() {
             </p>
           </div>
 
-          {isManagerOrAdmin && (
-            <div className="flex items-center gap-2">
-              <Link
-                href={`/dashboard/projects/${project.id}/edit`}
-                className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+          <div className="flex items-center gap-2">
+            {(project.settings as Record<string, string>)?.build_trigger_url && (
+              <button
+                onClick={handleTriggerBuild}
+                disabled={triggering}
+                className={`inline-flex items-center px-4 py-2 rounded-lg font-medium transition-colors ${
+                  triggerResult === 'success'
+                    ? 'bg-green-100 text-green-700'
+                    : triggerResult === 'error'
+                    ? 'bg-red-100 text-red-700'
+                    : 'border border-gray-300 text-gray-700 hover:bg-gray-50'
+                }`}
               >
-                <Edit className="h-4 w-4 mr-2" />
-                Bearbeiten
-              </Link>
-              <button className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors">
-                <MoreVertical className="h-5 w-5" />
+                {triggering ? (
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                ) : (
+                  <Rocket className="h-4 w-4 mr-2" />
+                )}
+                {triggerResult === 'success' ? 'Build gestartet!' : triggerResult === 'error' ? 'Fehler' : 'Build starten'}
               </button>
-            </div>
-          )}
+            )}
+            {isManagerOrAdmin && (
+              <>
+                <Link
+                  href={`/dashboard/projects/${project.id}/edit`}
+                  className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  <Edit className="h-4 w-4 mr-2" />
+                  Bearbeiten
+                </Link>
+                <button className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors">
+                  <MoreVertical className="h-5 w-5" />
+                </button>
+              </>
+            )}
+          </div>
         </div>
 
         {/* Stats */}

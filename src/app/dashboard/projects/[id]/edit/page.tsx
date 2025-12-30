@@ -15,6 +15,7 @@ import {
   User,
   Trash2,
   Building2,
+  Rocket,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { createClient } from '@/lib/supabase/client';
@@ -65,6 +66,7 @@ export default function EditProjectPage() {
   const [startDate, setStartDate] = useState('');
   const [dueDate, setDueDate] = useState('');
   const [budget, setBudget] = useState('');
+  const [buildTriggerUrl, setBuildTriggerUrl] = useState('');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -94,6 +96,7 @@ export default function EditProjectPage() {
         setStartDate(projectData.start_date?.split('T')[0] || '');
         setDueDate(projectData.due_date?.split('T')[0] || '');
         setBudget(projectData.budget?.toString() || '');
+        setBuildTriggerUrl((projectData.settings as Record<string, string>)?.build_trigger_url || '');
 
         // Fetch users for dropdowns
         const { data: usersData } = await supabase
@@ -149,6 +152,10 @@ export default function EditProjectPage() {
         start_date: startDate || null,
         due_date: dueDate || null,
         budget: budget ? parseFloat(budget) : null,
+        settings: {
+          ...(project?.settings || {}),
+          build_trigger_url: buildTriggerUrl.trim() || null,
+        },
         updated_at: new Date().toISOString(),
       };
 
@@ -454,6 +461,27 @@ export default function EditProjectPage() {
                 placeholder="0,00"
               />
             </div>
+          </div>
+
+          {/* Build Trigger */}
+          <div>
+            <label htmlFor="buildTrigger" className="block text-sm font-medium text-gray-700 mb-2">
+              Build-Trigger URL (CapRover)
+            </label>
+            <div className="relative">
+              <Rocket className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <input
+                id="buildTrigger"
+                type="url"
+                value={buildTriggerUrl}
+                onChange={(e) => setBuildTriggerUrl(e.target.value)}
+                className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 bg-white text-gray-900 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors"
+                placeholder="https://captain.example.com/api/v2/user/apps/webhooks/triggerbuild?..."
+              />
+            </div>
+            <p className="mt-1 text-xs text-gray-500">
+              Webhook-URL zum Ausloesen eines neuen Builds. Alle Projektmitglieder koennen den Build triggern.
+            </p>
           </div>
 
           {/* Actions */}
