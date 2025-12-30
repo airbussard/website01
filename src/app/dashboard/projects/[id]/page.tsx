@@ -179,7 +179,13 @@ export default function ProjectDetailPage() {
               </span>
             </div>
             <h1 className="text-2xl font-bold text-gray-900 mb-2">{project.name}</h1>
-            <p className="text-gray-600 max-w-2xl">{project.description || 'Keine Beschreibung vorhanden'}</p>
+            <p className="text-gray-600 max-w-2xl">
+              {project.description
+                ? project.description.length > 200
+                  ? project.description.slice(0, 200) + '...'
+                  : project.description
+                : 'Keine Beschreibung vorhanden'}
+            </p>
           </div>
 
           {isManagerOrAdmin && (

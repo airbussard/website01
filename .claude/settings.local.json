@@ -20,7 +20,10 @@
       "Bash(grep:*)",
       "Bash(sed:*)",
       "Bash(xargs:*)",
-      "Bash(wc:*)"
+      "Bash(wc:*)",
+      "Bash(npm ls:*)",
+      "Bash(npm audit:*)",
+      "WebFetch(domain:github.com)"
     ],
     "deny": [],
     "ask": []
