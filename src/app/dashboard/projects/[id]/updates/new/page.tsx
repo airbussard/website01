@@ -13,7 +13,10 @@ import {
   Eye,
   EyeOff,
   AlertCircle,
+  Upload,
+  X,
 } from 'lucide-react';
+import Image from 'next/image';
 import { useAuth } from '@/contexts/AuthContext';
 import { createClient } from '@/lib/supabase/client';
 import type { PMProject } from '@/types/dashboard';
@@ -36,6 +39,11 @@ export default function NewProjectUpdatePage() {
   const [content, setContent] = useState('');
   const [progressPercentage, setProgressPercentage] = useState('');
   const [isPublic, setIsPublic] = useState(true);
+
+  // Image upload state
+  const [uploadedImages, setUploadedImages] = useState<{url: string, caption: string, uploaded_at: string}[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const [dragActive, setDragActive] = useState(false);
 
   useEffect(() => {
     const fetchProject = async () => {
@@ -67,6 +75,64 @@ export default function NewProjectUpdatePage() {
     }
   }, [authLoading, isManagerOrAdmin, router, projectId]);
 
+  // Drag & Drop handlers
+  const handleDrag = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === 'dragenter' || e.type === 'dragover') {
+      setDragActive(true);
+    } else if (e.type === 'dragleave') {
+      setDragActive(false);
+    }
+  };
+
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      await handleFileUpload(e.dataTransfer.files);
+    }
+  };
+
+  const handleFileUpload = async (files: FileList) => {
+    setUploading(true);
+
+    for (const file of Array.from(files)) {
+      if (!file.type.startsWith('image/')) continue;
+
+      try {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `updates/${projectId}/${Date.now()}.${fileExt}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('project-images')
+          .upload(fileName, file);
+
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('project-images')
+          .getPublicUrl(fileName);
+
+        setUploadedImages(prev => [...prev, {
+          url: publicUrl,
+          caption: '',
+          uploaded_at: new Date().toISOString()
+        }]);
+      } catch (err) {
+        console.error('Upload error:', err);
+      }
+    }
+
+    setUploading(false);
+  };
+
+  const removeImage = (index: number) => {
+    setUploadedImages(prev => prev.filter((_, i) => i !== index));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || !title.trim()) return;
@@ -82,7 +148,7 @@ export default function NewProjectUpdatePage() {
         author_id: user.id,
         progress_percentage: progressPercentage ? parseInt(progressPercentage) : null,
         is_public: isPublic,
-        images: [],
+        images: uploadedImages,
         attachments: [],
         created_at: new Date().toISOString(),
       };
@@ -204,6 +270,65 @@ export default function NewProjectUpdatePage() {
               className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white text-gray-900 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors resize-none"
               placeholder="Beschreiben Sie den Fortschritt, abgeschlossene Aufgaben, etc..."
             />
+          </div>
+
+          {/* Screenshots */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Screenshots
+            </label>
+            <div
+              onDragEnter={handleDrag}
+              onDragLeave={handleDrag}
+              onDragOver={handleDrag}
+              onDrop={handleDrop}
+              className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
+                dragActive
+                  ? 'border-primary-500 bg-primary-50'
+                  : 'border-gray-300 hover:border-gray-400'
+              }`}
+            >
+              {uploading ? (
+                <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary-600" />
+              ) : (
+                <>
+                  <Upload className="h-8 w-8 mx-auto text-gray-400 mb-2" />
+                  <p className="text-gray-600 text-sm">
+                    Screenshots hier ablegen oder{' '}
+                    <label className="text-primary-600 cursor-pointer hover:underline">
+                      durchsuchen
+                      <input
+                        type="file"
+                        multiple
+                        accept="image/*"
+                        onChange={(e) => e.target.files && handleFileUpload(e.target.files)}
+                        className="hidden"
+                      />
+                    </label>
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">PNG, JPG, GIF</p>
+                </>
+              )}
+            </div>
+
+            {uploadedImages.length > 0 && (
+              <div className="mt-4 grid grid-cols-2 gap-3">
+                {uploadedImages.map((img, index) => (
+                  <div key={index} className="relative group rounded-lg overflow-hidden border border-gray-200">
+                    <div className="aspect-video relative">
+                      <Image src={img.url} alt="" fill className="object-cover" sizes="200px" />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => removeImage(index)}
+                      className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Progress Percentage */}
