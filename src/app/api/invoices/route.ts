@@ -7,6 +7,13 @@ import {
   invoiceCreatedTemplate,
   invoiceCreatedTextTemplate,
 } from '@/lib/email/templates/project-notifications';
+import {
+  createLexofficeClient,
+  mapToLexofficeInvoice,
+  LexofficeApiError,
+  calculateTotalsFromLineItems,
+} from '@/lib/lexoffice';
+import type { InvoiceLineItem, Invoice } from '@/types/dashboard';
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://oscarknabe.de';
 
@@ -111,6 +118,9 @@ export async function POST(request: NextRequest) {
       project_id,
       issue_date,
       due_date,
+      line_items,
+      sync_to_lexoffice = true,
+      finalize_in_lexoffice = false,
     } = body;
 
     // Validierung
@@ -121,10 +131,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Projekt laden fuer Projektname
+    // Projekt laden fuer Projektname und Lexoffice-Kontakt
     const { data: project, error: projectError } = await adminSupabase
       .from('pm_projects')
-      .select('id, name')
+      .select('id, name, client_id, organization_id')
       .eq('id', project_id)
       .single();
 
@@ -135,19 +145,33 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Wenn line_items vorhanden, Totals berechnen
+    let calculatedAmount = parseFloat(amount);
+    let calculatedTaxAmount = parseFloat(tax_amount) || 0;
+    let calculatedTotalAmount = parseFloat(total_amount) || parseFloat(amount);
+    const typedLineItems = line_items as InvoiceLineItem[] | undefined;
+
+    if (typedLineItems && typedLineItems.length > 0) {
+      const totals = calculateTotalsFromLineItems(typedLineItems);
+      calculatedAmount = totals.net_amount;
+      calculatedTaxAmount = totals.tax_amount;
+      calculatedTotalAmount = totals.total_amount;
+    }
+
     // Rechnung erstellen
     const invoiceData = {
       invoice_number,
       title: title.trim(),
       description: description?.trim() || null,
-      amount: parseFloat(amount),
-      tax_amount: parseFloat(tax_amount) || 0,
-      total_amount: parseFloat(total_amount) || parseFloat(amount),
+      amount: calculatedAmount,
+      tax_amount: calculatedTaxAmount,
+      total_amount: calculatedTotalAmount,
       currency: currency || 'EUR',
       status: status || 'draft',
       project_id,
       issue_date: issue_date || new Date().toISOString().split('T')[0],
       due_date: due_date || null,
+      line_items: typedLineItems || null,
       created_by: user.id,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
@@ -176,6 +200,124 @@ export async function POST(request: NextRequest) {
       entity_id: invoice.id,
       details: { invoice_number, title: title.trim(), total_amount: invoiceData.total_amount },
     });
+
+    // Lexoffice Sync wenn aktiviert und line_items vorhanden
+    let lexofficeId: string | null = null;
+    let lexofficeError: string | null = null;
+    let pdfUrl: string | null = null;
+
+    if (sync_to_lexoffice && typedLineItems && typedLineItems.length > 0) {
+      const { data: settings } = await adminSupabase
+        .from('system_settings')
+        .select('value')
+        .eq('key', 'lexoffice')
+        .single();
+
+      const lexofficeSettings = settings?.value as {
+        is_enabled: boolean;
+        api_key: string | null;
+      } | null;
+
+      if (lexofficeSettings?.is_enabled && lexofficeSettings?.api_key) {
+        try {
+          // Kontakt-Mapping finden
+          let contactId: string | null = null;
+
+          if (project.client_id) {
+            const { data: contactMapping } = await adminSupabase
+              .from('lexoffice_contacts')
+              .select('lexoffice_contact_id')
+              .eq('profile_id', project.client_id)
+              .single();
+
+            contactId = contactMapping?.lexoffice_contact_id || null;
+          } else if (project.organization_id) {
+            const { data: contactMapping } = await adminSupabase
+              .from('lexoffice_contacts')
+              .select('lexoffice_contact_id')
+              .eq('organization_id', project.organization_id)
+              .single();
+
+            contactId = contactMapping?.lexoffice_contact_id || null;
+          }
+
+          if (contactId) {
+            const lexoffice = createLexofficeClient(lexofficeSettings.api_key);
+            const lexofficeData = mapToLexofficeInvoice({
+              invoice: invoice as Invoice,
+              lexofficeContactId: contactId,
+              lineItems: typedLineItems,
+            });
+
+            const response = await lexoffice.createInvoice(lexofficeData, finalize_in_lexoffice);
+            lexofficeId = response.id;
+
+            // PDF abrufen wenn finalisiert
+            if (finalize_in_lexoffice && lexofficeId) {
+              try {
+                const pdfBuffer = await lexoffice.getInvoicePdf(lexofficeId);
+
+                const pdfFileName = `invoices/${invoice_number}.pdf`;
+                const { error: uploadError } = await adminSupabase.storage
+                  .from('documents')
+                  .upload(pdfFileName, pdfBuffer, {
+                    contentType: 'application/pdf',
+                    upsert: true,
+                  });
+
+                if (!uploadError) {
+                  const { data: urlData } = adminSupabase.storage
+                    .from('documents')
+                    .getPublicUrl(pdfFileName);
+
+                  pdfUrl = urlData.publicUrl;
+                }
+              } catch (pdfError) {
+                console.error('[Invoices API] PDF fetch error:', pdfError);
+              }
+            }
+
+            // Invoice mit Lexoffice ID updaten
+            await adminSupabase
+              .from('invoices')
+              .update({
+                lexoffice_id: lexofficeId,
+                lexoffice_status: finalize_in_lexoffice ? 'open' : 'draft',
+                pdf_url: pdfUrl,
+                synced_at: new Date().toISOString(),
+              })
+              .eq('id', invoice.id);
+
+            // Sync Log
+            await adminSupabase.from('lexoffice_sync_log').insert({
+              entity_type: 'invoice',
+              entity_id: invoice.id,
+              lexoffice_id: lexofficeId,
+              action: finalize_in_lexoffice ? 'finalize' : 'create',
+              status: 'success',
+              request_data: lexofficeData,
+              response_data: response,
+            });
+          } else {
+            lexofficeError = 'Kein Lexoffice-Kontakt fuer dieses Projekt gefunden';
+          }
+        } catch (error) {
+          if (error instanceof LexofficeApiError) {
+            lexofficeError = error.message;
+            await adminSupabase.from('lexoffice_sync_log').insert({
+              entity_type: 'invoice',
+              entity_id: invoice.id,
+              action: 'create',
+              status: 'failed',
+              error_message: error.message,
+            });
+          } else {
+            lexofficeError = 'Unbekannter Lexoffice-Fehler';
+            console.error('[Invoices API] Lexoffice error:', error);
+          }
+        }
+      }
+    }
 
     // Email-Benachrichtigungen senden
     try {
@@ -234,7 +376,15 @@ export async function POST(request: NextRequest) {
       console.error('[Invoices API] Email error:', emailError);
     }
 
-    return NextResponse.json({ invoice }, { status: 201 });
+    return NextResponse.json({
+      invoice: {
+        ...invoice,
+        lexoffice_id: lexofficeId,
+        pdf_url: pdfUrl,
+      },
+      lexoffice_synced: !!lexofficeId,
+      lexoffice_error: lexofficeError,
+    }, { status: 201 });
 
   } catch (error) {
     console.error('[Invoices API] Error:', error);
