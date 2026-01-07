@@ -15,6 +15,13 @@ import {
   Loader2,
   Info,
   Sliders,
+  Link2,
+  CheckCircle,
+  XCircle,
+  AlertCircle,
+  Eye,
+  EyeOff,
+  RefreshCw,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { createClient } from '@/lib/supabase/client';
@@ -29,6 +36,12 @@ interface SystemStats {
   paidInvoices: number;
 }
 
+interface LexofficeSettings {
+  is_enabled: boolean;
+  api_key_set: boolean;
+  api_key_masked: string | null;
+}
+
 export default function AdminSettingsPage() {
   const router = useRouter();
   const { user, isAdmin, loading: authLoading } = useAuth();
@@ -36,6 +49,14 @@ export default function AdminSettingsPage() {
 
   const [stats, setStats] = useState<SystemStats | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Lexoffice Settings State
+  const [lexofficeSettings, setLexofficeSettings] = useState<LexofficeSettings | null>(null);
+  const [lexofficeApiKey, setLexofficeApiKey] = useState('');
+  const [showApiKey, setShowApiKey] = useState(false);
+  const [lexofficeSaving, setLexofficeSaving] = useState(false);
+  const [lexofficeTesting, setLexofficeTesting] = useState(false);
+  const [lexofficeTestResult, setLexofficeTestResult] = useState<'success' | 'error' | null>(null);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -74,6 +95,13 @@ export default function AdminSettingsPage() {
           totalInvoices: invoicesResult.count || 0,
           paidInvoices: paidInvoicesResult.count || 0,
         });
+
+        // Fetch Lexoffice settings
+        const lexRes = await fetch('/api/admin/lexoffice-settings');
+        if (lexRes.ok) {
+          const lexData = await lexRes.json();
+          setLexofficeSettings(lexData.settings);
+        }
       } catch (error) {
         console.error('Error fetching stats:', error);
       } finally {
@@ -83,6 +111,69 @@ export default function AdminSettingsPage() {
 
     fetchStats();
   }, [authLoading, isAdmin, router, supabase]);
+
+  // Lexoffice Settings Functions
+  const handleLexofficeSave = async () => {
+    setLexofficeSaving(true);
+    setLexofficeTestResult(null);
+    try {
+      const res = await fetch('/api/admin/lexoffice-settings', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          is_enabled: lexofficeSettings?.is_enabled ?? false,
+          ...(lexofficeApiKey && { api_key: lexofficeApiKey }),
+        }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setLexofficeSettings(data.settings);
+        setLexofficeApiKey('');
+      }
+    } catch (error) {
+      console.error('Error saving Lexoffice settings:', error);
+    } finally {
+      setLexofficeSaving(false);
+    }
+  };
+
+  const handleLexofficeToggle = async () => {
+    const newEnabled = !lexofficeSettings?.is_enabled;
+    setLexofficeSettings(prev => prev ? { ...prev, is_enabled: newEnabled } : null);
+
+    try {
+      const res = await fetch('/api/admin/lexoffice-settings', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ is_enabled: newEnabled }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setLexofficeSettings(data.settings);
+      }
+    } catch (error) {
+      console.error('Error toggling Lexoffice:', error);
+      setLexofficeSettings(prev => prev ? { ...prev, is_enabled: !newEnabled } : null);
+    }
+  };
+
+  const handleLexofficeTest = async () => {
+    setLexofficeTesting(true);
+    setLexofficeTestResult(null);
+    try {
+      const res = await fetch('/api/admin/lexoffice-settings', {
+        method: 'POST',
+      });
+      const data = await res.json();
+      setLexofficeTestResult(data.success ? 'success' : 'error');
+    } catch (error) {
+      setLexofficeTestResult('error');
+    } finally {
+      setLexofficeTesting(false);
+    }
+  };
 
   if (authLoading || loading) {
     return (
@@ -250,11 +341,153 @@ export default function AdminSettingsPage() {
         </div>
       </motion.div>
 
-      {/* Default Values */}
+      {/* Lexoffice Integration */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
+        className="bg-white rounded-xl border border-gray-100 shadow-sm p-6"
+      >
+        <div className="flex items-center space-x-3 mb-6">
+          <div className="p-2 bg-purple-100 rounded-lg">
+            <Link2 className="h-5 w-5 text-purple-600" />
+          </div>
+          <h2 className="text-lg font-semibold text-gray-900">Lexoffice Integration</h2>
+        </div>
+
+        <div className="space-y-6">
+          {/* Aktivierung Toggle */}
+          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+            <div>
+              <p className="font-medium text-gray-900">Lexoffice aktivieren</p>
+              <p className="text-sm text-gray-500">
+                Rechnungen und Angebote mit Lexoffice synchronisieren
+              </p>
+            </div>
+            <button
+              onClick={handleLexofficeToggle}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                lexofficeSettings?.is_enabled ? 'bg-primary-600' : 'bg-gray-300'
+              }`}
+            >
+              <span
+                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                  lexofficeSettings?.is_enabled ? 'translate-x-6' : 'translate-x-1'
+                }`}
+              />
+            </button>
+          </div>
+
+          {/* API Key Eingabe */}
+          <div className="p-4 bg-gray-50 rounded-lg">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              API Key
+            </label>
+            <div className="flex space-x-3">
+              <div className="relative flex-1">
+                <input
+                  type={showApiKey ? 'text' : 'password'}
+                  value={lexofficeApiKey}
+                  onChange={(e) => setLexofficeApiKey(e.target.value)}
+                  placeholder={lexofficeSettings?.api_key_masked || 'API Key eingeben...'}
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowApiKey(!showApiKey)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  {showApiKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+              <button
+                onClick={handleLexofficeSave}
+                disabled={lexofficeSaving || !lexofficeApiKey}
+                className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+              >
+                {lexofficeSaving ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <span>Speichern</span>
+                )}
+              </button>
+            </div>
+            {lexofficeSettings?.api_key_set && (
+              <p className="mt-2 text-sm text-gray-500">
+                Aktueller Key: {lexofficeSettings.api_key_masked}
+              </p>
+            )}
+          </div>
+
+          {/* Verbindungstest */}
+          <div className="p-4 bg-gray-50 rounded-lg">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-medium text-gray-900">Verbindung testen</p>
+                <p className="text-sm text-gray-500">
+                  Pruefen Sie, ob die API-Verbindung funktioniert
+                </p>
+              </div>
+              <div className="flex items-center space-x-3">
+                {lexofficeTestResult === 'success' && (
+                  <div className="flex items-center text-green-600">
+                    <CheckCircle className="h-5 w-5 mr-1" />
+                    <span className="text-sm font-medium">Verbunden</span>
+                  </div>
+                )}
+                {lexofficeTestResult === 'error' && (
+                  <div className="flex items-center text-red-600">
+                    <XCircle className="h-5 w-5 mr-1" />
+                    <span className="text-sm font-medium">Fehler</span>
+                  </div>
+                )}
+                <button
+                  onClick={handleLexofficeTest}
+                  disabled={lexofficeTesting || !lexofficeSettings?.api_key_set}
+                  className="px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+                >
+                  {lexofficeTesting ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <RefreshCw className="h-4 w-4" />
+                  )}
+                  <span>Testen</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Status Info */}
+          {!lexofficeSettings?.api_key_set && (
+            <div className="p-4 bg-amber-50 border border-amber-100 rounded-lg">
+              <div className="flex items-start space-x-3">
+                <AlertCircle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-medium text-amber-800">API Key nicht konfiguriert</p>
+                  <p className="text-sm text-amber-700 mt-1">
+                    Geben Sie Ihren Lexoffice API Key ein, um die Integration zu nutzen.
+                    Den Key finden Sie unter{' '}
+                    <a
+                      href="https://app.lexware.de/addons/public-api"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline hover:no-underline"
+                    >
+                      app.lexware.de/addons/public-api
+                    </a>
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </motion.div>
+
+      {/* Default Values */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
         className="bg-white rounded-xl border border-gray-100 shadow-sm p-6"
       >
         <div className="flex items-center space-x-3 mb-6">

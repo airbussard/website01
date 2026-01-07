@@ -20,6 +20,8 @@ import {
   MessageSquare,
   FileSignature,
   Building2,
+  ClipboardList,
+  RefreshCw,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -38,12 +40,14 @@ const navItems: NavItem[] = [
   { name: 'Organisationen', href: '/dashboard/organizations', icon: Building2 },
   { name: 'Verträge', href: '/dashboard/contracts', icon: FileSignature },
   { name: 'Rechnungen', href: '/dashboard/invoices', icon: FileText },
+  { name: 'Angebote', href: '/dashboard/quotations', icon: ClipboardList, managerOnly: true },
   { name: 'Aktivität', href: '/dashboard/activity', icon: Activity, managerOnly: true },
 ];
 
 const adminItems: NavItem[] = [
   { name: 'Anfragen', href: '/dashboard/admin/anfragen', icon: MessageSquare, managerOnly: true },
   { name: 'Nutzerverwaltung', href: '/dashboard/admin/users', icon: Users, adminOnly: true },
+  { name: 'Wiederk. Rechnungen', href: '/dashboard/recurring-invoices', icon: RefreshCw, adminOnly: true },
   { name: 'E-Mail', href: '/dashboard/admin/email', icon: Mail, adminOnly: true },
   { name: 'Einstellungen', href: '/dashboard/admin/settings', icon: Settings, adminOnly: true },
 ];
