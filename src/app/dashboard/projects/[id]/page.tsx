@@ -18,6 +18,7 @@ import {
   Loader2,
   Building2,
   Rocket,
+  Trash2,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { createClient } from '@/lib/supabase/client';
@@ -73,6 +74,7 @@ export default function ProjectDetailPage() {
   const [triggerResult, setTriggerResult] = useState<'success' | 'error' | null>(null);
   const [rateLimitReached, setRateLimitReached] = useState(false);
   const [nextBuildTime, setNextBuildTime] = useState<Date | null>(null);
+  const [deletingUpdateId, setDeletingUpdateId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchProjectData = async () => {
@@ -235,6 +237,29 @@ export default function ProjectDetailPage() {
     } finally {
       setTriggering(false);
       setTimeout(() => setTriggerResult(null), 3000);
+    }
+  };
+
+  const handleDeleteUpdate = async (updateId: string) => {
+    if (!confirm('Moechten Sie dieses Update wirklich loeschen?')) return;
+
+    setDeletingUpdateId(updateId);
+    try {
+      const res = await fetch(`/api/progress-updates/${updateId}`, {
+        method: 'DELETE',
+      });
+
+      if (res.ok) {
+        setUpdates((prev) => prev.filter((u) => u.id !== updateId));
+      } else {
+        const data = await res.json();
+        alert(data.error || 'Fehler beim Loeschen');
+      }
+    } catch (error) {
+      console.error('Delete error:', error);
+      alert('Fehler beim Loeschen des Updates');
+    } finally {
+      setDeletingUpdateId(null);
     }
   };
 
@@ -679,16 +704,48 @@ export default function ProjectDetailPage() {
                   <div key={update.id} className="border-l-4 border-primary-500 pl-4">
                     <div className="flex items-start justify-between">
                       <div>
-                        <h4 className="font-semibold text-gray-900">{update.title}</h4>
+                        <div className="flex items-center gap-2">
+                          <h4 className="font-semibold text-gray-900">{update.title}</h4>
+                          {!update.is_public && (
+                            <span className="px-2 py-0.5 text-xs bg-gray-100 text-gray-600 rounded">
+                              Intern
+                            </span>
+                          )}
+                        </div>
                         <p className="text-sm text-gray-500">
                           {update.author?.full_name} - {new Date(update.created_at).toLocaleDateString('de-DE')}
                         </p>
                       </div>
-                      {update.progress_percentage !== null && (
-                        <span className="px-3 py-1 bg-primary-100 text-primary-700 rounded-full text-sm font-medium">
-                          {update.progress_percentage}%
-                        </span>
-                      )}
+                      <div className="flex items-center gap-2">
+                        {update.progress_percentage !== null && (
+                          <span className="px-3 py-1 bg-primary-100 text-primary-700 rounded-full text-sm font-medium">
+                            {update.progress_percentage}%
+                          </span>
+                        )}
+                        {isManagerOrAdmin && (
+                          <>
+                            <Link
+                              href={`/dashboard/projects/${project.id}/updates/${update.id}/edit`}
+                              className="p-1.5 text-gray-400 hover:text-primary-600 hover:bg-gray-100 rounded transition-colors"
+                              title="Bearbeiten"
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Link>
+                            <button
+                              onClick={() => handleDeleteUpdate(update.id)}
+                              disabled={deletingUpdateId === update.id}
+                              className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors disabled:opacity-50"
+                              title="Loeschen"
+                            >
+                              {deletingUpdateId === update.id ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <Trash2 className="h-4 w-4" />
+                              )}
+                            </button>
+                          </>
+                        )}
+                      </div>
                     </div>
                     {update.content && (
                       <div
