@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { Send, Mail, MessageSquare, Building, User, Briefcase } from 'lucide-react';
@@ -14,14 +14,16 @@ export default function Contact({ showHeading = true }: ContactProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
-  // Spam-Schutz: Zeit-Tracking (Bots fuellen Formulare in ms aus)
-  const [formLoadTime] = useState(Date.now());
+  // Spam-Schutz: Zeit-Tracking und JS-Token (nur auf Client, verhindert Hydration Mismatch)
+  const [formLoadTime, setFormLoadTime] = useState(0);
+  const [jsToken, setJsToken] = useState('');
 
-  // Spam-Schutz: JS-Token (nur mit JavaScript generierbar)
-  const [jsToken] = useState(() => {
-    const ua = typeof navigator !== 'undefined' ? navigator.userAgent : '';
-    return btoa(`${Date.now()}-${ua.slice(0, 20)}`).slice(0, 16);
-  });
+  useEffect(() => {
+    // Nur auf Client ausfuehren
+    setFormLoadTime(Date.now());
+    const ua = navigator.userAgent || '';
+    setJsToken(btoa(`${Date.now()}-${ua.slice(0, 20)}`).slice(0, 16));
+  }, []);
 
   const {
     register,
