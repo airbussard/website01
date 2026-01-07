@@ -14,6 +14,15 @@ export default function Contact({ showHeading = true }: ContactProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
+  // Spam-Schutz: Zeit-Tracking (Bots fuellen Formulare in ms aus)
+  const [formLoadTime] = useState(Date.now());
+
+  // Spam-Schutz: JS-Token (nur mit JavaScript generierbar)
+  const [jsToken] = useState(() => {
+    const ua = typeof navigator !== 'undefined' ? navigator.userAgent : '';
+    return btoa(`${Date.now()}-${ua.slice(0, 20)}`).slice(0, 16);
+  });
+
   const {
     register,
     handleSubmit,
@@ -31,7 +40,11 @@ export default function Contact({ showHeading = true }: ContactProps) {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          ...data,
+          _t: Date.now() - formLoadTime, // Zeit seit Formular-Load
+          _token: jsToken, // JS-Token
+        }),
       });
 
       if (response.ok) {
@@ -192,13 +205,18 @@ export default function Contact({ showHeading = true }: ContactProps) {
                 )}
               </div>
 
-              {/* Honeypot - versteckt fuer echte User, Bots fuellen es aus */}
-              <div className="absolute left-[-9999px]" aria-hidden="true">
+              {/* Honeypot - besser versteckt fuer Spam-Bots */}
+              <div
+                style={{ opacity: 0, position: 'absolute', top: 0, height: 0, overflow: 'hidden', pointerEvents: 'none' }}
+                aria-hidden="true"
+              >
+                <label htmlFor="contact-website">Website</label>
                 <input
                   {...register('website')}
+                  id="contact-website"
                   type="text"
                   tabIndex={-1}
-                  autoComplete="off"
+                  autoComplete="new-password"
                 />
               </div>
 

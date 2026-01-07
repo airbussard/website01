@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
@@ -54,6 +54,11 @@ const taskStatusColors: Record<string, string> = {
   done: 'bg-green-100 text-green-600',
 };
 
+// Rate Limiting fuer Re-Deploy
+const BUILD_RATE_LIMIT = 2;
+const BUILD_RATE_WINDOW = 60 * 60 * 1000; // 1 Stunde in ms
+const getBuildTimestampsKey = (projectId: string) => `build_timestamps_${projectId}`;
+
 export default function ProjectDetailPage() {
   const params = useParams();
   const projectId = params.id as string;
@@ -66,6 +71,8 @@ export default function ProjectDetailPage() {
   const [activeTab, setActiveTab] = useState<'overview' | 'tasks' | 'updates' | 'files'>('overview');
   const [triggering, setTriggering] = useState(false);
   const [triggerResult, setTriggerResult] = useState<'success' | 'error' | null>(null);
+  const [rateLimitReached, setRateLimitReached] = useState(false);
+  const [nextBuildTime, setNextBuildTime] = useState<Date | null>(null);
 
   useEffect(() => {
     const fetchProjectData = async () => {
@@ -98,16 +105,22 @@ export default function ProjectDetailPage() {
           .eq('project_id', projectId)
           .order('position', { ascending: true });
 
-        // Fetch progress updates
-        const { data: updatesData } = await supabase
+        // Fetch progress updates - Query aufbauen
+        let updatesQuery = supabase
           .from('progress_updates')
           .select(`
             *,
             author:profiles(id, full_name, avatar_url)
           `)
           .eq('project_id', projectId)
-          .eq('is_public', isManagerOrAdmin ? false : true)
           .order('created_at', { ascending: false });
+
+        // Nur fuer normale User auf oeffentliche Updates filtern
+        if (!isManagerOrAdmin) {
+          updatesQuery = updatesQuery.eq('is_public', true);
+        }
+
+        const { data: updatesData } = await updatesQuery;
 
         setProject(projectData);
         setTasks(tasksData || []);
@@ -156,7 +169,53 @@ export default function ProjectDetailPage() {
     { id: 'files', label: 'Dateien' },
   ] as const;
 
+  // Rate Limit pruefen
+  const checkRateLimit = useCallback(() => {
+    if (!project?.id) return;
+
+    const key = getBuildTimestampsKey(project.id);
+    const stored = localStorage.getItem(key);
+    const timestamps: number[] = stored ? JSON.parse(stored) : [];
+
+    const now = Date.now();
+    const windowStart = now - BUILD_RATE_WINDOW;
+    const recentBuilds = timestamps.filter(t => t > windowStart);
+
+    if (recentBuilds.length >= BUILD_RATE_LIMIT) {
+      setRateLimitReached(true);
+      const oldestInWindow = Math.min(...recentBuilds);
+      setNextBuildTime(new Date(oldestInWindow + BUILD_RATE_WINDOW));
+    } else {
+      setRateLimitReached(false);
+      setNextBuildTime(null);
+    }
+  }, [project?.id]);
+
+  // Build-Timestamp speichern
+  const recordBuild = useCallback(() => {
+    if (!project?.id) return;
+
+    const key = getBuildTimestampsKey(project.id);
+    const stored = localStorage.getItem(key);
+    const timestamps: number[] = stored ? JSON.parse(stored) : [];
+
+    const now = Date.now();
+    const windowStart = now - BUILD_RATE_WINDOW;
+    const recentBuilds = timestamps.filter(t => t > windowStart);
+    recentBuilds.push(now);
+
+    localStorage.setItem(key, JSON.stringify(recentBuilds));
+    checkRateLimit();
+  }, [project?.id, checkRateLimit]);
+
+  // Rate Limit beim Laden pruefen
+  useEffect(() => {
+    checkRateLimit();
+  }, [checkRateLimit]);
+
   const handleTriggerBuild = async () => {
+    if (rateLimitReached) return;
+
     const buildUrl = (project?.settings as Record<string, string>)?.build_trigger_url;
     if (!buildUrl) return;
 
@@ -167,6 +226,7 @@ export default function ProjectDetailPage() {
       const res = await fetch(buildUrl, { method: 'POST' });
       if (res.ok) {
         setTriggerResult('success');
+        recordBuild();
       } else {
         setTriggerResult('error');
       }
@@ -215,24 +275,37 @@ export default function ProjectDetailPage() {
 
           <div className="flex items-center gap-2">
             {(project.settings as Record<string, string>)?.build_trigger_url && (
-              <button
-                onClick={handleTriggerBuild}
-                disabled={triggering}
-                className={`inline-flex items-center px-4 py-2 rounded-lg font-medium transition-colors ${
-                  triggerResult === 'success'
-                    ? 'bg-green-100 text-green-700'
-                    : triggerResult === 'error'
-                    ? 'bg-red-100 text-red-700'
-                    : 'border border-gray-300 text-gray-700 hover:bg-gray-50'
-                }`}
-              >
-                {triggering ? (
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                ) : (
-                  <Rocket className="h-4 w-4 mr-2" />
+              <div className="relative">
+                <button
+                  onClick={handleTriggerBuild}
+                  disabled={triggering || rateLimitReached}
+                  className={`inline-flex items-center px-4 py-2 rounded-lg font-medium transition-colors ${
+                    triggerResult === 'success'
+                      ? 'bg-green-100 text-green-700'
+                      : triggerResult === 'error'
+                      ? 'bg-red-100 text-red-700'
+                      : rateLimitReached
+                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                      : 'border border-gray-300 text-gray-700 hover:bg-gray-50'
+                  }`}
+                  title={rateLimitReached && nextBuildTime
+                    ? `Naechster Build moeglich ab ${nextBuildTime.toLocaleTimeString('de-DE')}`
+                    : undefined
+                  }
+                >
+                  {triggering ? (
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  ) : (
+                    <Rocket className="h-4 w-4 mr-2" />
+                  )}
+                  {triggerResult === 'success' ? 'Build gestartet!' : triggerResult === 'error' ? 'Fehler' : 'Re-Deploy'}
+                </button>
+                {rateLimitReached && nextBuildTime && (
+                  <p className="absolute top-full left-0 mt-1 text-xs text-amber-600 whitespace-nowrap">
+                    Max 2x/Std. Naechster ab {nextBuildTime.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })}
+                  </p>
                 )}
-                {triggerResult === 'success' ? 'Build gestartet!' : triggerResult === 'error' ? 'Fehler' : 'Build starten'}
-              </button>
+              </div>
             )}
             {isManagerOrAdmin && (
               <>

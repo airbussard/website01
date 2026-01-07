@@ -27,13 +27,33 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { name, email, company, subject, message, projectType, website } = body;
+    const { name, email, company, subject, message, projectType, website, _t, _token } = body;
 
-    // Honeypot-Check: Wenn 'website' gefuellt ist, ist es ein Bot
-    const isSpam = !!website;
+    // Spam-Erkennung: Mehrere Checks
+    let isSpam = false;
+    const spamReasons: string[] = [];
+
+    // 1. Honeypot-Check: Wenn 'website' gefuellt ist, ist es ein Bot
+    if (website) {
+      isSpam = true;
+      spamReasons.push('honeypot');
+    }
+
+    // 2. Zeit-Check: Formular in < 3 Sekunden ausgefuellt = Bot
+    const formTime = typeof _t === 'number' ? _t : 0;
+    if (!formTime || formTime < 3000) {
+      isSpam = true;
+      spamReasons.push(`too_fast(${formTime}ms)`);
+    }
+
+    // 3. JS-Token-Check: Kein gueltiger Token = kein JavaScript = Bot
+    if (!_token || typeof _token !== 'string' || _token.length !== 16) {
+      isSpam = true;
+      spamReasons.push('no_token');
+    }
 
     if (isSpam) {
-      console.log(`[Contact] Bot detected via honeypot (IP: ${ip})`);
+      console.log(`[Contact] Bot detected (IP: ${ip}): ${spamReasons.join(', ')}`);
     }
 
     // Validate required fields
