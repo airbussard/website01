@@ -135,41 +135,7 @@ export default function ProjectDetailPage() {
     fetchProjectData();
   }, [user, projectId, isManagerOrAdmin]);
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
-      </div>
-    );
-  }
-
-  if (!project) {
-    return (
-      <div className="text-center py-12">
-        <h2 className="text-xl font-semibold text-gray-900 mb-2">Projekt nicht gefunden</h2>
-        <p className="text-gray-500 mb-4">Das angeforderte Projekt existiert nicht oder Sie haben keinen Zugriff.</p>
-        <Link
-          href="/dashboard/projects"
-          className="inline-flex items-center text-primary-600 hover:text-primary-700"
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Zurück zu Projekten
-        </Link>
-      </div>
-    );
-  }
-
-  const completedTasks = tasks.filter((t) => t.status === 'done').length;
-  const progress = tasks.length > 0 ? Math.round((completedTasks / tasks.length) * 100) : 0;
-
-  const tabs = [
-    { id: 'overview', label: 'Übersicht' },
-    { id: 'tasks', label: `Aufgaben (${tasks.length})` },
-    { id: 'updates', label: `Updates (${updates.length})` },
-    { id: 'files', label: 'Dateien' },
-  ] as const;
-
-  // Rate Limit pruefen
+  // Rate Limit pruefen - MUSS vor early returns sein (Rules of Hooks)
   const checkRateLimit = useCallback(() => {
     if (!project?.id) return;
 
@@ -212,6 +178,40 @@ export default function ProjectDetailPage() {
   useEffect(() => {
     checkRateLimit();
   }, [checkRateLimit]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
+      </div>
+    );
+  }
+
+  if (!project) {
+    return (
+      <div className="text-center py-12">
+        <h2 className="text-xl font-semibold text-gray-900 mb-2">Projekt nicht gefunden</h2>
+        <p className="text-gray-500 mb-4">Das angeforderte Projekt existiert nicht oder Sie haben keinen Zugriff.</p>
+        <Link
+          href="/dashboard/projects"
+          className="inline-flex items-center text-primary-600 hover:text-primary-700"
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Zurück zu Projekten
+        </Link>
+      </div>
+    );
+  }
+
+  const completedTasks = tasks.filter((t) => t.status === 'done').length;
+  const progress = tasks.length > 0 ? Math.round((completedTasks / tasks.length) * 100) : 0;
+
+  const tabs = [
+    { id: 'overview', label: 'Übersicht' },
+    { id: 'tasks', label: `Aufgaben (${tasks.length})` },
+    { id: 'updates', label: `Updates (${updates.length})` },
+    { id: 'files', label: 'Dateien' },
+  ] as const;
 
   const handleTriggerBuild = async () => {
     if (rateLimitReached) return;
