@@ -1,6 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { createAdminSupabaseClient } from '@/lib/supabase/admin';
+import { EmailService } from '@/lib/services/email/EmailService';
+import { getProjectRecipients } from '@/lib/services/notifications/getProjectRecipients';
+import {
+  contractReadyTemplate,
+  contractReadyTextTemplate,
+} from '@/lib/email/templates/project-notifications';
+
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://oscarknabe.de';
 
 /**
  * GET /api/contracts
@@ -177,6 +185,63 @@ export async function POST(request: NextRequest) {
       entity_id: contract.id,
       details: { contract_title: title },
     });
+
+    // Email-Benachrichtigungen senden
+    try {
+      // Projekt laden fuer Projektname
+      const { data: project } = await adminSupabase
+        .from('pm_projects')
+        .select('name')
+        .eq('id', projectId)
+        .single();
+
+      const projectName = project?.name || 'Projekt';
+      const recipients = await getProjectRecipients(projectId);
+      const dashboardUrl = `${BASE_URL}/dashboard/contracts/${contract.id}`;
+
+      // Formatierung des Gueltigkeitsdatums
+      const formattedValidUntil = validUntil
+        ? new Date(validUntil).toLocaleDateString('de-DE', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+          })
+        : undefined;
+
+      for (const recipient of recipients) {
+        await EmailService.queueEmail({
+          recipient_email: recipient.email,
+          recipient_name: recipient.name,
+          subject: `Vertrag zur Unterschrift: ${title}`,
+          content_html: contractReadyTemplate({
+            recipientName: recipient.name,
+            projectName,
+            contractTitle: title,
+            contractDescription: description || undefined,
+            validUntil: formattedValidUntil,
+            dashboardUrl,
+          }),
+          content_text: contractReadyTextTemplate({
+            recipientName: recipient.name,
+            projectName,
+            contractTitle: title,
+            contractDescription: description || undefined,
+            validUntil: formattedValidUntil,
+            dashboardUrl,
+          }),
+          type: 'contract',
+          metadata: {
+            project_id: projectId,
+            contract_id: contract.id,
+          },
+        });
+      }
+
+      console.log(`[Contracts API] ${recipients.length} Email(s) gequeued`);
+    } catch (emailError) {
+      // Email-Fehler loggen aber nicht die Response blockieren
+      console.error('[Contracts API] Email error:', emailError);
+    }
 
     return NextResponse.json({ contract }, { status: 201 });
   } catch (error) {

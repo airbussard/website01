@@ -1,15 +1,40 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { EmailService } from '@/lib/services/email/EmailService';
 import {
   contactNotificationTemplate,
   contactNotificationTextTemplate,
 } from '@/lib/email/templates/notification';
+import { rateLimit } from '@/lib/rateLimit';
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
+    // Rate Limiting: 5 Anfragen pro Minute pro IP
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0] || 'unknown';
+    const rateLimitResult = rateLimit(ip, 5, 60000);
+
+    if (!rateLimitResult.success) {
+      console.log(`[Contact] Rate limit exceeded for IP: ${ip}`);
+      return NextResponse.json(
+        { error: 'Zu viele Anfragen. Bitte versuchen Sie es spaeter erneut.' },
+        {
+          status: 429,
+          headers: {
+            'Retry-After': Math.ceil(rateLimitResult.resetIn / 1000).toString(),
+          },
+        }
+      );
+    }
+
     const body = await request.json();
-    const { name, email, company, subject, message, projectType } = body;
+    const { name, email, company, subject, message, projectType, website } = body;
+
+    // Honeypot-Check: Wenn 'website' gefuellt ist, ist es ein Bot
+    const isSpam = !!website;
+
+    if (isSpam) {
+      console.log(`[Contact] Bot detected via honeypot (IP: ${ip})`);
+    }
 
     // Validate required fields
     if (!name || !email || !subject || !message) {
@@ -28,7 +53,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // If Supabase is configured, store in database
+    // In Supabase speichern (inkl. Spam-Flag)
     if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
       try {
         const supabase = await createServerSupabaseClient();
@@ -42,6 +67,7 @@ export async function POST(request: Request) {
             subject,
             message,
             project_type: projectType,
+            is_spam: isSpam,
             created_at: new Date().toISOString(),
           });
 
@@ -53,7 +79,15 @@ export async function POST(request: Request) {
       }
     }
 
-    // E-Mail zur Queue hinzufügen (statt direktem Versand)
+    // Bei Spam: Keine E-Mail senden, aber Success zurueckgeben (Bot merkt nichts)
+    if (isSpam) {
+      return NextResponse.json(
+        { message: 'Contact request received successfully' },
+        { status: 200 }
+      );
+    }
+
+    // Nur bei echten Anfragen: E-Mail zur Queue hinzufuegen
     try {
       const templateData = {
         name,

@@ -42,8 +42,44 @@ export async function GET(request: Request, { params }: RouteParams) {
 }
 
 /**
+ * PATCH /api/admin/anfragen/[id]
+ * Anfrage aktualisieren (z.B. als Nicht-Spam markieren)
+ */
+export async function PATCH(request: Request, { params }: RouteParams) {
+  try {
+    const { id } = await params;
+    const body = await request.json();
+
+    // Als Nicht-Spam markieren
+    if (body.action === 'mark_not_spam') {
+      const success = await ContactService.markAsNotSpam(id);
+
+      if (!success) {
+        return NextResponse.json(
+          { error: 'Fehler beim Markieren als Nicht-Spam' },
+          { status: 500 }
+        );
+      }
+
+      return NextResponse.json({ success: true, message: 'Als Nicht-Spam markiert' });
+    }
+
+    return NextResponse.json(
+      { error: 'Unbekannte Aktion' },
+      { status: 400 }
+    );
+  } catch (error) {
+    console.error('[API] anfragen/[id] PATCH Fehler:', error);
+    return NextResponse.json(
+      { error: 'Fehler beim Aktualisieren' },
+      { status: 500 }
+    );
+  }
+}
+
+/**
  * DELETE /api/admin/anfragen/[id]
- * Anfrage löschen
+ * Anfrage loeschen
  */
 export async function DELETE(request: Request, { params }: RouteParams) {
   try {
@@ -53,16 +89,16 @@ export async function DELETE(request: Request, { params }: RouteParams) {
 
     if (!success) {
       return NextResponse.json(
-        { error: 'Fehler beim Löschen' },
+        { error: 'Fehler beim Loeschen' },
         { status: 500 }
       );
     }
 
-    return NextResponse.json({ success: true, message: 'Anfrage gelöscht' });
+    return NextResponse.json({ success: true, message: 'Anfrage geloescht' });
   } catch (error) {
     console.error('[API] anfragen/[id] DELETE Fehler:', error);
     return NextResponse.json(
-      { error: 'Fehler beim Löschen' },
+      { error: 'Fehler beim Loeschen' },
       { status: 500 }
     );
   }

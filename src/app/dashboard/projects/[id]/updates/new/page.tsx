@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import { useAuth } from '@/contexts/AuthContext';
+import RichTextEditor from '@/components/RichTextEditor';
 import { createClient } from '@/lib/supabase/client';
 import type { PMProject } from '@/types/dashboard';
 
@@ -145,19 +146,23 @@ export default function NewProjectUpdatePage() {
         title: title.trim(),
         content: content.trim() || null,
         project_id: projectId,
-        author_id: user.id,
-        progress_percentage: progressPercentage ? parseInt(progressPercentage) : null,
+        progress_percentage: progressPercentage || null,
         is_public: isPublic,
         images: uploadedImages,
         attachments: [],
-        created_at: new Date().toISOString(),
       };
 
-      const { error: insertError } = await supabase
-        .from('progress_updates')
-        .insert(updateData);
+      const response = await fetch('/api/progress-updates', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updateData),
+      });
 
-      if (insertError) throw insertError;
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Fehler beim Erstellen des Updates');
+      }
 
       router.push(`/dashboard/projects/${projectId}`);
     } catch (err: unknown) {
@@ -259,15 +264,12 @@ export default function NewProjectUpdatePage() {
 
           {/* Content */}
           <div>
-            <label htmlFor="content" className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
               Inhalt
             </label>
-            <textarea
-              id="content"
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              rows={6}
-              className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white text-gray-900 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors resize-none"
+            <RichTextEditor
+              content={content}
+              onChange={setContent}
               placeholder="Beschreiben Sie den Fortschritt, abgeschlossene Aufgaben, etc..."
             />
           </div>

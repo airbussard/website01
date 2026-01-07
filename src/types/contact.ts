@@ -15,6 +15,7 @@ export interface ContactRequest {
   project_type: string | null;
   status: ContactRequestStatus;
   notes: string | null;
+  is_spam: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -33,6 +34,7 @@ export interface ContactStats {
   neu: number;
   in_bearbeitung: number;
   erledigt: number;
+  spam: number;
 }
 
 export type EmailMessageDirection = 'incoming' | 'outgoing';

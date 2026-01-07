@@ -19,7 +19,7 @@ export class ContactService {
   // =====================================================
 
   /**
-   * Alle Anfragen laden
+   * Alle Anfragen laden (ohne Spam)
    */
   static async getAll(): Promise<ContactRequest[]> {
     try {
@@ -28,6 +28,7 @@ export class ContactService {
       const { data, error } = await supabase
         .from('contact_requests')
         .select('*')
+        .eq('is_spam', false)
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -38,6 +39,31 @@ export class ContactService {
       return (data || []) as ContactRequest[];
     } catch (err) {
       console.error('[ContactService] getAll Exception:', err);
+      return [];
+    }
+  }
+
+  /**
+   * Spam-Anfragen laden
+   */
+  static async getSpam(): Promise<ContactRequest[]> {
+    try {
+      const supabase = createAdminSupabaseClient();
+
+      const { data, error } = await supabase
+        .from('contact_requests')
+        .select('*')
+        .eq('is_spam', true)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('[ContactService] Fehler beim Laden der Spam-Anfragen:', error);
+        return [];
+      }
+
+      return (data || []) as ContactRequest[];
+    } catch (err) {
+      console.error('[ContactService] getSpam Exception:', err);
       return [];
     }
   }
@@ -99,11 +125,12 @@ export class ContactService {
     try {
       const supabase = createAdminSupabaseClient();
 
-      const [total, neu, inBearbeitung, erledigt] = await Promise.all([
-        supabase.from('contact_requests').select('*', { count: 'exact', head: true }),
-        supabase.from('contact_requests').select('*', { count: 'exact', head: true }).eq('status', 'neu'),
-        supabase.from('contact_requests').select('*', { count: 'exact', head: true }).eq('status', 'in_bearbeitung'),
-        supabase.from('contact_requests').select('*', { count: 'exact', head: true }).eq('status', 'erledigt'),
+      const [total, neu, inBearbeitung, erledigt, spam] = await Promise.all([
+        supabase.from('contact_requests').select('*', { count: 'exact', head: true }).eq('is_spam', false),
+        supabase.from('contact_requests').select('*', { count: 'exact', head: true }).eq('status', 'neu').eq('is_spam', false),
+        supabase.from('contact_requests').select('*', { count: 'exact', head: true }).eq('status', 'in_bearbeitung').eq('is_spam', false),
+        supabase.from('contact_requests').select('*', { count: 'exact', head: true }).eq('status', 'erledigt').eq('is_spam', false),
+        supabase.from('contact_requests').select('*', { count: 'exact', head: true }).eq('is_spam', true),
       ]);
 
       return {
@@ -111,10 +138,11 @@ export class ContactService {
         neu: neu.count || 0,
         in_bearbeitung: inBearbeitung.count || 0,
         erledigt: erledigt.count || 0,
+        spam: spam.count || 0,
       };
     } catch (err) {
       console.error('[ContactService] getStats Exception:', err);
-      return { total: 0, neu: 0, in_bearbeitung: 0, erledigt: 0 };
+      return { total: 0, neu: 0, in_bearbeitung: 0, erledigt: 0, spam: 0 };
     }
   }
 
@@ -224,6 +252,31 @@ export class ContactService {
       return true;
     } catch (err) {
       console.error('[ContactService] delete Exception:', err);
+      return false;
+    }
+  }
+
+  /**
+   * Anfrage als Nicht-Spam markieren
+   */
+  static async markAsNotSpam(id: string): Promise<boolean> {
+    try {
+      const supabase = createAdminSupabaseClient();
+
+      const { error } = await supabase
+        .from('contact_requests')
+        .update({ is_spam: false })
+        .eq('id', id);
+
+      if (error) {
+        console.error('[ContactService] Fehler beim Markieren als Nicht-Spam:', error);
+        return false;
+      }
+
+      console.log(`[ContactService] Anfrage ${id} als Nicht-Spam markiert`);
+      return true;
+    } catch (err) {
+      console.error('[ContactService] markAsNotSpam Exception:', err);
       return false;
     }
   }

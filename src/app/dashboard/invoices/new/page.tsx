@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { createClient } from '@/lib/supabase/client';
+import Select from '@/components/ui/Select';
 import type { InvoiceStatus, PMProject } from '@/types/dashboard';
 
 const statusOptions: { value: InvoiceStatus; label: string }[] = [
@@ -106,20 +107,21 @@ export default function NewInvoicePage() {
         project_id: projectId,
         issue_date: issueDate,
         due_date: dueDate || null,
-        created_by: user.id,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
       };
 
-      const { data, error: insertError } = await supabase
-        .from('invoices')
-        .insert(invoiceData)
-        .select()
-        .single();
+      const response = await fetch('/api/invoices', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(invoiceData),
+      });
 
-      if (insertError) throw insertError;
+      const data = await response.json();
 
-      router.push(`/dashboard/invoices/${data.id}`);
+      if (!response.ok) {
+        throw new Error(data.error || 'Fehler beim Erstellen der Rechnung');
+      }
+
+      router.push(`/dashboard/invoices/${data.invoice.id}`);
     } catch (err: unknown) {
       console.error('Error creating invoice:', err);
       const errorMessage = err instanceof Error ? err.message : 'Fehler beim Erstellen der Rechnung';
@@ -238,26 +240,18 @@ export default function NewInvoicePage() {
 
           {/* Project */}
           <div>
-            <label htmlFor="project" className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
               Projekt *
             </label>
-            <div className="relative">
-              <FolderKanban className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-              <select
-                id="project"
-                value={projectId}
-                onChange={(e) => setProjectId(e.target.value)}
-                required
-                className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 bg-white text-gray-900 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors"
-              >
-                <option value="">Projekt auswählen</option>
-                {projects.map((project) => (
-                  <option key={project.id} value={project.id}>
-                    {project.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <Select
+              value={projectId}
+              onChange={setProjectId}
+              options={[
+                { value: '', label: 'Projekt auswaehlen' },
+                ...projects.map((project) => ({ value: project.id, label: project.name })),
+              ]}
+              icon={<FolderKanban className="h-5 w-5" />}
+            />
           </div>
 
           {/* Amount & Tax */}
@@ -283,22 +277,19 @@ export default function NewInvoicePage() {
             </div>
 
             <div>
-              <label htmlFor="taxRate" className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 MwSt.-Satz
               </label>
-              <div className="relative">
-                <Percent className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <select
-                  id="taxRate"
-                  value={taxRate}
-                  onChange={(e) => setTaxRate(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 bg-white text-gray-900 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors"
-                >
-                  <option value="0">0%</option>
-                  <option value="7">7%</option>
-                  <option value="19">19%</option>
-                </select>
-              </div>
+              <Select
+                value={taxRate}
+                onChange={setTaxRate}
+                options={[
+                  { value: '0', label: '0%' },
+                  { value: '7', label: '7%' },
+                  { value: '19', label: '19%' },
+                ]}
+                icon={<Percent className="h-5 w-5" />}
+              />
             </div>
           </div>
 
@@ -358,21 +349,14 @@ export default function NewInvoicePage() {
 
           {/* Status */}
           <div>
-            <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
               Status
             </label>
-            <select
-              id="status"
+            <Select
               value={status}
-              onChange={(e) => setStatus(e.target.value as InvoiceStatus)}
-              className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white text-gray-900 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors"
-            >
-              {statusOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
+              onChange={(val) => setStatus(val as InvoiceStatus)}
+              options={statusOptions}
+            />
           </div>
 
           {/* Submit */}

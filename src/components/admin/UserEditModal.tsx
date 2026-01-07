@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { X, Save, Loader2, ChevronDown, ChevronUp, Building2, Plus, Trash2 } from 'lucide-react';
+import Select from '@/components/ui/Select';
 import type { Profile, Organization, OrganizationMemberRole } from '@/types/dashboard';
 
 interface UserOrganization {
@@ -525,31 +526,36 @@ export default function UserEditModal({ user, isOpen, onClose, onSave }: UserEdi
                           Organisation hinzufuegen
                         </p>
                         <div className="flex gap-2">
-                          <select
-                            value={selectedOrgId}
-                            onChange={(e) => setSelectedOrgId(e.target.value)}
-                            className="flex-1 text-sm px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                          >
-                            <option value="">Organisation waehlen...</option>
-                            {availableOrganizations.map((org) => (
-                              <option key={org.id} value={org.id}>
-                                {org.name}
-                              </option>
-                            ))}
-                          </select>
-                          <select
-                            value={selectedOrgRole}
-                            onChange={(e) => setSelectedOrgRole(e.target.value as 'member' | 'admin')}
-                            className="text-sm px-2 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                          >
-                            <option value="member">Mitglied</option>
-                            <option value="admin">Admin</option>
-                          </select>
+                          <div className="flex-1">
+                            <Select
+                              value={selectedOrgId}
+                              onChange={setSelectedOrgId}
+                              options={[
+                                { value: '', label: 'Organisation waehlen...' },
+                                ...availableOrganizations.map((org) => ({
+                                  value: org.id,
+                                  label: org.name,
+                                })),
+                              ]}
+                              variant="compact"
+                            />
+                          </div>
+                          <div className="w-28">
+                            <Select
+                              value={selectedOrgRole}
+                              onChange={(val) => setSelectedOrgRole(val as 'member' | 'admin')}
+                              options={[
+                                { value: 'member', label: 'Mitglied' },
+                                { value: 'admin', label: 'Admin' },
+                              ]}
+                              variant="compact"
+                            />
+                          </div>
                           <button
                             type="button"
                             onClick={handleAddOrganization}
                             disabled={!selectedOrgId || loadingOrgs}
-                            className="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="p-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             {loadingOrgs ? (
                               <Loader2 className="h-4 w-4 animate-spin" />

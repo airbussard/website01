@@ -618,7 +618,10 @@ export default function ProjectDetailPage() {
                       )}
                     </div>
                     {update.content && (
-                      <p className="mt-2 text-gray-600">{update.content}</p>
+                      <div
+                        className="mt-2 text-gray-600 prose prose-sm max-w-none"
+                        dangerouslySetInnerHTML={{ __html: update.content }}
+                      />
                     )}
                     {update.images && update.images.length > 0 && (
                       <div className="mt-3 flex flex-wrap gap-2">

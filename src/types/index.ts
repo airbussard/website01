@@ -22,6 +22,7 @@ export interface ContactForm {
   subject: string;
   message: string;
   projectType?: 'website' | 'webapp' | 'mobile' | 'other';
+  website?: string; // Honeypot-Feld (versteckt, nur von Bots ausgefuellt)
 }
 
 export interface Technology {

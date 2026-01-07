@@ -19,7 +19,7 @@ interface AuthContextValue {
   isManager: boolean;
   isManagerOrAdmin: boolean;
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
-  signUp: (email: string, password: string, fullName?: string) => Promise<{ error: string | null }>;
+  signUp: (email: string, password: string, fullName?: string, website?: string) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
 }
@@ -197,14 +197,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   // Sign Up - via API-Route (DB-Trigger ist deaktiviert)
-  const signUp = useCallback(async (email: string, password: string, fullName?: string) => {
+  const signUp = useCallback(async (email: string, password: string, fullName?: string, website?: string) => {
     try {
       setError(null);
 
       const response = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, fullName }),
+        body: JSON.stringify({ email, password, fullName, website }),
       });
 
       const data = await response.json();

@@ -16,6 +16,7 @@ export default function RegisterPage() {
   const [password, setPassword] = useState('');
   const [passwordConfirm, setPasswordConfirm] = useState('');
   const [company, setCompany] = useState('');
+  const [website, setWebsite] = useState(''); // Honeypot
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -38,7 +39,7 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      const { error: signUpError } = await signUp(email, password, fullName);
+      const { error: signUpError } = await signUp(email, password, fullName, website);
 
       if (signUpError) {
         setError(signUpError);
@@ -227,6 +228,17 @@ export default function RegisterPage() {
                   placeholder="••••••••"
                 />
               </div>
+            </div>
+
+            {/* Honeypot - versteckt fuer echte User, Bots fuellen es aus */}
+            <div className="absolute left-[-9999px]" aria-hidden="true">
+              <input
+                type="text"
+                value={website}
+                onChange={(e) => setWebsite(e.target.value)}
+                tabIndex={-1}
+                autoComplete="off"
+              />
             </div>
 
             <button

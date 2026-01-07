@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
 
     // Request Body parsen
     const body = await request.json();
-    const { email, first_name, last_name, role = 'user' } = body;
+    const { email, first_name, last_name, role = 'user', project_ids } = body;
     const full_name = [first_name, last_name].filter(Boolean).join(' ');
 
     if (!email) {
@@ -109,6 +109,26 @@ export async function POST(request: NextRequest) {
         console.error('Profile creation error:', profileError);
         // Nicht abbrechen - User wurde erstellt, nur Profil fehlt
       }
+
+      // Projekt-Zuweisungen erstellen wenn project_ids vorhanden
+      if (project_ids && Array.isArray(project_ids) && project_ids.length > 0) {
+        const memberships = project_ids.map((projectId: string) => ({
+          project_id: projectId,
+          user_id: data.user!.id,
+          role: 'viewer' as const, // Standard-Rolle fuer eingeladene User
+        }));
+
+        const { error: memberError } = await adminSupabase
+          .from('project_members')
+          .insert(memberships);
+
+        if (memberError) {
+          console.error('Project member creation error:', memberError);
+          // Nicht abbrechen - User wurde erstellt, nur Projektzuweisung fehlt
+        } else {
+          console.log(`[Invite API] ${project_ids.length} Projektzuweisung(en) erstellt fuer User ${data.user!.id}`);
+        }
+      }
     }
 
     return NextResponse.json({
@@ -118,6 +138,7 @@ export async function POST(request: NextRequest) {
         id: data.user?.id,
         email: data.user?.email,
       },
+      assigned_projects: project_ids?.length || 0,
     });
 
   } catch (error) {

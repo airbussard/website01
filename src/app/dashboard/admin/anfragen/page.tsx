@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Inbox, Trash2, ExternalLink } from 'lucide-react';
+import { Inbox, Trash2, ExternalLink, ShieldCheck, AlertTriangle } from 'lucide-react';
 import ContactStatusSelect from '@/components/admin/ContactStatusSelect';
 import type { ContactRequest, ContactStats } from '@/types/contact';
 
@@ -12,14 +12,17 @@ export default function AnfragenPage() {
   const [requests, setRequests] = useState<ContactRequest[]>([]);
   const [stats, setStats] = useState<ContactStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showSpam, setShowSpam] = useState(false);
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [showSpam]);
 
   const loadData = async () => {
+    setLoading(true);
     try {
-      const res = await fetch('/api/admin/anfragen');
+      const url = showSpam ? '/api/admin/anfragen?spam=true' : '/api/admin/anfragen';
+      const res = await fetch(url);
       if (res.ok) {
         const data = await res.json();
         setRequests(data.requests);
@@ -34,16 +37,33 @@ export default function AnfragenPage() {
 
   const handleDelete = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!confirm('Anfrage wirklich löschen?')) return;
+    if (!confirm('Anfrage wirklich loeschen?')) return;
 
     try {
       const res = await fetch(`/api/admin/anfragen/${id}`, { method: 'DELETE' });
       if (res.ok) {
         setRequests(requests.filter(r => r.id !== id));
-        loadData(); // Reload stats
+        loadData();
       }
     } catch (err) {
-      console.error('Fehler beim Löschen:', err);
+      console.error('Fehler beim Loeschen:', err);
+    }
+  };
+
+  const handleMarkNotSpam = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+
+    try {
+      const res = await fetch(`/api/admin/anfragen/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'mark_not_spam' }),
+      });
+      if (res.ok) {
+        loadData();
+      }
+    } catch (err) {
+      console.error('Fehler beim Markieren als Nicht-Spam:', err);
     }
   };
 
@@ -57,14 +77,42 @@ export default function AnfragenPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Kontaktanfragen</h1>
-        <p className="text-gray-600 mt-1">Verwalten Sie eingehende Anfragen</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">
+            {showSpam ? 'Spam-Anfragen' : 'Kontaktanfragen'}
+          </h1>
+          <p className="text-gray-600 mt-1">
+            {showSpam ? 'Verdaechtige Anfragen pruefen' : 'Verwalten Sie eingehende Anfragen'}
+          </p>
+        </div>
+
+        {/* Toggle Button */}
+        <button
+          onClick={() => setShowSpam(!showSpam)}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
+            showSpam
+              ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              : 'bg-red-50 text-red-700 hover:bg-red-100'
+          }`}
+        >
+          {showSpam ? (
+            <>
+              <Inbox className="h-4 w-4" />
+              Anfragen anzeigen
+            </>
+          ) : (
+            <>
+              <AlertTriangle className="h-4 w-4" />
+              Spam anzeigen {stats && stats.spam > 0 && `(${stats.spam})`}
+            </>
+          )}
+        </button>
       </div>
 
       {/* Stats */}
       {stats && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
           <div className="bg-white rounded-lg p-4 border border-gray-200">
             <div className="text-2xl font-bold text-gray-900">{stats.total}</div>
             <div className="text-sm text-gray-500">Gesamt</div>
@@ -81,6 +129,16 @@ export default function AnfragenPage() {
             <div className="text-2xl font-bold text-green-700">{stats.erledigt}</div>
             <div className="text-sm text-green-600">Erledigt</div>
           </div>
+          <div className={`rounded-lg p-4 border ${
+            stats.spam > 0
+              ? 'bg-red-50 border-red-200'
+              : 'bg-gray-50 border-gray-200'
+          }`}>
+            <div className={`text-2xl font-bold ${stats.spam > 0 ? 'text-red-700' : 'text-gray-500'}`}>
+              {stats.spam}
+            </div>
+            <div className={`text-sm ${stats.spam > 0 ? 'text-red-600' : 'text-gray-500'}`}>Spam</div>
+          </div>
         </div>
       )}
 
@@ -88,7 +146,9 @@ export default function AnfragenPage() {
       {requests.length === 0 ? (
         <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
           <Inbox className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-          <p className="text-gray-500">Keine Anfragen vorhanden</p>
+          <p className="text-gray-500">
+            {showSpam ? 'Keine Spam-Anfragen vorhanden' : 'Keine Anfragen vorhanden'}
+          </p>
         </div>
       ) : (
         <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
@@ -108,9 +168,11 @@ export default function AnfragenPage() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Datum
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
-                  </th>
+                  {!showSpam && (
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Status
+                    </th>
+                  )}
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Aktionen
                   </th>
@@ -122,7 +184,7 @@ export default function AnfragenPage() {
                     key={request.id}
                     onClick={() => router.push(`/dashboard/admin/anfragen/${request.id}`)}
                     className={`cursor-pointer hover:bg-gray-50 transition-colors ${
-                      request.status === 'neu' ? 'bg-blue-50/50' : ''
+                      showSpam ? 'bg-red-50/30' : request.status === 'neu' ? 'bg-blue-50/50' : ''
                     }`}
                   >
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
@@ -141,15 +203,26 @@ export default function AnfragenPage() {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {formatDate(request.created_at)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
-                      <ContactStatusSelect
-                        requestId={request.id}
-                        currentStatus={request.status}
-                        onStatusChange={() => loadData()}
-                      />
-                    </td>
+                    {!showSpam && (
+                      <td className="px-6 py-4 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                        <ContactStatusSelect
+                          requestId={request.id}
+                          currentStatus={request.status}
+                          onStatusChange={() => loadData()}
+                        />
+                      </td>
+                    )}
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex items-center justify-end gap-2">
+                        {showSpam && (
+                          <button
+                            onClick={(e) => handleMarkNotSpam(request.id, e)}
+                            className="text-green-600 hover:text-green-800"
+                            title="Als kein Spam markieren"
+                          >
+                            <ShieldCheck className="h-4 w-4" />
+                          </button>
+                        )}
                         <Link
                           href={`/dashboard/admin/anfragen/${request.id}`}
                           onClick={(e) => e.stopPropagation()}

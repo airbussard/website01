@@ -192,6 +192,16 @@ export default function Contact({ showHeading = true }: ContactProps) {
                 )}
               </div>
 
+              {/* Honeypot - versteckt fuer echte User, Bots fuellen es aus */}
+              <div className="absolute left-[-9999px]" aria-hidden="true">
+                <input
+                  {...register('website')}
+                  type="text"
+                  tabIndex={-1}
+                  autoComplete="off"
+                />
+              </div>
+
               {/* Submit Status Messages */}
               {submitStatus === 'success' && (
                 <div className="p-4 bg-green-100 text-green-700 rounded-lg">

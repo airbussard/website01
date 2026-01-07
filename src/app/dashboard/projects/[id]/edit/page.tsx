@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { createClient } from '@/lib/supabase/client';
+import Select from '@/components/ui/Select';
 import type { ProjectStatus, Priority, Profile, PMProject, Organization } from '@/types/dashboard';
 
 interface OrganizationWithRole extends Organization {
@@ -299,63 +300,42 @@ export default function EditProjectPage() {
           {/* Status & Priority */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Status
               </label>
-              <select
-                id="status"
+              <Select
                 value={status}
-                onChange={(e) => setStatus(e.target.value as ProjectStatus)}
-                className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white text-gray-900 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors"
-              >
-                {statusOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
+                onChange={(val) => setStatus(val as ProjectStatus)}
+                options={statusOptions}
+              />
             </div>
 
             <div>
-              <label htmlFor="priority" className="block text-sm font-medium text-gray-700 mb-2">
-                Priorität
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Prioritaet
               </label>
-              <select
-                id="priority"
+              <Select
                 value={priority}
-                onChange={(e) => setPriority(e.target.value as Priority)}
-                className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white text-gray-900 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors"
-              >
-                {priorityOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
+                onChange={(val) => setPriority(val as Priority)}
+                options={priorityOptions}
+              />
             </div>
           </div>
 
           {/* Organization */}
           <div>
-            <label htmlFor="organization" className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
               Organisation / Firma
             </label>
-            <div className="relative">
-              <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-              <select
-                id="organization"
-                value={organizationId}
-                onChange={(e) => setOrganizationId(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 bg-white text-gray-900 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors"
-              >
-                <option value="">Keine Organisation</option>
-                {organizations.map((org) => (
-                  <option key={org.id} value={org.id}>
-                    {org.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <Select
+              value={organizationId}
+              onChange={setOrganizationId}
+              options={[
+                { value: '', label: 'Keine Organisation' },
+                ...organizations.map((org) => ({ value: org.id, label: org.name })),
+              ]}
+              icon={<Building2 className="h-5 w-5" />}
+            />
             <p className="mt-1 text-xs text-gray-500">
               Alle Mitglieder der Organisation haben Zugriff auf dieses Projekt.
             </p>
@@ -364,47 +344,33 @@ export default function EditProjectPage() {
           {/* Client & Manager */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label htmlFor="client" className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Kunde
               </label>
-              <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <select
-                  id="client"
-                  value={clientId}
-                  onChange={(e) => setClientId(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 bg-white text-gray-900 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors"
-                >
-                  <option value="">Kein Kunde</option>
-                  {clients.map((u) => (
-                    <option key={u.id} value={u.id}>
-                      {u.full_name || u.email}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <Select
+                value={clientId}
+                onChange={setClientId}
+                options={[
+                  { value: '', label: 'Kein Kunde' },
+                  ...clients.map((u) => ({ value: u.id, label: u.full_name || u.email })),
+                ]}
+                icon={<User className="h-5 w-5" />}
+              />
             </div>
 
             <div>
-              <label htmlFor="manager" className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Projektmanager
               </label>
-              <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <select
-                  id="manager"
-                  value={managerId}
-                  onChange={(e) => setManagerId(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 bg-white text-gray-900 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors"
-                >
-                  <option value="">Kein Manager</option>
-                  {managers.map((u) => (
-                    <option key={u.id} value={u.id}>
-                      {u.full_name || u.email}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <Select
+                value={managerId}
+                onChange={setManagerId}
+                options={[
+                  { value: '', label: 'Kein Manager' },
+                  ...managers.map((u) => ({ value: u.id, label: u.full_name || u.email })),
+                ]}
+                icon={<User className="h-5 w-5" />}
+              />
             </div>
           </div>
 

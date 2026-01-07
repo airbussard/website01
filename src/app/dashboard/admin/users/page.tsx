@@ -21,6 +21,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import UserActionsMenu from '@/components/admin/UserActionsMenu';
 import UserEditModal from '@/components/admin/UserEditModal';
 import InviteUserModal from '@/components/admin/InviteUserModal';
+import Select from '@/components/ui/Select';
 import type { Profile, UserRole } from '@/types/dashboard';
 
 interface UserWithOrgs extends Profile {
@@ -236,22 +237,17 @@ export default function AdminUsersPage() {
         </div>
 
         {/* Role Filter */}
-        <div className="relative">
-          <Filter className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-          <select
+        <div className="w-48">
+          <Select
             value={roleFilter}
-            onChange={(e) => {
-              setRoleFilter(e.target.value as UserRole | 'all');
+            onChange={(val) => {
+              setRoleFilter(val as UserRole | 'all');
               setPage(0);
             }}
-            className="pl-10 pr-10 py-2.5 rounded-lg border border-gray-300 bg-white text-gray-900 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors appearance-none"
-          >
-            {roleOptions.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
+            options={roleOptions}
+            icon={<Filter className="h-5 w-5" />}
+            variant="compact"
+          />
         </div>
       </div>
 

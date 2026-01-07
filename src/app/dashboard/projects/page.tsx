@@ -82,13 +82,26 @@ export default function ProjectsPage() {
 
           const orgIds = userOrgs?.map((o: { organization_id: string }) => o.organization_id) || [];
 
+          // User's project_members Eintraege laden
+          const { data: memberProjects } = await supabase
+            .from('project_members')
+            .select('project_id')
+            .eq('user_id', user.id);
+
+          const memberProjectIds = memberProjects?.map((m: { project_id: string }) => m.project_id) || [];
+
+          // Filter bauen: client_id ODER organization ODER project_member
+          const filters: string[] = [`client_id.eq.${user.id}`];
+
           if (orgIds.length > 0) {
-            // Projekte sehen wo User Client ist ODER Organisations-Mitglied
-            query = query.or(`client_id.eq.${user.id},organization_id.in.(${orgIds.join(',')})`);
-          } else {
-            // Nur Projekte wo User Client ist
-            query = query.eq('client_id', user.id);
+            filters.push(`organization_id.in.(${orgIds.join(',')})`);
           }
+
+          if (memberProjectIds.length > 0) {
+            filters.push(`id.in.(${memberProjectIds.join(',')})`);
+          }
+
+          query = query.or(filters.join(','));
         }
 
         // Filter by status

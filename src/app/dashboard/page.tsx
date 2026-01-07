@@ -62,17 +62,47 @@ export default function DashboardPage() {
       const supabase = createClient();
 
       try {
-        // Fetch projects based on role
-        let projectsQuery = supabase
-          .from('pm_projects')
-          .select('*')
-          .order('updated_at', { ascending: false });
+        // Filter fuer normale User berechnen (client_id, organization, project_members)
+        let userProjectFilter = 'id.not.is.null'; // Default fuer Admin
 
         if (!isManagerOrAdmin) {
-          projectsQuery = projectsQuery.eq('client_id', user.id);
+          // User's organizations laden
+          const { data: userOrgs } = await supabase
+            .from('organization_members')
+            .select('organization_id')
+            .eq('user_id', user.id);
+
+          const orgIds = userOrgs?.map((o: { organization_id: string }) => o.organization_id) || [];
+
+          // User's project_members Eintraege laden
+          const { data: memberProjects } = await supabase
+            .from('project_members')
+            .select('project_id')
+            .eq('user_id', user.id);
+
+          const memberProjectIds = memberProjects?.map((m: { project_id: string }) => m.project_id) || [];
+
+          // Filter bauen: client_id ODER organization ODER project_member
+          const filters: string[] = [`client_id.eq.${user.id}`];
+
+          if (orgIds.length > 0) {
+            filters.push(`organization_id.in.(${orgIds.join(',')})`);
+          }
+
+          if (memberProjectIds.length > 0) {
+            filters.push(`id.in.(${memberProjectIds.join(',')})`);
+          }
+
+          userProjectFilter = filters.join(',');
         }
 
-        const { data: projects } = await projectsQuery.limit(5);
+        // Fetch projects based on role
+        const { data: projects } = await supabase
+          .from('pm_projects')
+          .select('*')
+          .order('updated_at', { ascending: false })
+          .or(userProjectFilter)
+          .limit(5);
 
         // Fetch tasks
         let tasksQuery = supabase
@@ -91,13 +121,13 @@ export default function DashboardPage() {
         const { count: totalProjects } = await supabase
           .from('pm_projects')
           .select('*', { count: 'exact', head: true })
-          .or(isManagerOrAdmin ? 'id.not.is.null' : `client_id.eq.${user.id}`);
+          .or(userProjectFilter);
 
         const { count: activeProjects } = await supabase
           .from('pm_projects')
           .select('*', { count: 'exact', head: true })
           .eq('status', 'active')
-          .or(isManagerOrAdmin ? 'id.not.is.null' : `client_id.eq.${user.id}`);
+          .or(userProjectFilter);
 
         const { count: pendingTasks } = await supabase
           .from('tasks')

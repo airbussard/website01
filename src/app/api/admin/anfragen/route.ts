@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { ContactService } from '@/lib/services/contact/ContactService';
 
 // =====================================================
@@ -9,11 +9,14 @@ import { ContactService } from '@/lib/services/contact/ContactService';
 /**
  * GET /api/admin/anfragen
  * Alle Kontaktanfragen laden mit Statistiken
+ * Query-Parameter: spam=true fuer Spam-Anfragen
  */
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const showSpam = request.nextUrl.searchParams.get('spam') === 'true';
+
     const [requests, stats] = await Promise.all([
-      ContactService.getAll(),
+      showSpam ? ContactService.getSpam() : ContactService.getAll(),
       ContactService.getStats(),
     ]);
 

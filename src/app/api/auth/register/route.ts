@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminSupabaseClient } from '@/lib/supabase/admin';
+import { rateLimit } from '@/lib/rateLimit';
 
 /**
  * POST /api/auth/register
@@ -8,8 +9,35 @@ import { createAdminSupabaseClient } from '@/lib/supabase/admin';
  */
 export async function POST(request: NextRequest) {
   try {
+    // Rate Limiting: 3 Registrierungen pro Minute pro IP
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0] || 'unknown';
+    const rateLimitResult = rateLimit(ip, 3, 60000);
+
+    if (!rateLimitResult.success) {
+      console.log(`[Register] Rate limit exceeded for IP: ${ip}`);
+      return NextResponse.json(
+        { error: 'Zu viele Registrierungsversuche. Bitte versuchen Sie es spaeter erneut.' },
+        {
+          status: 429,
+          headers: {
+            'Retry-After': Math.ceil(rateLimitResult.resetIn / 1000).toString(),
+          },
+        }
+      );
+    }
+
     const body = await request.json();
-    const { email, password, fullName, company } = body;
+    const { email, password, fullName, company, website } = body;
+
+    // Honeypot-Check: Wenn 'website' gefuellt ist, ist es ein Bot
+    if (website) {
+      console.log(`[Register] Bot detected via honeypot (IP: ${ip})`);
+      // Fake-Success zurueckgeben (Bot merkt nichts)
+      return NextResponse.json({
+        success: true,
+        message: 'Registrierung erfolgreich. Bitte bestaetigen Sie Ihre E-Mail-Adresse.',
+      });
+    }
 
     // Validierung
     if (!email || !password) {
@@ -30,19 +58,19 @@ export async function POST(request: NextRequest) {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return NextResponse.json(
-        { error: 'Ungültige E-Mail-Adresse' },
+        { error: 'Ungueltige E-Mail-Adresse' },
         { status: 400 }
       );
     }
 
-    // Admin Client für User-Erstellung
+    // Admin Client fuer User-Erstellung
     const adminSupabase = createAdminSupabaseClient();
 
     // User in Auth erstellen
     const { data: authData, error: authError } = await adminSupabase.auth.admin.createUser({
       email,
       password,
-      email_confirm: false, // User muss E-Mail bestätigen
+      email_confirm: false, // User muss E-Mail bestaetigen
       user_metadata: {
         full_name: fullName || '',
         role: 'user',
@@ -81,13 +109,13 @@ export async function POST(request: NextRequest) {
         // Nicht abbrechen - User wurde erstellt
       }
 
-      // Bestätigungs-E-Mail senden
-      // Supabase sendet automatisch eine Bestätigungs-E-Mail wenn email_confirm: false
+      // Bestaetigungs-E-Mail senden
+      // Supabase sendet automatisch eine Bestaetigungs-E-Mail wenn email_confirm: false
     }
 
     return NextResponse.json({
       success: true,
-      message: 'Registrierung erfolgreich. Bitte bestätigen Sie Ihre E-Mail-Adresse.',
+      message: 'Registrierung erfolgreich. Bitte bestaetigen Sie Ihre E-Mail-Adresse.',
     });
 
   } catch (error) {

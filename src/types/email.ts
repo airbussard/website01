@@ -34,7 +34,7 @@ export interface UpdateEmailSettings {
 }
 
 export type EmailQueueStatus = 'pending' | 'processing' | 'sent' | 'failed';
-export type EmailType = 'notification' | 'contact' | 'system' | 'reply';
+export type EmailType = 'notification' | 'contact' | 'system' | 'reply' | 'project-update' | 'invoice' | 'contract';
 
 export interface EmailQueueItem {
   id: string;

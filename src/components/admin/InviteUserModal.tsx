@@ -1,7 +1,15 @@
 'use client';
 
-import { useState } from 'react';
-import { X, Send, Loader2, UserPlus } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { X, Send, Loader2, UserPlus, FolderKanban } from 'lucide-react';
+import { createClient } from '@/lib/supabase/client';
+import Select from '@/components/ui/Select';
+import MultiSelect from '@/components/ui/MultiSelect';
+
+interface Project {
+  id: string;
+  name: string;
+}
 
 interface InviteUserModalProps {
   isOpen: boolean;
@@ -18,11 +26,44 @@ export default function InviteUserModal({ isOpen, onClose, onSuccess }: InviteUs
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
+  // Projekt-Zuweisung
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [selectedProjectIds, setSelectedProjectIds] = useState<string[]>([]);
+  const [loadingProjects, setLoadingProjects] = useState(false);
+
+  const supabase = createClient();
+
+  // Projekte laden wenn Modal geoeffnet wird
+  useEffect(() => {
+    if (isOpen) {
+      loadProjects();
+    }
+  }, [isOpen]);
+
+  const loadProjects = async () => {
+    setLoadingProjects(true);
+    try {
+      const { data, error } = await supabase
+        .from('pm_projects')
+        .select('id, name')
+        .in('status', ['planned', 'active', 'on_hold'])
+        .order('name');
+
+      if (error) throw error;
+      setProjects(data || []);
+    } catch (err) {
+      console.error('Fehler beim Laden der Projekte:', err);
+    } finally {
+      setLoadingProjects(false);
+    }
+  };
+
   const resetForm = () => {
     setEmail('');
     setFirstName('');
     setLastName('');
     setRole('user');
+    setSelectedProjectIds([]);
     setError(null);
     setSuccess(false);
   };
@@ -46,6 +87,7 @@ export default function InviteUserModal({ isOpen, onClose, onSuccess }: InviteUs
           first_name: firstName,
           last_name: lastName,
           role,
+          project_ids: selectedProjectIds.length > 0 ? selectedProjectIds : undefined,
         }),
       });
 
@@ -169,14 +211,34 @@ export default function InviteUserModal({ isOpen, onClose, onSuccess }: InviteUs
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Rolle
                   </label>
-                  <select
+                  <Select
                     value={role}
-                    onChange={(e) => setRole(e.target.value as 'user' | 'admin')}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  >
-                    <option value="user">Benutzer</option>
-                    <option value="admin">Administrator</option>
-                  </select>
+                    onChange={(val) => setRole(val as 'user' | 'admin')}
+                    options={[
+                      { value: 'user', label: 'Benutzer' },
+                      { value: 'admin', label: 'Administrator' },
+                    ]}
+                  />
+                </div>
+
+                {/* Projektzuweisung */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Projektzuweisung (optional)
+                  </label>
+                  <MultiSelect
+                    value={selectedProjectIds}
+                    onChange={setSelectedProjectIds}
+                    options={projects.map((p) => ({ value: p.id, label: p.name }))}
+                    placeholder="Keine Projekte ausgewaehlt"
+                    selectedText={(count) => `${count} Projekt${count > 1 ? 'e' : ''} ausgewaehlt`}
+                    loading={loadingProjects}
+                    icon={<FolderKanban className="h-5 w-5" />}
+                    emptyMessage="Keine Projekte vorhanden"
+                  />
+                  <p className="mt-1 text-xs text-gray-500">
+                    Der Benutzer erhaelt Zugriff auf die ausgewaehlten Projekte.
+                  </p>
                 </div>
 
                 {/* Error */}
