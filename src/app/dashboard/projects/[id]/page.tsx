@@ -100,20 +100,14 @@ export default function ProjectDetailPage() {
         // Fetch tasks
         const { data: tasksData } = await supabase
           .from('tasks')
-          .select(`
-            *,
-            assignee:profiles(id, full_name, avatar_url)
-          `)
+          .select('*')
           .eq('project_id', projectId)
           .order('position', { ascending: true });
 
         // Fetch progress updates - Query aufbauen
         let updatesQuery = supabase
           .from('progress_updates')
-          .select(`
-            *,
-            author:profiles(id, full_name, avatar_url)
-          `)
+          .select('*')
           .eq('project_id', projectId)
           .order('created_at', { ascending: false });
 
@@ -489,11 +483,6 @@ export default function ProjectDetailPage() {
                           </span>
                           <span className="text-gray-900">{task.title}</span>
                         </div>
-                        {task.assignee && (
-                          <div className="h-6 w-6 rounded-full bg-primary-100 flex items-center justify-center text-xs font-medium text-primary-600">
-                            {task.assignee.full_name?.split(' ').map(n => n[0]).join('').slice(0, 2)}
-                          </div>
-                        )}
                       </Link>
                     ))}
                   </div>
@@ -660,18 +649,11 @@ export default function ProjectDetailPage() {
                         )}
                       </div>
                     </div>
-                    <div className="flex items-center space-x-4">
-                      {task.due_date && (
-                        <span className="text-sm text-gray-500">
-                          {new Date(task.due_date).toLocaleDateString('de-DE')}
-                        </span>
-                      )}
-                      {task.assignee && (
-                        <div className="h-8 w-8 rounded-full bg-primary-100 flex items-center justify-center text-xs font-medium text-primary-600">
-                          {task.assignee.full_name?.split(' ').map(n => n[0]).join('').slice(0, 2)}
-                        </div>
-                      )}
-                    </div>
+                    {task.due_date && (
+                      <span className="text-sm text-gray-500">
+                        {new Date(task.due_date).toLocaleDateString('de-DE')}
+                      </span>
+                    )}
                   </Link>
                 ))}
               </div>
@@ -713,7 +695,7 @@ export default function ProjectDetailPage() {
                           )}
                         </div>
                         <p className="text-sm text-gray-500">
-                          {update.author?.full_name} - {new Date(update.created_at).toLocaleDateString('de-DE')}
+                          {new Date(update.created_at).toLocaleDateString('de-DE')}
                         </p>
                       </div>
                       <div className="flex items-center gap-2">

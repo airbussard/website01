@@ -69,11 +69,7 @@ export default function TasksPage() {
       try {
         let query = supabase
           .from('tasks')
-          .select(`
-            *,
-            project:pm_projects(id, name),
-            assignee:profiles(id, full_name, avatar_url)
-          `)
+          .select('*, project:pm_projects(id, name)')
           .order('position', { ascending: true });
 
         // Filter by user role
@@ -257,13 +253,6 @@ export default function TasksPage() {
                           )}
                         </div>
                       </div>
-                      {task.assignee && (
-                        <div className="flex items-center ml-4">
-                          <div className="h-8 w-8 rounded-full bg-primary-100 flex items-center justify-center text-xs font-medium text-primary-600">
-                            {task.assignee.full_name?.split(' ').map(n => n[0]).join('').slice(0, 2)}
-                          </div>
-                        </div>
-                      )}
                     </Link>
                   </motion.div>
                 ))}

@@ -296,6 +296,11 @@ chore: Wartung
 5. **Admin-Bereich** benötigt Supabase Auth
 6. **Bilder** werden in Supabase Storage gespeichert
 7. **CapRover** deployed automatisch von GitHub main branch
+8. **WICHTIG: Nach jeder Änderung committen und deployen:**
+   ```bash
+   git add . && git commit -m "Beschreibung" && git push origin main
+   curl -X POST "https://captain.immogear.de/api/v2/user/apps/webhooks/triggerbuild?namespace=captain&token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7InRva2VuVmVyc2lvbiI6IjQ3ODYwMDY3LTQ3MDktNDJmMS1hZDIxLTRmNWQ2ZWFjZWJmZCIsImFwcE5hbWUiOiJ3ZWJzaXRlMDFvc2NhcmtuYWJlIiwibmFtZXNwYWNlIjoiY2FwdGFpbiJ9LCJpYXQiOjE3NTgxOTUzODJ9.mhObDqR-VkgYE0JPcVGL4e5Y6oHrN0rnVeQpZCqEJ-g"
+   ```
 
 ## 📚 Weiterführende Dokumentation
 

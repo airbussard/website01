@@ -68,11 +68,7 @@ export default function TaskDetailPage() {
       try {
         const { data, error } = await supabase
           .from('tasks')
-          .select(`
-            *,
-            project:pm_projects(id, name),
-            assignee:profiles(id, full_name, email, avatar_url)
-          `)
+          .select('*, project:pm_projects(id, name)')
           .eq('id', taskId)
           .single();
 
@@ -202,18 +198,6 @@ export default function TaskDetailPage() {
                 >
                   {task.project.name}
                 </Link>
-              </div>
-            </div>
-          )}
-
-          {task.assignee && (
-            <div className="flex items-center space-x-3">
-              <div className="p-2 bg-purple-100 rounded-lg">
-                <User className="h-5 w-5 text-purple-600" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-500">Zugewiesen an</p>
-                <p className="font-medium text-gray-900">{task.assignee.full_name}</p>
               </div>
             </div>
           )}
