@@ -447,7 +447,7 @@ export default function UserEditModal({ user, isOpen, onClose, onSave }: UserEdi
               </div>
 
               {/* Organisationen (collapsible) */}
-              <div className="border border-gray-200 rounded-lg overflow-hidden">
+              <div className="border border-gray-200 rounded-lg">
                 <button
                   type="button"
                   onClick={() => setShowOrganizations(!showOrganizations)}
