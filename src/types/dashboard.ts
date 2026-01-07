@@ -176,6 +176,15 @@ export interface ProgressImage {
 // =====================================================
 // INVOICES
 // =====================================================
+export interface InvoiceLineItem {
+  name: string;
+  description?: string;
+  quantity: number;
+  unit_name: string;
+  unit_price: number;
+  tax_rate: 0 | 7 | 19;
+}
+
 export interface Invoice {
   id: string;
   project_id: string;
@@ -191,6 +200,87 @@ export interface Invoice {
   due_date: string | null;
   paid_at: string | null;
   pdf_url: string | null;
+  line_items: InvoiceLineItem[] | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+
+  // Lexoffice Integration
+  lexoffice_id: string | null;
+  lexoffice_status: string | null;
+  synced_at: string | null;
+
+  // Relationen
+  project?: PMProject;
+  creator?: Profile;
+}
+
+// =====================================================
+// QUOTATIONS (ANGEBOTE)
+// =====================================================
+export type QuotationStatus = 'draft' | 'sent' | 'accepted' | 'rejected' | 'expired';
+
+export interface Quotation {
+  id: string;
+  project_id: string;
+  quotation_number: string;
+  title: string;
+  description: string | null;
+  line_items: InvoiceLineItem[];
+  net_amount: number;
+  tax_amount: number;
+  total_amount: number;
+  currency: string;
+  status: QuotationStatus;
+  valid_until: string | null;
+  sent_at: string | null;
+  accepted_at: string | null;
+  rejected_at: string | null;
+  pdf_url: string | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+
+  // Lexoffice Integration
+  lexoffice_id: string | null;
+  lexoffice_status: string | null;
+  synced_at: string | null;
+
+  // Relationen
+  project?: PMProject;
+  creator?: Profile;
+}
+
+// =====================================================
+// RECURRING INVOICES (WIEDERKEHRENDE RECHNUNGEN)
+// =====================================================
+export type RecurringInterval = 'monthly' | 'quarterly' | 'yearly';
+
+export interface RecurringInvoice {
+  id: string;
+  project_id: string;
+  title: string;
+  description: string | null;
+  line_items: InvoiceLineItem[];
+  net_amount: number;
+  tax_rate: 0 | 7 | 19;
+
+  // Recurring Settings
+  interval_type: RecurringInterval;
+  interval_value: number;
+  start_date: string;
+  end_date: string | null;
+  next_invoice_date: string;
+
+  // Status
+  is_active: boolean;
+  last_generated_at: string | null;
+  invoices_generated: number;
+
+  // Options
+  auto_send: boolean;
+  send_notification: boolean;
+
   created_by: string | null;
   created_at: string;
   updated_at: string;

@@ -23,7 +23,10 @@
       "Bash(wc:*)",
       "Bash(npm ls:*)",
       "Bash(npm audit:*)",
-      "WebFetch(domain:github.com)"
+      "WebFetch(domain:github.com)",
+      "WebSearch",
+      "WebFetch(domain:developers.lexoffice.io)",
+      "WebFetch(domain:developers.lexware.io)"
     ],
     "deny": [],
     "ask": []
