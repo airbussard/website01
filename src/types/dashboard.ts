@@ -506,6 +506,21 @@ export interface MonitoredServer {
   updated_at: string;
 }
 
+export interface ServerDatabase {
+  id: string;
+  server_id: string;
+  name: string;
+  host: string;
+  port: number;
+  database_name: string;
+  username: string;
+  password?: string; // Nur beim Erstellen/Bearbeiten sichtbar
+  ssl_enabled: boolean;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface ServerStatus {
   cpu: {
     usage: number;

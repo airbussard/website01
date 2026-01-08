@@ -20,6 +20,7 @@ import ContainerTable from '@/components/admin/servers/ContainerTable';
 import ContainerLogsModal from '@/components/admin/servers/ContainerLogsModal';
 import ContainerLimitsModal from '@/components/admin/servers/ContainerLimitsModal';
 import DatabaseSection from '@/components/admin/servers/DatabaseSection';
+import DatabaseConfigPanel from '@/components/admin/servers/DatabaseConfigPanel';
 import type { MonitoredServer, ServerStatus, Container } from '@/types/dashboard';
 
 function formatUptime(seconds: number): string {
@@ -63,6 +64,7 @@ export default function ServerDetailPage() {
     open: false,
     container: null
   });
+  const [dbRefreshKey, setDbRefreshKey] = useState(0);
 
   const fetchData = useCallback(async (showRefreshing = false) => {
     if (showRefreshing) setRefreshing(true);
@@ -328,8 +330,14 @@ export default function ServerDetailPage() {
         />
       </div>
 
-      {/* Database Section */}
-      <DatabaseSection serverId={serverId} />
+      {/* Database Config Panel */}
+      <DatabaseConfigPanel
+        serverId={serverId}
+        onSynced={() => setDbRefreshKey(k => k + 1)}
+      />
+
+      {/* Database Monitoring Section */}
+      <DatabaseSection key={dbRefreshKey} serverId={serverId} />
 
       {/* Logs Modal */}
       <ContainerLogsModal
