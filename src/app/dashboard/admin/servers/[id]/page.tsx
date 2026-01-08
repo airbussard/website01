@@ -19,6 +19,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import ContainerTable from '@/components/admin/servers/ContainerTable';
 import ContainerLogsModal from '@/components/admin/servers/ContainerLogsModal';
 import ContainerLimitsModal from '@/components/admin/servers/ContainerLimitsModal';
+import DatabaseSection from '@/components/admin/servers/DatabaseSection';
 import type { MonitoredServer, ServerStatus, Container } from '@/types/dashboard';
 
 function formatUptime(seconds: number): string {
@@ -326,6 +327,9 @@ export default function ServerDetailPage() {
           onLimits={(container) => setLimitsModal({ open: true, container })}
         />
       </div>
+
+      {/* Database Section */}
+      <DatabaseSection serverId={serverId} />
 
       {/* Logs Modal */}
       <ContainerLogsModal

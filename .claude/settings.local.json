@@ -29,7 +29,8 @@
       "WebFetch(domain:developers.lexware.io)",
       "Bash(ssh:*)",
       "Bash(scp:*)",
-      "Bash(dig:*)"
+      "Bash(dig:*)",
+      "Bash(openssl rand:*)"
     ],
     "deny": [],
     "ask": []
