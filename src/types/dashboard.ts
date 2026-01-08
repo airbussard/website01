@@ -492,6 +492,69 @@ export interface CreateOrganizationForm {
 // =====================================================
 export type ContractStatus = 'pending_signature' | 'signed' | 'expired' | 'cancelled';
 
+// =====================================================
+// SERVER MONITORING
+// =====================================================
+export interface MonitoredServer {
+  id: string;
+  name: string;
+  host: string;
+  agent_port: number;
+  auth_token: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ServerStatus {
+  cpu: {
+    usage: number;
+    cores: number;
+  };
+  memory: {
+    used: number;
+    total: number;
+    percent: number;
+  };
+  disk: {
+    used: number;
+    total: number;
+    percent: number;
+  };
+  os: {
+    platform: string;
+    distro: string;
+    release: string;
+  };
+  uptime: number;
+}
+
+export type ContainerState = 'running' | 'exited' | 'paused' | 'restarting' | 'created' | 'dead';
+
+export interface ContainerPort {
+  PrivatePort: number;
+  PublicPort?: number;
+  Type: string;
+}
+
+export interface ContainerStats {
+  cpu_percent: number;
+  memory_usage: number;
+  memory_limit: number;
+  memory_percent: number;
+}
+
+export interface Container {
+  id: string;
+  name: string;
+  image: string;
+  state: ContainerState;
+  status: string;
+  created: string;
+  ports: ContainerPort[];
+  stats?: ContainerStats;
+}
+
 export interface Contract {
   id: string;
   project_id: string;
