@@ -24,12 +24,12 @@ const statusOptions: { value: InvoiceStatus; label: string }[] = [
   { value: 'sent', label: 'Gesendet' },
 ];
 
-export default function NewInvoicePage() {
+export default function AdminNewInvoicePage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const preselectedProjectId = searchParams.get('project');
 
-  const { user, isManagerOrAdmin, loading: authLoading } = useAuth();
+  const { user, isAdmin, loading: authLoading } = useAuth();
   const supabase = createClient();
 
   const [loading, setLoading] = useState(false);
@@ -53,8 +53,14 @@ export default function NewInvoicePage() {
   const totalAmount = netAmount + taxAmount;
 
   useEffect(() => {
+    if (!authLoading && !isAdmin) {
+      router.push('/dashboard');
+    }
+  }, [authLoading, isAdmin, router]);
+
+  useEffect(() => {
     const fetchProjects = async () => {
-      if (!isManagerOrAdmin || authLoading) return;
+      if (!isAdmin || authLoading) return;
 
       try {
         const { data, error } = await supabase
@@ -79,13 +85,7 @@ export default function NewInvoicePage() {
     };
 
     fetchProjects();
-  }, [authLoading, isManagerOrAdmin, supabase]);
-
-  useEffect(() => {
-    if (!authLoading && !isManagerOrAdmin) {
-      router.push('/dashboard/invoices');
-    }
-  }, [authLoading, isManagerOrAdmin, router]);
+  }, [authLoading, isAdmin, supabase]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -121,7 +121,7 @@ export default function NewInvoicePage() {
         throw new Error(data.error || 'Fehler beim Erstellen der Rechnung');
       }
 
-      router.push(`/dashboard/invoices/${data.invoice.id}`);
+      router.push(`/dashboard/admin/invoices/${data.invoice.id}`);
     } catch (err: unknown) {
       console.error('Error creating invoice:', err);
       const errorMessage = err instanceof Error ? err.message : 'Fehler beim Erstellen der Rechnung';
@@ -146,7 +146,7 @@ export default function NewInvoicePage() {
     );
   }
 
-  if (!isManagerOrAdmin) {
+  if (!isAdmin) {
     return null;
   }
 
@@ -154,8 +154,8 @@ export default function NewInvoicePage() {
     <div className="max-w-2xl mx-auto space-y-6">
       {/* Breadcrumb */}
       <div className="flex items-center space-x-2 text-sm">
-        <Link href="/dashboard/invoices" className="text-gray-500 hover:text-primary-600 transition-colors">
-          Rechnungen
+        <Link href="/dashboard/admin/invoices" className="text-gray-500 hover:text-primary-600 transition-colors">
+          Rechnungsverwaltung
         </Link>
         <span className="text-gray-400">/</span>
         <span className="text-gray-900 font-medium">Neue Rechnung</span>
@@ -165,14 +165,14 @@ export default function NewInvoicePage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Neue Rechnung erstellen</h1>
-          <p className="text-gray-600">Erstellen Sie eine neue Rechnung für ein Projekt</p>
+          <p className="text-gray-600">Erstellen Sie eine neue Rechnung fuer ein Projekt</p>
         </div>
         <Link
-          href="/dashboard/invoices"
+          href="/dashboard/admin/invoices"
           className="inline-flex items-center px-4 py-2 text-gray-600 hover:text-gray-900 transition-colors"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Zurück
+          Zurueck
         </Link>
       </div>
 
@@ -332,7 +332,7 @@ export default function NewInvoicePage() {
 
             <div>
               <label htmlFor="dueDate" className="block text-sm font-medium text-gray-700 mb-2">
-                Fällig am
+                Faellig am
               </label>
               <div className="relative">
                 <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />

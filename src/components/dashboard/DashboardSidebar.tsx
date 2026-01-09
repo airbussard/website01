@@ -21,7 +21,6 @@ import {
   FileSignature,
   Building2,
   ClipboardList,
-  RefreshCw,
   Server,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -49,7 +48,7 @@ const adminItems: NavItem[] = [
   { name: 'Anfragen', href: '/dashboard/admin/anfragen', icon: MessageSquare, managerOnly: true },
   { name: 'Nutzerverwaltung', href: '/dashboard/admin/users', icon: Users, adminOnly: true },
   { name: 'Server', href: '/dashboard/admin/servers', icon: Server, adminOnly: true },
-  { name: 'Wiederk. Rechnungen', href: '/dashboard/recurring-invoices', icon: RefreshCw, adminOnly: true },
+  { name: 'Rechnungsverwaltung', href: '/dashboard/admin/invoices', icon: FileText, adminOnly: true },
   { name: 'E-Mail', href: '/dashboard/admin/email', icon: Mail, adminOnly: true },
   { name: 'Einstellungen', href: '/dashboard/admin/settings', icon: Settings, adminOnly: true },
 ];

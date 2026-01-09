@@ -13,8 +13,10 @@ import {
   Clock,
   AlertCircle,
   XCircle,
+  Trash2,
   Loader2,
   FolderKanban,
+  User,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { createClient } from '@/lib/supabase/client';
@@ -32,50 +34,45 @@ const statusLabels: Record<InvoiceStatus, string> = {
   draft: 'Entwurf',
   sent: 'Gesendet',
   paid: 'Bezahlt',
-  overdue: 'Überfällig',
+  overdue: 'Ueberfaellig',
   cancelled: 'Storniert',
 };
 
 type InvoiceWithRelations = Invoice & {
   project?: { id: string; name: string; client_id: string };
+  creator?: { full_name: string; email: string };
 };
 
-export default function InvoiceDetailPage() {
+export default function AdminInvoiceDetailPage() {
   const params = useParams();
   const router = useRouter();
   const invoiceId = params.id as string;
-  const { user, loading: authLoading } = useAuth();
+  const { user, isAdmin, loading: authLoading } = useAuth();
   const supabase = createClient();
 
   const [invoice, setInvoice] = useState<InvoiceWithRelations | null>(null);
   const [loading, setLoading] = useState(true);
+  const [updating, setUpdating] = useState(false);
+
+  useEffect(() => {
+    if (!authLoading && !isAdmin) {
+      router.push('/dashboard');
+    }
+  }, [authLoading, isAdmin, router]);
 
   useEffect(() => {
     const fetchInvoice = async () => {
-      if (!user || authLoading) return;
+      if (!user || authLoading || !isAdmin) return;
 
       try {
-        // First get user's projects
-        const { data: projects } = await supabase
-          .from('pm_projects')
-          .select('id')
-          .eq('client_id', user.id);
-
-        if (!projects || projects.length === 0) {
-          setLoading(false);
-          return;
-        }
-
-        const projectIds = projects.map((p: { id: string }) => p.id);
-
         const { data, error } = await supabase
           .from('invoices')
           .select(`
             *,
-            project:pm_projects(id, name, client_id)
+            project:pm_projects(id, name, client_id),
+            creator:profiles(full_name, email)
           `)
           .eq('id', invoiceId)
-          .in('project_id', projectIds)
           .single();
 
         if (error) throw error;
@@ -88,7 +85,47 @@ export default function InvoiceDetailPage() {
     };
 
     fetchInvoice();
-  }, [user, authLoading, invoiceId, supabase]);
+  }, [user, authLoading, isAdmin, invoiceId, supabase]);
+
+  const updateStatus = async (newStatus: InvoiceStatus) => {
+    if (!invoice || !isAdmin) return;
+
+    setUpdating(true);
+    try {
+      const updateData: Record<string, unknown> = {
+        status: newStatus,
+        updated_at: new Date().toISOString(),
+      };
+
+      if (newStatus === 'paid') {
+        updateData.paid_at = new Date().toISOString();
+      }
+
+      const { error } = await supabase
+        .from('invoices')
+        .update(updateData)
+        .eq('id', invoice.id);
+
+      if (error) throw error;
+      setInvoice({ ...invoice, status: newStatus, paid_at: newStatus === 'paid' ? new Date().toISOString() : invoice.paid_at });
+    } catch (error) {
+      console.error('Error updating invoice:', error);
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const deleteInvoice = async () => {
+    if (!invoice || !isAdmin || !confirm('Rechnung wirklich loeschen?')) return;
+
+    try {
+      const { error } = await supabase.from('invoices').delete().eq('id', invoice.id);
+      if (error) throw error;
+      router.push('/dashboard/admin/invoices');
+    } catch (error) {
+      console.error('Error deleting invoice:', error);
+    }
+  };
 
   const formatCurrency = (amount: number, currency: string = 'EUR') => {
     return new Intl.NumberFormat('de-DE', {
@@ -105,15 +142,17 @@ export default function InvoiceDetailPage() {
     );
   }
 
+  if (!isAdmin) return null;
+
   if (!invoice) {
     return (
       <div className="text-center py-12">
         <AlertCircle className="h-16 w-16 mx-auto mb-4 text-gray-300" />
         <h2 className="text-xl font-semibold text-gray-900 mb-2">Rechnung nicht gefunden</h2>
-        <p className="text-gray-500 mb-4">Die angeforderte Rechnung existiert nicht oder Sie haben keinen Zugriff.</p>
-        <Link href="/dashboard/invoices" className="inline-flex items-center text-primary-600 hover:text-primary-700">
+        <p className="text-gray-500 mb-4">Die angeforderte Rechnung existiert nicht.</p>
+        <Link href="/dashboard/admin/invoices" className="inline-flex items-center text-primary-600 hover:text-primary-700">
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Zurück zu Rechnungen
+          Zurueck zu Rechnungen
         </Link>
       </div>
     );
@@ -125,8 +164,8 @@ export default function InvoiceDetailPage() {
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Breadcrumb */}
       <div className="flex items-center space-x-2 text-sm">
-        <Link href="/dashboard/invoices" className="text-gray-500 hover:text-primary-600 transition-colors">
-          Rechnungen
+        <Link href="/dashboard/admin/invoices" className="text-gray-500 hover:text-primary-600 transition-colors">
+          Rechnungsverwaltung
         </Link>
         <span className="text-gray-400">/</span>
         <span className="text-gray-900 font-medium">{invoice.invoice_number}</span>
@@ -153,20 +192,29 @@ export default function InvoiceDetailPage() {
             )}
           </div>
 
-          {invoice.pdf_url && (
-            <a
-              href={invoice.pdf_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 transition-colors"
+          <div className="flex items-center gap-2">
+            {invoice.pdf_url && (
+              <a
+                href={invoice.pdf_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                title="PDF herunterladen"
+              >
+                <Download className="h-5 w-5" />
+              </a>
+            )}
+            <button
+              onClick={deleteInvoice}
+              className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+              title="Loeschen"
             >
-              <Download className="h-5 w-5 mr-2" />
-              PDF herunterladen
-            </a>
-          )}
+              <Trash2 className="h-5 w-5" />
+            </button>
+          </div>
         </div>
 
-        {/* Beträge */}
+        {/* Betraege */}
         <div className="mt-6 pt-6 border-t border-gray-100">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
             <div className="bg-gray-50 rounded-lg p-4">
@@ -227,7 +275,7 @@ export default function InvoiceDetailPage() {
                 <Clock className="h-5 w-5 text-orange-600" />
               </div>
               <div>
-                <p className="text-sm text-gray-500">Fällig am</p>
+                <p className="text-sm text-gray-500">Faellig am</p>
                 <p className="font-medium text-gray-900">
                   {new Date(invoice.due_date).toLocaleDateString('de-DE')}
                 </p>
@@ -248,17 +296,59 @@ export default function InvoiceDetailPage() {
               </div>
             </div>
           )}
+
+          {invoice.creator && (
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-purple-100 rounded-lg">
+                <User className="h-5 w-5 text-purple-600" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Erstellt von</p>
+                <p className="font-medium text-gray-900">{invoice.creator.full_name}</p>
+              </div>
+            </div>
+          )}
+        </div>
+      </motion.div>
+
+      {/* Status aendern */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+        className="bg-white rounded-xl border border-gray-100 shadow-sm p-6"
+      >
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Status aendern</h3>
+        <div className="flex flex-wrap gap-2">
+          {(Object.keys(statusLabels) as InvoiceStatus[]).map((status) => {
+            const StatusBtnIcon = statusColors[status].icon;
+            return (
+              <button
+                key={status}
+                onClick={() => updateStatus(status)}
+                disabled={updating || invoice.status === status}
+                className={`inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  invoice.status === status
+                    ? `${statusColors[status].bg} ${statusColors[status].text} border ${statusColors[status].border}`
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                } disabled:opacity-50`}
+              >
+                <StatusBtnIcon className="h-4 w-4 mr-1.5" />
+                {statusLabels[status]}
+              </button>
+            );
+          })}
         </div>
       </motion.div>
 
       {/* Zurueck-Link */}
       <div className="text-center">
         <Link
-          href="/dashboard/invoices"
+          href="/dashboard/admin/invoices"
           className="inline-flex items-center text-gray-600 hover:text-primary-600 transition-colors"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Zurueck zu meinen Rechnungen
+          Zurueck zur Rechnungsverwaltung
         </Link>
       </div>
     </div>

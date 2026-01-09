@@ -5,13 +5,10 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import {
   FileText,
-  Plus,
   Search,
   Filter,
   Download,
   Eye,
-  Calendar,
-  Euro,
   Loader2,
   CheckCircle,
   Clock,
@@ -48,7 +45,7 @@ const statusLabels: Record<InvoiceStatus, string> = {
 };
 
 export default function InvoicesPage() {
-  const { user, isManagerOrAdmin } = useAuth();
+  const { user } = useAuth();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -61,18 +58,28 @@ export default function InvoicesPage() {
       const supabase = createClient();
 
       try {
+        // Fetch invoices for projects where user is client
+        const { data: projects } = await supabase
+          .from('pm_projects')
+          .select('id')
+          .eq('client_id', user.id);
+
+        if (!projects || projects.length === 0) {
+          setInvoices([]);
+          setLoading(false);
+          return;
+        }
+
+        const projectIds = projects.map((p: { id: string }) => p.id);
+
         let query = supabase
           .from('invoices')
           .select(`
             *,
             project:pm_projects(id, name, client_id)
           `)
+          .in('project_id', projectIds)
           .order('issue_date', { ascending: false });
-
-        // Filter by user role - users only see invoices for their projects
-        if (!isManagerOrAdmin) {
-          query = query.eq('project.client_id', user.id);
-        }
 
         // Filter by status
         if (statusFilter !== 'all') {
@@ -97,7 +104,7 @@ export default function InvoicesPage() {
     };
 
     fetchInvoices();
-  }, [user, isManagerOrAdmin, statusFilter, searchQuery]);
+  }, [user, statusFilter, searchQuery]);
 
   const formatCurrency = (amount: number, currency: string = 'EUR') => {
     return new Intl.NumberFormat('de-DE', {
@@ -119,21 +126,9 @@ export default function InvoicesPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Rechnungen</h1>
-          <p className="text-gray-600">
-            {isManagerOrAdmin ? 'Alle Rechnungen verwalten' : 'Ihre Rechnungen'}
-          </p>
+          <h1 className="text-2xl font-bold text-gray-900">Meine Rechnungen</h1>
+          <p className="text-gray-600">Uebersicht Ihrer Rechnungen</p>
         </div>
-
-        {isManagerOrAdmin && (
-          <Link
-            href="/dashboard/invoices/new"
-            className="inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 transition-colors"
-          >
-            <Plus className="h-5 w-5 mr-2" />
-            Neue Rechnung
-          </Link>
-        )}
       </div>
 
       {/* Stats Cards */}
@@ -330,20 +325,11 @@ export default function InvoicesPage() {
         >
           <FileText className="h-16 w-16 mx-auto mb-4 text-gray-300" />
           <h3 className="text-lg font-semibold text-gray-900 mb-2">Keine Rechnungen gefunden</h3>
-          <p className="text-gray-500 mb-6">
+          <p className="text-gray-500">
             {searchQuery || statusFilter !== 'all'
               ? 'Versuchen Sie andere Suchkriterien'
-              : 'Es wurden noch keine Rechnungen erstellt'}
+              : 'Sie haben noch keine Rechnungen erhalten'}
           </p>
-          {isManagerOrAdmin && (
-            <Link
-              href="/dashboard/invoices/new"
-              className="inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 transition-colors"
-            >
-              <Plus className="h-5 w-5 mr-2" />
-              Erste Rechnung erstellen
-            </Link>
-          )}
         </motion.div>
       )}
     </div>
