@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useForm } from 'react-hook-form';
-import { Send, Mail, MessageSquare, Building, User, Briefcase } from 'lucide-react';
+import { Send, Mail, MessageSquare, Building, User, Briefcase, ChevronDown } from 'lucide-react';
 import { ContactForm } from '@/types';
 
 interface ContactProps {
@@ -155,16 +155,19 @@ export default function Contact({ showHeading = true }: ContactProps) {
                     <Briefcase className="inline h-4 w-4 mr-2" />
                     Projekttyp
                   </label>
-                  <select
-                    {...register('projectType')}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white text-gray-900 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors"
-                  >
-                    <option value="">Bitte wählen</option>
-                    <option value="website">Website</option>
-                    <option value="webapp">Web-Applikation</option>
-                    <option value="mobile">iOS App</option>
-                    <option value="other">Sonstiges</option>
-                  </select>
+                  <div className="relative">
+                    <select
+                      {...register('projectType')}
+                      className="w-full px-4 py-3 pr-10 rounded-lg border border-gray-300 bg-white text-gray-900 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors appearance-none cursor-pointer"
+                    >
+                      <option value="">Bitte wählen</option>
+                      <option value="website">Website</option>
+                      <option value="webapp">Web-Applikation</option>
+                      <option value="mobile">iOS App</option>
+                      <option value="other">Sonstiges</option>
+                    </select>
+                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+                  </div>
                 </div>
               </div>
 
