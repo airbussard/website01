@@ -65,7 +65,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     const { error: otpError } = await adminSupabase.auth.signInWithOtp({
       email: email,
       options: {
-        emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL || 'https://getemergence.com'}/dashboard`,
+        emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL || 'https://getemergence.com'}/auth/callback?next=/dashboard`,
         shouldCreateUser: false,
       },
     });
