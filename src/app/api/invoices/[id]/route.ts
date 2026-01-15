@@ -1,19 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { createAdminSupabaseClient } from '@/lib/supabase/admin';
-import {
-  createLexofficeClient,
-  LexofficeApiError,
-} from '@/lib/lexoffice';
-import type { QuotationStatus } from '@/types/dashboard';
+import { calculateTotalsFromLineItems } from '@/lib/lexoffice';
+import type { InvoiceLineItem } from '@/types/dashboard';
 
 interface RouteParams {
   params: Promise<{ id: string }>;
 }
 
 /**
- * GET /api/quotations/[id]
- * Ruft ein einzelnes Angebot ab
+ * GET /api/invoices/[id]
+ * Ruft eine einzelne Rechnung ab
  */
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
@@ -30,18 +27,18 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
     const adminSupabase = createAdminSupabaseClient();
 
-    const { data: quotation, error } = await adminSupabase
-      .from('quotations')
+    const { data: invoice, error } = await adminSupabase
+      .from('invoices')
       .select(`
         *,
         project:pm_projects(id, name, client_id, organization_id),
-        creator:profiles!quotations_created_by_fkey(id, full_name, email)
+        creator:profiles!invoices_created_by_fkey(id, full_name, email)
       `)
       .eq('id', id)
       .single();
 
-    if (error || !quotation) {
-      return NextResponse.json({ error: 'Angebot nicht gefunden' }, { status: 404 });
+    if (error || !invoice) {
+      return NextResponse.json({ error: 'Rechnung nicht gefunden' }, { status: 404 });
     }
 
     // Berechtigungspruefung
@@ -56,7 +53,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       const { data: membership } = await adminSupabase
         .from('pm_project_members')
         .select('id')
-        .eq('project_id', quotation.project_id)
+        .eq('project_id', invoice.project_id)
         .eq('user_id', user.id)
         .single();
 
@@ -65,22 +62,23 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       }
     }
 
-    return NextResponse.json({ quotation });
+    return NextResponse.json({ invoice });
   } catch (error) {
-    console.error('[Quotation] Error:', error);
+    console.error('[Invoice] Error:', error);
     return NextResponse.json({ error: 'Interner Serverfehler' }, { status: 500 });
   }
 }
 
 /**
- * PATCH /api/quotations/[id]
- * Aktualisiert ein Angebot
+ * PATCH /api/invoices/[id]
+ * Aktualisiert eine Rechnung (nur wenn nicht zu Lexoffice synchronisiert)
  *
  * Body:
- * - status: QuotationStatus (optional)
  * - title: string (optional)
  * - description: string (optional)
- * - valid_until: string (optional)
+ * - status: string (optional)
+ * - due_date: string (optional)
+ * - line_items: InvoiceLineItem[] (optional)
  */
 export async function PATCH(request: NextRequest, { params }: RouteParams) {
   try {
@@ -107,19 +105,19 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: 'Keine Berechtigung' }, { status: 403 });
     }
 
-    // Angebot laden
-    const { data: existingQuotation, error: loadError } = await adminSupabase
-      .from('quotations')
+    // Rechnung laden
+    const { data: existingInvoice, error: loadError } = await adminSupabase
+      .from('invoices')
       .select('*')
       .eq('id', id)
       .single();
 
-    if (loadError || !existingQuotation) {
-      return NextResponse.json({ error: 'Angebot nicht gefunden' }, { status: 404 });
+    if (loadError || !existingInvoice) {
+      return NextResponse.json({ error: 'Rechnung nicht gefunden' }, { status: 404 });
     }
 
-    // Lexoffice-Sync-Pruefung: Nur nicht-synchronisierte Angebote bearbeitbar
-    if (existingQuotation.lexoffice_id) {
+    // Lexoffice-Sync-Pruefung: Nur nicht-synchronisierte Rechnungen bearbeitbar
+    if (existingInvoice.lexoffice_id) {
       return NextResponse.json(
         { error: 'Bereits zu Lexoffice synchronisiert - Bearbeitung nicht moeglich' },
         { status: 400 }
@@ -127,52 +125,52 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     }
 
     const body = await request.json();
-    const { status, title, description, valid_until } = body;
+    const { title, description, status, due_date, line_items } = body;
 
-    // Status-Aenderungen mit Timestamps
     const updates: Record<string, unknown> = {
       updated_at: new Date().toISOString(),
     };
 
-    if (status) {
-      updates.status = status;
+    if (title !== undefined) updates.title = title;
+    if (description !== undefined) updates.description = description;
+    if (status !== undefined) updates.status = status;
+    if (due_date !== undefined) updates.due_date = due_date;
 
-      // Status-spezifische Timestamps
-      if (status === 'sent' && existingQuotation.status === 'draft') {
-        updates.sent_at = new Date().toISOString();
-      } else if (status === 'accepted') {
-        updates.accepted_at = new Date().toISOString();
-      } else if (status === 'rejected') {
-        updates.rejected_at = new Date().toISOString();
+    // Line Items und Totals berechnen
+    if (line_items !== undefined) {
+      const typedLineItems = line_items as InvoiceLineItem[];
+      updates.line_items = typedLineItems;
+
+      if (typedLineItems && typedLineItems.length > 0) {
+        const totals = calculateTotalsFromLineItems(typedLineItems);
+        updates.amount = totals.net_amount;
+        updates.tax_amount = totals.tax_amount;
+        updates.total_amount = totals.total_amount;
       }
     }
 
-    if (title !== undefined) updates.title = title;
-    if (description !== undefined) updates.description = description;
-    if (valid_until !== undefined) updates.valid_until = valid_until;
-
-    const { data: quotation, error: updateError } = await adminSupabase
-      .from('quotations')
+    const { data: invoice, error: updateError } = await adminSupabase
+      .from('invoices')
       .update(updates)
       .eq('id', id)
       .select()
       .single();
 
     if (updateError) {
-      console.error('[Quotation] Update error:', updateError);
+      console.error('[Invoice] Update error:', updateError);
       return NextResponse.json({ error: 'Fehler beim Aktualisieren' }, { status: 500 });
     }
 
-    return NextResponse.json({ quotation });
+    return NextResponse.json({ invoice });
   } catch (error) {
-    console.error('[Quotation] Error:', error);
+    console.error('[Invoice] Error:', error);
     return NextResponse.json({ error: 'Interner Serverfehler' }, { status: 500 });
   }
 }
 
 /**
- * DELETE /api/quotations/[id]
- * Loescht ein Angebot (nur im Draft-Status)
+ * DELETE /api/invoices/[id]
+ * Loescht eine Rechnung (nur wenn nicht zu Lexoffice synchronisiert)
  */
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
@@ -196,30 +194,30 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       .single();
 
     if (!profile || profile.role !== 'admin') {
-      return NextResponse.json({ error: 'Nur Admins koennen Angebote loeschen' }, { status: 403 });
+      return NextResponse.json({ error: 'Nur Admins koennen Rechnungen loeschen' }, { status: 403 });
     }
 
-    // Angebot laden
-    const { data: quotation, error: loadError } = await adminSupabase
-      .from('quotations')
+    // Rechnung laden
+    const { data: invoice, error: loadError } = await adminSupabase
+      .from('invoices')
       .select('status, lexoffice_id')
       .eq('id', id)
       .single();
 
-    if (loadError || !quotation) {
-      return NextResponse.json({ error: 'Angebot nicht gefunden' }, { status: 404 });
+    if (loadError || !invoice) {
+      return NextResponse.json({ error: 'Rechnung nicht gefunden' }, { status: 404 });
     }
 
     // Nur Drafts loeschen
-    if (quotation.status !== 'draft') {
+    if (invoice.status !== 'draft') {
       return NextResponse.json(
         { error: 'Nur Entwuerfe koennen geloescht werden' },
         { status: 400 }
       );
     }
 
-    // Lexoffice-Sync-Pruefung: Nur nicht-synchronisierte Angebote loeschbar
-    if (quotation.lexoffice_id) {
+    // Lexoffice-Sync-Pruefung: Nur nicht-synchronisierte Rechnungen loeschbar
+    if (invoice.lexoffice_id) {
       return NextResponse.json(
         { error: 'Bereits zu Lexoffice synchronisiert - Loeschen nicht moeglich' },
         { status: 400 }
@@ -227,18 +225,18 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     }
 
     const { error: deleteError } = await adminSupabase
-      .from('quotations')
+      .from('invoices')
       .delete()
       .eq('id', id);
 
     if (deleteError) {
-      console.error('[Quotation] Delete error:', deleteError);
+      console.error('[Invoice] Delete error:', deleteError);
       return NextResponse.json({ error: 'Fehler beim Loeschen' }, { status: 500 });
     }
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('[Quotation] Error:', error);
+    console.error('[Invoice] Error:', error);
     return NextResponse.json({ error: 'Interner Serverfehler' }, { status: 500 });
   }
 }
