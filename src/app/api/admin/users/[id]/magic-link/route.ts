@@ -61,29 +61,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    // Magic Link generieren und senden
-    const { data, error } = await adminSupabase.auth.admin.generateLink({
-      type: 'magiclink',
-      email: email,
-      options: {
-        redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || 'https://getemergence.com'}/dashboard`,
-      },
-    });
-
-    if (error) {
-      console.error('Magic Link error:', error);
-      return NextResponse.json(
-        { error: error.message || 'Fehler beim Generieren des Magic Links' },
-        { status: 500 }
-      );
-    }
-
-    // E-Mail mit Magic Link senden (über Supabase's eingebaute Funktion)
-    // Der generateLink gibt den Link zurück, aber Supabase sendet auch automatisch die E-Mail
-    // wenn man signInWithOtp verwendet. Da wir admin.generateLink nutzen, müssen wir
-    // die E-Mail manuell senden oder den Link direkt zurückgeben.
-
-    // Alternative: Verwende signInWithOtp für automatischen E-Mail-Versand
+    // Magic Link per E-Mail senden (signInWithOtp sendet automatisch)
     const { error: otpError } = await adminSupabase.auth.signInWithOtp({
       email: email,
       options: {
@@ -94,13 +72,10 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
     if (otpError) {
       console.error('OTP error:', otpError);
-      // Falls signInWithOtp fehlschlägt, geben wir trotzdem den generierten Link zurück
-      return NextResponse.json({
-        success: true,
-        message: 'Magic Link wurde generiert',
-        link: data.properties?.action_link,
-        note: 'E-Mail konnte nicht automatisch gesendet werden. Der Link kann manuell geteilt werden.',
-      });
+      return NextResponse.json(
+        { error: otpError.message || 'Fehler beim Senden des Magic Links' },
+        { status: 500 }
+      );
     }
 
     return NextResponse.json({
