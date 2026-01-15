@@ -20,6 +20,7 @@ import {
   AlertCircle,
   RefreshCw,
   Link2,
+  Receipt,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { createClient } from '@/lib/supabase/client';
@@ -57,6 +58,7 @@ export default function QuotationDetailPage() {
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const [sendingToLexoffice, setSendingToLexoffice] = useState(false);
+  const [converting, setConverting] = useState(false);
 
   useEffect(() => {
     const fetchQuotation = async () => {
@@ -161,6 +163,34 @@ export default function QuotationDetailPage() {
       router.push('/dashboard/quotations');
     } catch (error) {
       console.error('Error deleting quotation:', error);
+    }
+  };
+
+  const convertToInvoice = async () => {
+    if (!quotation || !isManagerOrAdmin) return;
+    if (!confirm('Angebot in Rechnung umwandeln? Das Angebot wird als "Angenommen" markiert.')) return;
+
+    setConverting(true);
+    try {
+      const response = await fetch(`/api/quotations/${quotation.id}/convert`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ set_accepted: true }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Fehler beim Konvertieren');
+      }
+
+      // Zur neuen Rechnung navigieren
+      router.push(`/dashboard/admin/invoices/${data.invoice.id}`);
+    } catch (error) {
+      console.error('Error converting quotation:', error);
+      alert(error instanceof Error ? error.message : 'Fehler beim Konvertieren');
+    } finally {
+      setConverting(false);
     }
   };
 
@@ -269,6 +299,21 @@ export default function QuotationDetailPage() {
                     <Send className="h-4 w-4 mr-1.5" />
                   )}
                   An Lexoffice
+                </button>
+              )}
+              {['sent', 'accepted'].includes(quotation.status) && (
+                <button
+                  onClick={convertToInvoice}
+                  disabled={converting}
+                  className="inline-flex items-center px-3 py-2 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 transition-colors"
+                  title="In Rechnung umwandeln"
+                >
+                  {converting ? (
+                    <Loader2 className="h-4 w-4 animate-spin mr-1.5" />
+                  ) : (
+                    <Receipt className="h-4 w-4 mr-1.5" />
+                  )}
+                  In Rechnung
                 </button>
               )}
               <button

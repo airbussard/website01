@@ -9,20 +9,21 @@ import {
   Save,
   Loader2,
   FileText,
-  Euro,
   Calendar,
   FolderKanban,
-  Percent,
+  Send,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { createClient } from '@/lib/supabase/client';
 import Select from '@/components/ui/Select';
-import type { InvoiceStatus, PMProject } from '@/types/dashboard';
-
-const statusOptions: { value: InvoiceStatus; label: string }[] = [
-  { value: 'draft', label: 'Entwurf' },
-  { value: 'sent', label: 'Gesendet' },
-];
+import LineItemsEditor, {
+  LineItemForm,
+  createEmptyLineItem,
+  calculateTotals,
+  prepareLineItemsForApi,
+  formatCurrency,
+} from '@/components/shared/LineItemsEditor';
+import type { PMProject } from '@/types/dashboard';
 
 export default function AdminNewInvoicePage() {
   const router = useRouter();
@@ -33,6 +34,7 @@ export default function AdminNewInvoicePage() {
   const supabase = createClient();
 
   const [loading, setLoading] = useState(false);
+  const [sendingToLexoffice, setSendingToLexoffice] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [projects, setProjects] = useState<PMProject[]>([]);
 
@@ -40,17 +42,13 @@ export default function AdminNewInvoicePage() {
   const [invoiceNumber, setInvoiceNumber] = useState('');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [amount, setAmount] = useState('');
-  const [taxRate, setTaxRate] = useState('19');
-  const [status, setStatus] = useState<InvoiceStatus>('draft');
   const [projectId, setProjectId] = useState(preselectedProjectId || '');
   const [issueDate, setIssueDate] = useState(new Date().toISOString().split('T')[0]);
   const [dueDate, setDueDate] = useState('');
+  const [lineItems, setLineItems] = useState<LineItemForm[]>([createEmptyLineItem()]);
 
-  // Calculate tax and total
-  const netAmount = parseFloat(amount) || 0;
-  const taxAmount = netAmount * (parseFloat(taxRate) / 100);
-  const totalAmount = netAmount + taxAmount;
+  // Calculate totals
+  const { netAmount, taxAmount, totalAmount } = calculateTotals(lineItems);
 
   useEffect(() => {
     if (!authLoading && !isAdmin) {
@@ -79,6 +77,11 @@ export default function AdminNewInvoicePage() {
         const year = new Date().getFullYear();
         const nextNumber = (count || 0) + 1;
         setInvoiceNumber(`RE-${year}-${String(nextNumber).padStart(4, '0')}`);
+
+        // Set default due date (14 days from now)
+        const defaultDueDate = new Date();
+        defaultDueDate.setDate(defaultDueDate.getDate() + 14);
+        setDueDate(defaultDueDate.toISOString().split('T')[0]);
       } catch (err) {
         console.error('Error fetching data:', err);
       }
@@ -87,11 +90,35 @@ export default function AdminNewInvoicePage() {
     fetchProjects();
   }, [authLoading, isAdmin, supabase]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!user || !title.trim() || !projectId || netAmount <= 0) return;
+  const validateForm = () => {
+    if (!title.trim()) return 'Bitte geben Sie einen Titel ein';
+    if (!projectId) return 'Bitte waehlen Sie ein Projekt aus';
+    if (lineItems.length === 0) return 'Bitte fuegen Sie mindestens eine Position hinzu';
 
-    setLoading(true);
+    for (const item of lineItems) {
+      if (!item.name.trim()) return 'Alle Positionen muessen einen Namen haben';
+      if (!item.unit_price || parseFloat(item.unit_price) <= 0) {
+        return 'Alle Positionen muessen einen gueltigen Preis haben';
+      }
+    }
+
+    return null;
+  };
+
+  const handleSubmit = async (e: React.FormEvent, sendToLexoffice: boolean = false) => {
+    e.preventDefault();
+
+    const validationError = validateForm();
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+
+    if (sendToLexoffice) {
+      setSendingToLexoffice(true);
+    } else {
+      setLoading(true);
+    }
     setError(null);
 
     try {
@@ -99,14 +126,17 @@ export default function AdminNewInvoicePage() {
         invoice_number: invoiceNumber,
         title: title.trim(),
         description: description.trim() || null,
+        project_id: projectId,
+        line_items: prepareLineItemsForApi(lineItems),
         amount: netAmount,
         tax_amount: taxAmount,
         total_amount: totalAmount,
         currency: 'EUR',
-        status,
-        project_id: projectId,
+        status: sendToLexoffice ? 'sent' : 'draft',
         issue_date: issueDate,
         due_date: dueDate || null,
+        sync_to_lexoffice: sendToLexoffice,
+        finalize_in_lexoffice: sendToLexoffice,
       };
 
       const response = await fetch('/api/invoices', {
@@ -128,14 +158,8 @@ export default function AdminNewInvoicePage() {
       setError(errorMessage);
     } finally {
       setLoading(false);
+      setSendingToLexoffice(false);
     }
-  };
-
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('de-DE', {
-      style: 'currency',
-      currency: 'EUR',
-    }).format(value);
   };
 
   if (authLoading) {
@@ -151,7 +175,7 @@ export default function AdminNewInvoicePage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
+    <div className="max-w-4xl mx-auto space-y-6">
       {/* Breadcrumb */}
       <div className="flex items-center space-x-2 text-sm">
         <Link href="/dashboard/admin/invoices" className="text-gray-500 hover:text-primary-600 transition-colors">
@@ -182,28 +206,49 @@ export default function AdminNewInvoicePage() {
         animate={{ opacity: 1, y: 0 }}
         className="bg-white rounded-xl border border-gray-100 shadow-sm"
       >
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+        <form onSubmit={(e) => handleSubmit(e, false)} className="p-6 space-y-6">
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
               {error}
             </div>
           )}
 
-          {/* Invoice Number (auto-generated) */}
-          <div>
-            <label htmlFor="invoiceNumber" className="block text-sm font-medium text-gray-700 mb-2">
-              Rechnungsnummer
-            </label>
-            <div className="relative">
-              <FileText className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-              <input
-                id="invoiceNumber"
-                type="text"
-                value={invoiceNumber}
-                onChange={(e) => setInvoiceNumber(e.target.value)}
-                required
-                className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 bg-gray-50 text-gray-900 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors"
-              />
+          {/* Basic Info */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Invoice Number */}
+            <div>
+              <label htmlFor="invoiceNumber" className="block text-sm font-medium text-gray-700 mb-2">
+                Rechnungsnummer
+              </label>
+              <div className="relative">
+                <FileText className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <input
+                  id="invoiceNumber"
+                  type="text"
+                  value={invoiceNumber}
+                  onChange={(e) => setInvoiceNumber(e.target.value)}
+                  required
+                  className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 bg-gray-50 text-gray-900 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors"
+                />
+              </div>
+            </div>
+
+            {/* Issue Date */}
+            <div>
+              <label htmlFor="issueDate" className="block text-sm font-medium text-gray-700 mb-2">
+                Rechnungsdatum *
+              </label>
+              <div className="relative">
+                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <input
+                  id="issueDate"
+                  type="date"
+                  value={issueDate}
+                  onChange={(e) => setIssueDate(e.target.value)}
+                  required
+                  className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 bg-white text-gray-900 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors"
+                />
+              </div>
             </div>
           </div>
 
@@ -223,21 +268,6 @@ export default function AdminNewInvoicePage() {
             />
           </div>
 
-          {/* Description */}
-          <div>
-            <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
-              Beschreibung
-            </label>
-            <textarea
-              id="description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              rows={3}
-              className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white text-gray-900 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors resize-none"
-              placeholder="Leistungsbeschreibung..."
-            />
-          </div>
-
           {/* Project */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -254,46 +284,28 @@ export default function AdminNewInvoicePage() {
             />
           </div>
 
-          {/* Amount & Tax */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="amount" className="block text-sm font-medium text-gray-700 mb-2">
-                Nettobetrag *
-              </label>
-              <div className="relative">
-                <Euro className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <input
-                  id="amount"
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  required
-                  className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 bg-white text-gray-900 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors"
-                  placeholder="0,00"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                MwSt.-Satz
-              </label>
-              <Select
-                value={taxRate}
-                onChange={setTaxRate}
-                options={[
-                  { value: '0', label: '0%' },
-                  { value: '7', label: '7%' },
-                  { value: '19', label: '19%' },
-                ]}
-                icon={<Percent className="h-5 w-5" />}
-              />
-            </div>
+          {/* Description */}
+          <div>
+            <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
+              Beschreibung
+            </label>
+            <textarea
+              id="description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={3}
+              className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white text-gray-900 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors resize-none"
+              placeholder="Allgemeine Beschreibung der Rechnung..."
+            />
           </div>
 
-          {/* Calculated Amounts */}
+          {/* Line Items */}
+          <LineItemsEditor
+            items={lineItems}
+            onChange={setLineItems}
+          />
+
+          {/* Totals */}
           {netAmount > 0 && (
             <div className="bg-gray-50 rounded-lg p-4 space-y-2">
               <div className="flex justify-between text-sm">
@@ -301,7 +313,7 @@ export default function AdminNewInvoicePage() {
                 <span className="text-gray-900">{formatCurrency(netAmount)}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-gray-500">MwSt. ({taxRate}%):</span>
+                <span className="text-gray-500">MwSt.:</span>
                 <span className="text-gray-900">{formatCurrency(taxAmount)}</span>
               </div>
               <div className="flex justify-between font-semibold border-t border-gray-200 pt-2">
@@ -311,70 +323,58 @@ export default function AdminNewInvoicePage() {
             </div>
           )}
 
-          {/* Dates */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="issueDate" className="block text-sm font-medium text-gray-700 mb-2">
-                Rechnungsdatum *
-              </label>
-              <div className="relative">
-                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <input
-                  id="issueDate"
-                  type="date"
-                  value={issueDate}
-                  onChange={(e) => setIssueDate(e.target.value)}
-                  required
-                  className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 bg-white text-gray-900 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label htmlFor="dueDate" className="block text-sm font-medium text-gray-700 mb-2">
-                Faellig am
-              </label>
-              <div className="relative">
-                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <input
-                  id="dueDate"
-                  type="date"
-                  value={dueDate}
-                  onChange={(e) => setDueDate(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 bg-white text-gray-900 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Status */}
+          {/* Due Date */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Status
+            <label htmlFor="dueDate" className="block text-sm font-medium text-gray-700 mb-2">
+              Faellig am
             </label>
-            <Select
-              value={status}
-              onChange={(val) => setStatus(val as InvoiceStatus)}
-              options={statusOptions}
-            />
+            <div className="relative">
+              <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <input
+                id="dueDate"
+                type="date"
+                value={dueDate}
+                onChange={(e) => setDueDate(e.target.value)}
+                className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 bg-white text-gray-900 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors"
+              />
+            </div>
           </div>
 
-          {/* Submit */}
-          <div className="pt-4 border-t border-gray-100">
+          {/* Submit Buttons */}
+          <div className="pt-4 border-t border-gray-100 space-y-3">
             <button
               type="submit"
-              disabled={loading || !title.trim() || !projectId || netAmount <= 0}
-              className="w-full flex items-center justify-center px-6 py-3 bg-primary-600 text-white rounded-lg font-semibold hover:bg-primary-700 focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+              disabled={loading || sendingToLexoffice}
+              className="w-full flex items-center justify-center px-6 py-3 bg-gray-100 text-gray-700 rounded-lg font-semibold hover:bg-gray-200 focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors disabled:bg-gray-200 disabled:cursor-not-allowed"
             >
               {loading ? (
                 <>
                   <Loader2 className="h-5 w-5 animate-spin mr-2" />
-                  Erstelle Rechnung...
+                  Speichere...
                 </>
               ) : (
                 <>
                   <Save className="h-5 w-5 mr-2" />
-                  Rechnung erstellen
+                  Als Entwurf speichern
+                </>
+              )}
+            </button>
+
+            <button
+              type="button"
+              onClick={(e) => handleSubmit(e as unknown as React.FormEvent, true)}
+              disabled={loading || sendingToLexoffice}
+              className="w-full flex items-center justify-center px-6 py-3 bg-primary-600 text-white rounded-lg font-semibold hover:bg-primary-700 focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+            >
+              {sendingToLexoffice ? (
+                <>
+                  <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                  Sende an Lexoffice...
+                </>
+              ) : (
+                <>
+                  <Send className="h-5 w-5 mr-2" />
+                  Speichern und an Lexoffice senden
                 </>
               )}
             </button>
