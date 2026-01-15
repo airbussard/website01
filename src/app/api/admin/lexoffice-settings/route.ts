@@ -122,7 +122,6 @@ export async function PATCH(request: NextRequest) {
         {
           key: 'lexoffice',
           value: newValue,
-          description: 'Lexoffice API Integration Settings',
           updated_at: new Date().toISOString(),
         },
         { onConflict: 'key' }

@@ -57,6 +57,8 @@ export default function AdminSettingsPage() {
   const [lexofficeSaving, setLexofficeSaving] = useState(false);
   const [lexofficeTesting, setLexofficeTesting] = useState(false);
   const [lexofficeTestResult, setLexofficeTestResult] = useState<'success' | 'error' | null>(null);
+  const [lexofficeSaveError, setLexofficeSaveError] = useState<string | null>(null);
+  const [lexofficeSaveSuccess, setLexofficeSaveSuccess] = useState(false);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -116,6 +118,8 @@ export default function AdminSettingsPage() {
   const handleLexofficeSave = async () => {
     setLexofficeSaving(true);
     setLexofficeTestResult(null);
+    setLexofficeSaveError(null);
+    setLexofficeSaveSuccess(false);
     try {
       const res = await fetch('/api/admin/lexoffice-settings', {
         method: 'PATCH',
@@ -126,13 +130,19 @@ export default function AdminSettingsPage() {
         }),
       });
 
+      const data = await res.json();
+
       if (res.ok) {
-        const data = await res.json();
         setLexofficeSettings(data.settings);
         setLexofficeApiKey('');
+        setLexofficeSaveSuccess(true);
+        setTimeout(() => setLexofficeSaveSuccess(false), 3000);
+      } else {
+        setLexofficeSaveError(data.error || 'Fehler beim Speichern');
       }
     } catch (error) {
       console.error('Error saving Lexoffice settings:', error);
+      setLexofficeSaveError('Netzwerkfehler - bitte erneut versuchen');
     } finally {
       setLexofficeSaving(false);
     }
@@ -416,6 +426,18 @@ export default function AdminSettingsPage() {
               <p className="mt-2 text-sm text-gray-500">
                 Aktueller Key: {lexofficeSettings.api_key_masked}
               </p>
+            )}
+            {lexofficeSaveError && (
+              <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded-lg flex items-center text-sm text-red-700">
+                <XCircle className="h-4 w-4 mr-2 flex-shrink-0" />
+                {lexofficeSaveError}
+              </div>
+            )}
+            {lexofficeSaveSuccess && (
+              <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded-lg flex items-center text-sm text-green-700">
+                <CheckCircle className="h-4 w-4 mr-2 flex-shrink-0" />
+                API Key erfolgreich gespeichert
+              </div>
             )}
           </div>
 
