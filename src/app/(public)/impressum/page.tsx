@@ -40,7 +40,7 @@ export default function ImpressumPage() {
               </h2>
               <div className="text-gray-600">
                 <p>Umsatzsteuer-Identifikationsnummer gemäß § 27a UStG:</p>
-                <p className="italic">Die UST-ID wird nachgereicht.</p>
+                <p>DE346449523</p>
               </div>
             </section>
 

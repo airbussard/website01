@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Linkedin, Mail, Heart, Code2 } from 'lucide-react';
+import { Mail, Heart, Code2 } from 'lucide-react';
 import Link from 'next/link';
 import CookieConsent from './CookieConsent';
 
@@ -35,15 +35,7 @@ export default function Footer() {
             </p>
             <div className="flex space-x-4">
               <Link
-                href="https://linkedin.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-gray-400 hover:text-primary-400 transition-colors"
-              >
-                <Linkedin className="h-6 w-6" />
-              </Link>
-              <Link
-                href="mailto:hello@getemergence.com"
+                href="/kontakt"
                 className="text-gray-400 hover:text-primary-400 transition-colors"
               >
                 <Mail className="h-6 w-6" />
