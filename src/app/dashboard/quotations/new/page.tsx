@@ -14,6 +14,7 @@ import {
   Plus,
   Trash2,
   Send,
+  ChevronDown,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { createClient } from '@/lib/supabase/client';
@@ -441,15 +442,18 @@ export default function NewQuotationPage() {
                     {/* Unit */}
                     <div>
                       <label className="block text-xs text-gray-500 mb-1">Einheit</label>
-                      <select
-                        value={item.unit_name}
-                        onChange={(e) => updateLineItem(item.id, 'unit_name', e.target.value)}
-                        className="w-full px-3 py-2 rounded-lg border border-gray-300 bg-white text-gray-900 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors text-sm"
-                      >
-                        {unitOptions.map((opt) => (
-                          <option key={opt.value} value={opt.value}>{opt.label}</option>
-                        ))}
-                      </select>
+                      <div className="relative">
+                        <select
+                          value={item.unit_name}
+                          onChange={(e) => updateLineItem(item.id, 'unit_name', e.target.value)}
+                          className="w-full px-3 py-2 pr-8 rounded-lg border border-gray-300 bg-white text-gray-900 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors text-sm appearance-none cursor-pointer"
+                        >
+                          {unitOptions.map((opt) => (
+                            <option key={opt.value} value={opt.value}>{opt.label}</option>
+                          ))}
+                        </select>
+                        <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+                      </div>
                     </div>
 
                     {/* Unit Price */}
@@ -469,15 +473,18 @@ export default function NewQuotationPage() {
                     {/* Tax Rate */}
                     <div>
                       <label className="block text-xs text-gray-500 mb-1">MwSt.</label>
-                      <select
-                        value={item.tax_rate}
-                        onChange={(e) => updateLineItem(item.id, 'tax_rate', e.target.value as '0' | '7' | '19')}
-                        className="w-full px-3 py-2 rounded-lg border border-gray-300 bg-white text-gray-900 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors text-sm"
-                      >
-                        <option value="0">0%</option>
-                        <option value="7">7%</option>
-                        <option value="19">19%</option>
-                      </select>
+                      <div className="relative">
+                        <select
+                          value={item.tax_rate}
+                          onChange={(e) => updateLineItem(item.id, 'tax_rate', e.target.value as '0' | '7' | '19')}
+                          className="w-full px-3 py-2 pr-8 rounded-lg border border-gray-300 bg-white text-gray-900 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors text-sm appearance-none cursor-pointer"
+                        >
+                          <option value="0">0%</option>
+                          <option value="7">7%</option>
+                          <option value="19">19%</option>
+                        </select>
+                        <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+                      </div>
                     </div>
                   </div>
 

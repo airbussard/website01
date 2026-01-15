@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { X, Loader2 } from 'lucide-react';
+import { X, Loader2, ChevronDown } from 'lucide-react';
 import { ProjectWithImages } from '@/lib/hooks/useSupabase';
 
 interface ProjectFormProps {
@@ -133,15 +133,18 @@ export default function ProjectForm({ project, onClose, onSave }: ProjectFormPro
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Kategorie
             </label>
-            <select
-              value={formData.category}
-              onChange={(e) => setFormData({ ...formData, category: e.target.value as any })}
-              className="w-full px-4 py-2 rounded-lg border border-gray-300 bg-white text-gray-900 focus:ring-2 focus:ring-primary-500"
-            >
-              <option value="web">Web</option>
-              <option value="mobile">Mobile</option>
-              <option value="system">System</option>
-            </select>
+            <div className="relative">
+              <select
+                value={formData.category}
+                onChange={(e) => setFormData({ ...formData, category: e.target.value as any })}
+                className="w-full px-4 py-2 pr-10 rounded-lg border border-gray-300 bg-white text-gray-900 focus:ring-2 focus:ring-primary-500 appearance-none cursor-pointer"
+              >
+                <option value="web">Web</option>
+                <option value="mobile">Mobile</option>
+                <option value="system">System</option>
+              </select>
+              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+            </div>
           </div>
 
           {/* Technologies */}

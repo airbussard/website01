@@ -12,6 +12,7 @@ import {
   Trash2,
   Bell,
   Send,
+  ChevronDown,
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import Select from '@/components/ui/Select';
@@ -415,15 +416,18 @@ export default function CreateRecurringModal({
                       placeholder="Menge"
                       className="w-full px-3 py-1.5 rounded border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm"
                     />
-                    <select
-                      value={item.unit_name}
-                      onChange={(e) => updateLineItem(item.id, 'unit_name', e.target.value)}
-                      className="w-full px-3 py-1.5 rounded border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm"
-                    >
-                      {unitOptions.map((opt) => (
-                        <option key={opt.value} value={opt.value}>{opt.label}</option>
-                      ))}
-                    </select>
+                    <div className="relative">
+                      <select
+                        value={item.unit_name}
+                        onChange={(e) => updateLineItem(item.id, 'unit_name', e.target.value)}
+                        className="w-full px-3 py-1.5 pr-8 rounded border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm appearance-none cursor-pointer"
+                      >
+                        {unitOptions.map((opt) => (
+                          <option key={opt.value} value={opt.value}>{opt.label}</option>
+                        ))}
+                      </select>
+                      <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+                    </div>
                     <input
                       type="number"
                       min="0"
@@ -433,15 +437,18 @@ export default function CreateRecurringModal({
                       placeholder="Preis EUR *"
                       className="w-full px-3 py-1.5 rounded border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm"
                     />
-                    <select
-                      value={item.tax_rate}
-                      onChange={(e) => updateLineItem(item.id, 'tax_rate', e.target.value as '0' | '7' | '19')}
-                      className="w-full px-3 py-1.5 rounded border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm"
-                    >
-                      <option value="0">0% MwSt.</option>
-                      <option value="7">7% MwSt.</option>
-                      <option value="19">19% MwSt.</option>
-                    </select>
+                    <div className="relative">
+                      <select
+                        value={item.tax_rate}
+                        onChange={(e) => updateLineItem(item.id, 'tax_rate', e.target.value as '0' | '7' | '19')}
+                        className="w-full px-3 py-1.5 pr-8 rounded border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm appearance-none cursor-pointer"
+                      >
+                        <option value="0">0% MwSt.</option>
+                        <option value="7">7% MwSt.</option>
+                        <option value="19">19% MwSt.</option>
+                      </select>
+                      <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+                    </div>
                   </div>
                 </div>
               ))}
