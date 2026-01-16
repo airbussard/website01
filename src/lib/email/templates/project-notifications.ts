@@ -63,7 +63,7 @@ export function projectUpdateTemplate(data: ProjectUpdateData): string {
         <table role="presentation" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; border: 2px solid #3b82f6;">
           <!-- Header -->
           <tr>
-            <td style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); padding: 24px 40px; text-align: center;">
+            <td style="padding: 24px 40px; text-align: center; border-bottom: 2px solid #3b82f6;">
               <img src="https://getemergence.com/getemergence-logo.png" alt="getemergence.com" style="height: 40px; width: auto;" />
             </td>
           </tr>
@@ -179,7 +179,7 @@ export function invoiceCreatedTemplate(data: InvoiceCreatedData): string {
         <table role="presentation" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; border: 2px solid #3b82f6;">
           <!-- Header -->
           <tr>
-            <td style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); padding: 24px 40px; text-align: center;">
+            <td style="padding: 24px 40px; text-align: center; border-bottom: 2px solid #3b82f6;">
               <img src="https://getemergence.com/getemergence-logo.png" alt="getemergence.com" style="height: 40px; width: auto;" />
             </td>
           </tr>
@@ -316,7 +316,7 @@ export function contractReadyTemplate(data: ContractReadyData): string {
         <table role="presentation" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; border: 2px solid #3b82f6;">
           <!-- Header -->
           <tr>
-            <td style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); padding: 24px 40px; text-align: center;">
+            <td style="padding: 24px 40px; text-align: center; border-bottom: 2px solid #3b82f6;">
               <img src="https://getemergence.com/getemergence-logo.png" alt="getemergence.com" style="height: 40px; width: auto;" />
             </td>
           </tr>
