@@ -31,7 +31,8 @@
       "Bash(scp:*)",
       "Bash(dig:*)",
       "Bash(openssl rand:*)",
-      "Bash(git diff:*)"
+      "Bash(git diff:*)",
+      "Bash(git log:*)"
     ],
     "deny": [],
     "ask": []
