@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import Image from 'next/image';
 import Testimonials from '@/components/Testimonials';
 import {
   Globe,
@@ -32,6 +33,7 @@ const services = [
     title: 'Websites & Webshops',
     tagline: 'Ihre digitale Visitenkarte, die rund um die Uhr für Sie arbeitet',
     description: 'Professionelle Websites, die nicht nur gut aussehen, sondern auch Kunden gewinnen. Optimiert für Suchmaschinen und mobile Geräte.',
+    image: '/images/stock/service-web.jpg',
     forWhom: [
       { icon: Building2, text: 'Unternehmen' },
       { icon: Briefcase, text: 'Dienstleister' },
@@ -58,6 +60,7 @@ const services = [
     title: 'Web-Anwendungen',
     tagline: 'Digitale Werkzeuge, die Ihre Geschäftsprozesse automatisieren',
     description: 'Maßgeschneiderte Web-Anwendungen, die Ihre tägliche Arbeit vereinfachen und Prozesse automatisieren. Von Kundenportalen bis zu internen Tools.',
+    image: '/images/stock/service-web.jpg',
     forWhom: [
       { icon: Briefcase, text: 'Agenturen' },
       { icon: Building2, text: 'Beratungsunternehmen' },
@@ -84,6 +87,7 @@ const services = [
     title: 'Mobile Apps',
     tagline: 'Ihre Marke in der Hosentasche Ihrer Kunden',
     description: 'Native iOS und Android Apps, die Ihre Kunden begeistern. Von der Konzeption über die Entwicklung bis zur Veröffentlichung im App Store.',
+    image: '/images/stock/service-mobile.jpg',
     forWhom: [
       { icon: Building2, text: 'Unternehmen' },
       { icon: ShoppingCart, text: 'Einzelhandel' },
@@ -110,6 +114,7 @@ const services = [
     title: 'IT-Beratung',
     tagline: 'Klarheit vor der Investition - wir helfen bei der Entscheidung',
     description: 'Sie stehen vor einer digitalen Entscheidung? Wir beraten Sie unabhängig und helfen Ihnen, die richtige Lösung zu finden - ohne Verkaufsdruck.',
+    image: '/images/stock/service-consulting.jpg',
     forWhom: [
       { icon: Building2, text: 'Geschäftsführer' },
       { icon: BarChart3, text: 'Entscheider' },
@@ -266,17 +271,27 @@ export default function ServicesPage() {
               >
                 {/* Service Header */}
                 <div className="p-8 md:p-10 border-b border-gray-100">
-                  <div className="flex items-start gap-6">
-                    <div className="w-16 h-16 bg-primary-100 rounded-2xl flex items-center justify-center flex-shrink-0">
-                      <Icon className="h-8 w-8 text-primary-600" />
+                  <div className="flex flex-col lg:flex-row lg:items-center gap-6">
+                    <div className="flex items-start gap-6 flex-1">
+                      <div className="w-16 h-16 bg-primary-100 rounded-2xl flex items-center justify-center flex-shrink-0">
+                        <Icon className="h-8 w-8 text-primary-600" />
+                      </div>
+                      <div>
+                        <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
+                          {service.title}
+                        </h2>
+                        <p className="text-lg text-primary-600 font-medium">
+                          {service.tagline}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
-                        {service.title}
-                      </h2>
-                      <p className="text-lg text-primary-600 font-medium">
-                        {service.tagline}
-                      </p>
+                    <div className="hidden lg:block relative w-48 h-32 rounded-xl overflow-hidden flex-shrink-0">
+                      <Image
+                        src={service.image}
+                        alt={service.title}
+                        fill
+                        className="object-cover"
+                      />
                     </div>
                   </div>
                   <p className="mt-6 text-gray-600 text-lg leading-relaxed">

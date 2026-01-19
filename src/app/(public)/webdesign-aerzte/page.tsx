@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import Image from 'next/image';
 import {
   ArrowRight,
   Globe,
@@ -128,6 +129,18 @@ export default function WebdesignAerztePage() {
     <div className="min-h-screen">
       {/* Hero Section */}
       <section className="relative bg-gradient-to-br from-gray-50 to-gray-100 overflow-hidden">
+        {/* Background Image */}
+        <div className="absolute inset-0">
+          <Image
+            src="/images/stock/industry-medical.jpg"
+            alt=""
+            fill
+            className="object-cover"
+            priority
+          />
+          <div className="absolute inset-0 bg-gradient-to-br from-white/95 via-white/90 to-primary-50/90" />
+        </div>
+
         {/* Background Grid Pattern */}
         <div className="absolute inset-0 opacity-5">
           <div

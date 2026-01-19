@@ -1,12 +1,25 @@
 'use client';
 
 import Contact from '@/components/Contact';
+import Image from 'next/image';
 import { Mail, MapPin, Clock, Phone, MessageSquare } from 'lucide-react';
 
 export default function KontaktPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      <main className="container mx-auto px-6 py-20">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 relative">
+      {/* Background Image */}
+      <div className="absolute inset-0 h-[600px]">
+        <Image
+          src="/images/stock/contact-bg.jpg"
+          alt=""
+          fill
+          className="object-cover"
+          priority
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-white/95 via-white/90 to-gray-50" />
+      </div>
+
+      <main className="container mx-auto px-6 py-20 relative z-10">
         {/* Hero Section */}
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">
