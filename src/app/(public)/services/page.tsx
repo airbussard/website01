@@ -60,7 +60,7 @@ const services = [
     title: 'Web-Anwendungen',
     tagline: 'Digitale Werkzeuge, die Ihre Geschäftsprozesse automatisieren',
     description: 'Maßgeschneiderte Web-Anwendungen, die Ihre tägliche Arbeit vereinfachen und Prozesse automatisieren. Von Kundenportalen bis zu internen Tools.',
-    image: '/images/stock/service-web.jpg',
+    image: '/images/stock/service-webapp.jpg',
     forWhom: [
       { icon: Briefcase, text: 'Agenturen' },
       { icon: Building2, text: 'Beratungsunternehmen' },
@@ -270,9 +270,21 @@ export default function ServicesPage() {
                 className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden scroll-mt-24"
               >
                 {/* Service Header */}
-                <div className="p-8 md:p-10 border-b border-gray-100">
-                  <div className="flex flex-col lg:flex-row lg:items-center gap-6">
-                    <div className="flex items-start gap-6 flex-1">
+                <div className="p-8 md:p-10 border-b border-gray-100 relative overflow-hidden">
+                  {/* Background Image */}
+                  <div className="absolute inset-0 hidden md:block">
+                    <Image
+                      src={service.image}
+                      alt=""
+                      fill
+                      className="object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-r from-white via-white/95 to-white/75" />
+                  </div>
+
+                  {/* Content */}
+                  <div className="relative">
+                    <div className="flex items-start gap-6">
                       <div className="w-16 h-16 bg-primary-100 rounded-2xl flex items-center justify-center flex-shrink-0">
                         <Icon className="h-8 w-8 text-primary-600" />
                       </div>
@@ -285,18 +297,10 @@ export default function ServicesPage() {
                         </p>
                       </div>
                     </div>
-                    <div className="hidden lg:block relative w-48 h-32 rounded-xl overflow-hidden flex-shrink-0">
-                      <Image
-                        src={service.image}
-                        alt={service.title}
-                        fill
-                        className="object-cover"
-                      />
-                    </div>
+                    <p className="mt-6 text-gray-600 text-lg leading-relaxed max-w-3xl">
+                      {service.description}
+                    </p>
                   </div>
-                  <p className="mt-6 text-gray-600 text-lg leading-relaxed">
-                    {service.description}
-                  </p>
                 </div>
 
                 {/* Service Content */}
