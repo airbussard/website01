@@ -75,27 +75,21 @@ export default function CookieConsent({ forceShow = false }: CookieConsentProps)
       {showBanner && (
         <>
           {/* Overlay für Modal */}
-          {showSettings && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[9998]"
-              onClick={() => !forceShow && setShowSettings(false)}
-            />
-          )}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[9998]"
+            onClick={() => !forceShow && handleAcceptEssential()}
+          />
 
           {/* Cookie Banner / Settings Modal */}
           <motion.div
-            initial={{ y: 100, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: 100, opacity: 0 }}
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.95, opacity: 0 }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className={`fixed z-[9999] ${
-              showSettings
-                ? 'inset-0 flex items-center justify-center p-4'
-                : 'bottom-0 left-0 right-0 flex justify-center p-4'
-            }`}
+            className="fixed z-[9999] inset-0 flex items-center justify-center p-4"
           >
             <div className="relative bg-white rounded-2xl border-2 border-primary-500 shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto w-full max-w-2xl">
               {/* Grid Pattern Background */}
