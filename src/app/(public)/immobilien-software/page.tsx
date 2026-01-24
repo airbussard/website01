@@ -29,8 +29,8 @@ import {
   Award,
   Zap,
 } from 'lucide-react';
-import ProjectCard from '@/components/ProjectCard';
-import { getFeaturedProjects } from '@/lib/data/projects';
+// import ProjectCard from '@/components/ProjectCard'; // Temporär ausgeblendet
+// import { getFeaturedProjects } from '@/lib/data/projects'; // Temporär ausgeblendet
 
 // Standard-Paket Features
 const standardFeatures = [
@@ -146,7 +146,7 @@ const maklerTypen = [
 ];
 
 export default function ImmobilienSoftwarePage() {
-  const featuredProjects = getFeaturedProjects().slice(0, 3);
+  // const featuredProjects = getFeaturedProjects().slice(0, 3); // Temporär ausgeblendet
 
   return (
     <div className="min-h-screen">
@@ -508,7 +508,7 @@ export default function ImmobilienSoftwarePage() {
         </div>
       </section>
 
-      {/* Projects Section */}
+      {/* Projects Section - Temporär ausgeblendet
       <section className="py-16 md:py-20 bg-white">
         <div className="container mx-auto px-6">
           <motion.div
@@ -550,6 +550,7 @@ export default function ImmobilienSoftwarePage() {
           </motion.div>
         </div>
       </section>
+      */}
 
       {/* Testimonials Section - Coming Soon */}
       {/*

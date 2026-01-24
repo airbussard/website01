@@ -23,8 +23,8 @@ import {
   Layers,
   Award,
 } from 'lucide-react';
-import ProjectCard from '@/components/ProjectCard';
-import { getFeaturedProjects } from '@/lib/data/projects';
+// import ProjectCard from '@/components/ProjectCard'; // Temporär ausgeblendet
+// import { getFeaturedProjects } from '@/lib/data/projects'; // Temporär ausgeblendet
 
 // Services für Kanzleien
 const kanzleiServices = [
@@ -97,7 +97,7 @@ const rechtsgebiete = [
 ];
 
 export default function WebdesignRechtsanwaeltePage() {
-  const featuredProjects = getFeaturedProjects().slice(0, 3);
+  // const featuredProjects = getFeaturedProjects().slice(0, 3); // Temporär ausgeblendet
 
   return (
     <div className="min-h-screen">
@@ -372,7 +372,7 @@ export default function WebdesignRechtsanwaeltePage() {
         </div>
       </section>
 
-      {/* Projects Section */}
+      {/* Projects Section - Temporär ausgeblendet
       <section className="py-16 md:py-20 bg-gray-50">
         <div className="container mx-auto px-6">
           <motion.div
@@ -414,6 +414,7 @@ export default function WebdesignRechtsanwaeltePage() {
           </motion.div>
         </div>
       </section>
+      */}
 
       {/* Testimonials Section - Coming Soon */}
       {/*

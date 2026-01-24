@@ -26,8 +26,8 @@ import {
   TrendingUp,
   Layers
 } from 'lucide-react';
-import ProjectCard from '@/components/ProjectCard';
-import { getFeaturedProjects } from '@/lib/data/projects';
+// import ProjectCard from '@/components/ProjectCard'; // Temporär ausgeblendet
+// import { getFeaturedProjects } from '@/lib/data/projects'; // Temporär ausgeblendet
 
 // Services der Webagentur
 const webdesignServices = [
@@ -128,7 +128,7 @@ const accessibilityFeatures = [
 ];
 
 export default function WebdesignAgenturPage() {
-  const featuredProjects = getFeaturedProjects().slice(0, 3);
+  // const featuredProjects = getFeaturedProjects().slice(0, 3); // Temporär ausgeblendet
 
   return (
     <div className="min-h-screen">
@@ -439,7 +439,7 @@ export default function WebdesignAgenturPage() {
         </div>
       </section>
 
-      {/* Projects Section */}
+      {/* Projects Section - Temporär ausgeblendet
       <section className="py-16 md:py-20 bg-white">
         <div className="container mx-auto px-6">
           <motion.div
@@ -481,6 +481,7 @@ export default function WebdesignAgenturPage() {
           </motion.div>
         </div>
       </section>
+      */}
 
       {/* CTA Section */}
       <section className="py-20 bg-gray-50">
