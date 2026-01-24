@@ -12,7 +12,7 @@ const inter = Inter({
 export const metadata: Metadata = {
   metadataBase: new URL('https://oscarknabe.de'),
   title: {
-    default: "Webentwicklung Nordrhein-Westfalen - Websites & Web-Apps | getemergence.com",
+    default: "Webentwicklung NRW | Websites & Web-Apps - getemergence.com",
     template: "%s | getemergence.com",
   },
   description: "Professionelle Webentwicklung aus Deutschland. Websites, Web-Anwendungen und Mobile Apps für Unternehmen. Persönliche Betreuung, faire Preise.",
@@ -29,12 +29,12 @@ export const metadata: Metadata = {
     type: "website",
     locale: "de_DE",
     url: "https://oscarknabe.de",
-    title: "Webentwicklung Nordrhein-Westfalen - Websites & Web-Apps | getemergence.com",
+    title: "Webentwicklung NRW | Websites & Web-Apps - getemergence.com",
     description: "Professionelle Webentwicklung aus Deutschland. Websites, Web-Anwendungen und Mobile Apps für Unternehmen.",
     siteName: "getemergence.com",
     images: [
       {
-        url: "/og-image.jpg",
+        url: "/opengraph-image",
         width: 1200,
         height: 630,
         alt: "getemergence.com - Webentwicklung",
@@ -43,9 +43,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Webentwicklung Nordrhein-Westfalen - Websites & Web-Apps | getemergence.com",
+    title: "Webentwicklung NRW | Websites & Web-Apps - getemergence.com",
     description: "Professionelle Webentwicklung aus Deutschland. Websites, Web-Anwendungen und Mobile Apps für Unternehmen.",
-    images: ["/og-image.jpg"],
+    images: ["/opengraph-image"],
   },
   robots: {
     index: true,
@@ -59,7 +59,7 @@ export const metadata: Metadata = {
     },
   },
   alternates: {
-    canonical: "./",
+    canonical: "https://oscarknabe.de",
   },
   verification: {
     // Google Search Console verification (add your code here)

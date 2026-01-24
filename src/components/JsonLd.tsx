@@ -5,7 +5,7 @@ export function OrganizationJsonLd() {
     name: 'getemergence.com',
     alternateName: 'getemergence',
     url: 'https://oscarknabe.de',
-    logo: 'https://oscarknabe.de/og-image.jpg',
+    logo: 'https://oscarknabe.de/getemergence-logo.png',
     description: 'Professionelle Webentwicklung und digitale Lösungen für Unternehmen. Websites, Web-Anwendungen und Mobile Apps.',
     email: 'hello@getemergence.com',
     founder: {
@@ -43,7 +43,7 @@ export function LocalBusinessJsonLd() {
     '@context': 'https://schema.org',
     '@type': 'ProfessionalService',
     name: 'getemergence.com - Webentwicklung',
-    image: 'https://oscarknabe.de/og-image.jpg',
+    image: 'https://oscarknabe.de/getemergence-logo.png',
     url: 'https://oscarknabe.de',
     telephone: '',
     email: 'hello@getemergence.com',

@@ -23,9 +23,9 @@ import {
   Database
 } from 'lucide-react';
 import Hero from '@/components/Hero';
-import ProjectCard from '@/components/ProjectCard';
+// import ProjectCard from '@/components/ProjectCard'; // Temporär ausgeblendet
 import Testimonials from '@/components/Testimonials';
-import { getFeaturedProjects } from '@/lib/data/projects';
+// import { getFeaturedProjects } from '@/lib/data/projects'; // Temporär ausgeblendet
 
 // USP-Vorteile
 const benefits = [
@@ -153,7 +153,7 @@ const services = [
 
 
 export default function Home() {
-  const featuredProjects = getFeaturedProjects().slice(0, 3);
+  // const featuredProjects = getFeaturedProjects().slice(0, 3); // Temporär ausgeblendet
 
   return (
     <main>
@@ -392,7 +392,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Featured Projects */}
+        {/* Featured Projects - Temporär ausgeblendet
         <section className="py-16 md:py-20 bg-white">
           <div className="container mx-auto px-6">
             <motion.div
@@ -435,6 +435,7 @@ export default function Home() {
             </motion.div>
           </div>
         </section>
+        */}
 
         {/* Testimonials */}
         <Testimonials />

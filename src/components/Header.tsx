@@ -11,7 +11,7 @@ const navigation = [
   { name: 'Start', href: '/' },
   { name: 'Services', href: '/services' },
   { name: 'Technologien', href: '/technologien' },
-  { name: 'Projekte', href: '/projekte' },
+  // { name: 'Projekte', href: '/projekte' }, // Temporär ausgeblendet
   { name: 'Über uns', href: '/ueber-uns' },
 ];
 
@@ -104,6 +104,8 @@ export default function Header() {
           <button
             className="md:hidden p-2"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label={mobileMenuOpen ? 'Menü schließen' : 'Menü öffnen'}
+            aria-expanded={mobileMenuOpen}
           >
             {mobileMenuOpen ? (
               <X className="h-6 w-6 text-gray-700" />

@@ -108,7 +108,7 @@ Die iOS App arbeitet im Read-Only Modus für mobile Übersicht, während das Web
     id: 'flighthour-portal',
     title: 'FLIGHTHOUR Employee Portal',
     description: 'Umfassendes Mitarbeiterportal mit Ticketsystem, Dokumentenmanagement und Kalenderintegration',
-    longDescription: `Ein modernes Mitarbeiterportal für Luftfahrtunternehmen mit umfangreichen Management-Funktionen.
+    longDescription: `Ein modernes Mitarbeiterportal für Flighthour mit umfangreichen Management-Funktionen.
 
 Das System existiert in zwei Implementierungen:
 - Moderne Next.js 14 Version mit TypeScript
@@ -135,7 +135,7 @@ Rollen-System:
 - Manager: Erweiterte Berechtigungen
 - Admin: Volle System-Kontrolle
 
-Die Plattform wurde speziell für die Anforderungen in der Luftfahrtbranche entwickelt.`,
+Die Plattform wurde speziell für die Anforderungen in der Eventbranche entwickelt.`,
     categories: ['web'],
     technologies: ['Next.js', 'TypeScript', 'PHP', 'Supabase', 'PostgreSQL', 'Tailwind CSS', 'shadcn/ui', 'Google Calendar API'],
     imageUrl: '/images/projects/flighthour/flighthour_mitarbeiterportal.png',

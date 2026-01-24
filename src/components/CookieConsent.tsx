@@ -94,7 +94,7 @@ export default function CookieConsent({ forceShow = false }: CookieConsentProps)
             className={`fixed z-[9999] ${
               showSettings
                 ? 'inset-0 flex items-center justify-center p-4'
-                : 'bottom-0 left-0 right-0'
+                : 'bottom-0 left-0 right-0 flex justify-center p-4'
             }`}
           >
             <div className="relative bg-white rounded-2xl border-2 border-primary-500 shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto w-full max-w-2xl">

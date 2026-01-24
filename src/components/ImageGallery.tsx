@@ -123,6 +123,7 @@ export default function ImageGallery({ images, projectTitle }: ImageGalleryProps
             <button
               onClick={closeLightbox}
               className="absolute top-4 right-4 text-white/70 hover:text-white transition-colors z-50"
+              aria-label="Galerie schließen"
             >
               <X className="h-8 w-8" />
             </button>
@@ -136,6 +137,7 @@ export default function ImageGallery({ images, projectTitle }: ImageGalleryProps
                     goToPrevious();
                   }}
                   className="absolute left-4 text-white/70 hover:text-white transition-colors z-50"
+                  aria-label="Vorheriges Bild"
                 >
                   <ChevronLeft className="h-12 w-12" />
                 </button>
@@ -145,6 +147,7 @@ export default function ImageGallery({ images, projectTitle }: ImageGalleryProps
                     goToNext();
                   }}
                   className="absolute right-4 text-white/70 hover:text-white transition-colors z-50"
+                  aria-label="Nächstes Bild"
                 >
                   <ChevronRight className="h-12 w-12" />
                 </button>
