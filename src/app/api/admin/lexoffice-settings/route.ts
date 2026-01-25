@@ -1,42 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@/lib/supabase/server';
-import { createAdminSupabaseClient } from '@/lib/supabase/admin';
+import { auth } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
 import { createLexofficeClient } from '@/lib/lexoffice';
 
 /**
  * GET /api/admin/lexoffice-settings
  * Ruft die Lexoffice-Einstellungen ab
  */
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    const supabase = await createServerSupabaseClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
+    const session = await auth();
+    if (!session?.user) {
       return NextResponse.json({ error: 'Nicht authentifiziert' }, { status: 401 });
     }
 
-    // Rolle pruefen - nur Admin
-    const adminSupabase = createAdminSupabaseClient();
-    const { data: profile } = await adminSupabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-
-    if (!profile || profile.role !== 'admin') {
+    const userRole = (session.user as { role?: string }).role;
+    if (userRole !== 'admin') {
       return NextResponse.json({ error: 'Nur Admins' }, { status: 403 });
     }
 
     // Settings laden
-    const { data: settings } = await adminSupabase
-      .from('system_settings')
-      .select('value, updated_at')
-      .eq('key', 'lexoffice')
-      .single();
+    const settings = await prisma.system_settings.findUnique({
+      where: { key: 'lexoffice' },
+      select: { value: true, updated_at: true },
+    });
 
     const lexofficeSettings = settings?.value as {
       is_enabled: boolean;
@@ -65,32 +52,16 @@ export async function GET(request: NextRequest) {
 /**
  * PATCH /api/admin/lexoffice-settings
  * Aktualisiert die Lexoffice-Einstellungen
- *
- * Body:
- * - is_enabled: boolean (optional)
- * - api_key: string (optional) - Neuer API Key
  */
 export async function PATCH(request: NextRequest) {
   try {
-    const supabase = await createServerSupabaseClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
+    const session = await auth();
+    if (!session?.user) {
       return NextResponse.json({ error: 'Nicht authentifiziert' }, { status: 401 });
     }
 
-    // Rolle pruefen - nur Admin
-    const adminSupabase = createAdminSupabaseClient();
-    const { data: profile } = await adminSupabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-
-    if (!profile || profile.role !== 'admin') {
+    const userRole = (session.user as { role?: string }).role;
+    if (userRole !== 'admin') {
       return NextResponse.json({ error: 'Nur Admins' }, { status: 403 });
     }
 
@@ -98,11 +69,10 @@ export async function PATCH(request: NextRequest) {
     const { is_enabled, api_key } = body;
 
     // Aktuelle Settings laden
-    const { data: currentSettings } = await adminSupabase
-      .from('system_settings')
-      .select('value')
-      .eq('key', 'lexoffice')
-      .single();
+    const currentSettings = await prisma.system_settings.findUnique({
+      where: { key: 'lexoffice' },
+      select: { value: true },
+    });
 
     const currentValue = (currentSettings?.value as {
       is_enabled: boolean;
@@ -115,22 +85,19 @@ export async function PATCH(request: NextRequest) {
       api_key: api_key !== undefined ? api_key : currentValue.api_key,
     };
 
-    // Upsert (INSERT ... ON CONFLICT UPDATE)
-    const { error: upsertError } = await adminSupabase
-      .from('system_settings')
-      .upsert(
-        {
-          key: 'lexoffice',
-          value: newValue,
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: 'key' }
-      );
-
-    if (upsertError) {
-      console.error('[Lexoffice Settings] Upsert error:', upsertError);
-      return NextResponse.json({ error: 'Fehler beim Speichern' }, { status: 500 });
-    }
+    // Upsert
+    await prisma.system_settings.upsert({
+      where: { key: 'lexoffice' },
+      create: {
+        key: 'lexoffice',
+        value: newValue,
+        updated_at: new Date(),
+      },
+      update: {
+        value: newValue,
+        updated_at: new Date(),
+      },
+    });
 
     // API Key maskieren fuer Response
     const maskedApiKey = newValue.api_key
@@ -152,39 +119,26 @@ export async function PATCH(request: NextRequest) {
 }
 
 /**
- * POST /api/admin/lexoffice-settings/test
+ * POST /api/admin/lexoffice-settings
  * Testet die Lexoffice-Verbindung
  */
-export async function POST(request: NextRequest) {
+export async function POST() {
   try {
-    const supabase = await createServerSupabaseClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
+    const session = await auth();
+    if (!session?.user) {
       return NextResponse.json({ error: 'Nicht authentifiziert' }, { status: 401 });
     }
 
-    // Rolle pruefen - nur Admin
-    const adminSupabase = createAdminSupabaseClient();
-    const { data: profile } = await adminSupabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-
-    if (!profile || profile.role !== 'admin') {
+    const userRole = (session.user as { role?: string }).role;
+    if (userRole !== 'admin') {
       return NextResponse.json({ error: 'Nur Admins' }, { status: 403 });
     }
 
     // Settings laden
-    const { data: settings } = await adminSupabase
-      .from('system_settings')
-      .select('value')
-      .eq('key', 'lexoffice')
-      .single();
+    const settings = await prisma.system_settings.findUnique({
+      where: { key: 'lexoffice' },
+      select: { value: true },
+    });
 
     const lexofficeSettings = settings?.value as {
       is_enabled: boolean;
@@ -203,10 +157,7 @@ export async function POST(request: NextRequest) {
     const connected = await lexoffice.testConnection();
 
     if (connected) {
-      return NextResponse.json({
-        success: true,
-        message: 'Verbindung erfolgreich',
-      });
+      return NextResponse.json({ success: true, message: 'Verbindung erfolgreich' });
     } else {
       return NextResponse.json({
         success: false,
@@ -215,9 +166,6 @@ export async function POST(request: NextRequest) {
     }
   } catch (error) {
     console.error('[Lexoffice Settings] Test error:', error);
-    return NextResponse.json({
-      success: false,
-      error: 'Verbindungstest fehlgeschlagen',
-    });
+    return NextResponse.json({ success: false, error: 'Verbindungstest fehlgeschlagen' });
   }
 }

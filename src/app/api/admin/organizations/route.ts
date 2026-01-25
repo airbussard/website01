@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@/lib/supabase/server';
-import { createAdminSupabaseClient } from '@/lib/supabase/admin';
+import { auth } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
 
 /**
  * GET /api/admin/organizations
@@ -8,54 +8,26 @@ import { createAdminSupabaseClient } from '@/lib/supabase/admin';
  */
 export async function GET() {
   try {
-    // Auth pruefen
-    const supabase = await createServerSupabaseClient();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Nicht authentifiziert' },
-        { status: 401 }
-      );
+    // Auth pruefen via NextAuth
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Nicht authentifiziert' }, { status: 401 });
     }
 
-    const adminSupabase = createAdminSupabaseClient();
-
-    // Admin-Rolle pruefen
-    const { data: profile } = await adminSupabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-
-    if (profile?.role !== 'admin') {
-      return NextResponse.json(
-        { error: 'Keine Admin-Berechtigung' },
-        { status: 403 }
-      );
+    const userRole = (session.user as { role?: string }).role;
+    if (userRole !== 'admin') {
+      return NextResponse.json({ error: 'Keine Admin-Berechtigung' }, { status: 403 });
     }
 
     // Alle Organisationen laden
-    const { data: organizations, error } = await adminSupabase
-      .from('organizations')
-      .select('id, name, slug, logo_url, city, created_at')
-      .order('name', { ascending: true });
+    const organizations = await prisma.organizations.findMany({
+      select: { id: true, name: true, slug: true, logo_url: true, city: true, created_at: true },
+      orderBy: { name: 'asc' },
+    });
 
-    if (error) {
-      console.error('[Admin Organizations API] Error:', error);
-      return NextResponse.json(
-        { error: 'Fehler beim Laden der Organisationen' },
-        { status: 500 }
-      );
-    }
-
-    return NextResponse.json({ organizations: organizations || [] });
-
+    return NextResponse.json({ organizations });
   } catch (error) {
     console.error('[Admin Organizations API] Error:', error);
-    return NextResponse.json(
-      { error: 'Interner Serverfehler' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Interner Serverfehler' }, { status: 500 });
   }
 }
