@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createAdminSupabaseClient } from '@/lib/supabase/admin';
+import { prisma } from '@/lib/prisma';
+import bcrypt from 'bcryptjs';
 import { rateLimit } from '@/lib/rateLimit';
+import { randomUUID } from 'crypto';
 
 /**
  * POST /api/auth/register
- * Registriert einen neuen Benutzer und erstellt das Profil direkt
- * (DB-Trigger ist deaktiviert)
+ * Registriert einen neuen Benutzer mit Prisma
  */
 export async function POST(request: NextRequest) {
   try {
@@ -35,7 +36,7 @@ export async function POST(request: NextRequest) {
       // Fake-Success zurueckgeben (Bot merkt nichts)
       return NextResponse.json({
         success: true,
-        message: 'Registrierung erfolgreich. Bitte bestaetigen Sie Ihre E-Mail-Adresse.',
+        message: 'Registrierung erfolgreich.',
       });
     }
 
@@ -63,59 +64,36 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Admin Client fuer User-Erstellung
-    const adminSupabase = createAdminSupabaseClient();
+    // Pruefen ob E-Mail bereits existiert
+    const existingUser = await prisma.profiles.findUnique({
+      where: { email: email.toLowerCase() },
+    });
 
-    // User in Auth erstellen
-    const { data: authData, error: authError } = await adminSupabase.auth.admin.createUser({
-      email,
-      password,
-      email_confirm: false, // User muss E-Mail bestaetigen
-      user_metadata: {
-        full_name: fullName || '',
+    if (existingUser) {
+      return NextResponse.json(
+        { error: 'Diese E-Mail-Adresse ist bereits registriert' },
+        { status: 400 }
+      );
+    }
+
+    // Passwort hashen
+    const passwordHash = await bcrypt.hash(password, 12);
+
+    // Benutzer erstellen
+    await prisma.profiles.create({
+      data: {
+        id: randomUUID(),
+        email: email.toLowerCase(),
+        full_name: fullName || null,
+        company: company || null,
+        password_hash: passwordHash,
         role: 'user',
       },
     });
 
-    if (authError) {
-      console.error('Register error:', authError);
-
-      // Spezifische Fehlermeldungen
-      if (authError.message.includes('already registered') || authError.message.includes('already exists')) {
-        return NextResponse.json(
-          { error: 'Diese E-Mail-Adresse ist bereits registriert' },
-          { status: 400 }
-        );
-      }
-
-      return NextResponse.json(
-        { error: authError.message || 'Fehler bei der Registrierung' },
-        { status: 500 }
-      );
-    }
-
-    // Profil direkt erstellen (Trigger ist deaktiviert)
-    if (authData.user) {
-      const { error: profileError } = await adminSupabase.from('profiles').upsert({
-        id: authData.user.id,
-        email: authData.user.email,
-        full_name: fullName || '',
-        company: company || '',
-        role: 'user',
-      }, { onConflict: 'id' });
-
-      if (profileError) {
-        console.error('Profile creation error:', profileError);
-        // Nicht abbrechen - User wurde erstellt
-      }
-
-      // Bestaetigungs-E-Mail senden
-      // Supabase sendet automatisch eine Bestaetigungs-E-Mail wenn email_confirm: false
-    }
-
     return NextResponse.json({
       success: true,
-      message: 'Registrierung erfolgreich. Bitte bestaetigen Sie Ihre E-Mail-Adresse.',
+      message: 'Registrierung erfolgreich. Sie koennen sich jetzt anmelden.',
     });
 
   } catch (error) {

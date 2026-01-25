@@ -1,8 +1,8 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
-import { createClient } from '@/lib/supabase/client';
-import type { User, Session, AuthChangeEvent } from '@supabase/supabase-js';
+import { useSession, signIn as nextAuthSignIn, signOut as nextAuthSignOut } from 'next-auth/react';
+import type { Session } from 'next-auth';
 import type { Profile, UserRole, AuthUser } from '@/types/dashboard';
 
 // =====================================================
@@ -29,45 +29,26 @@ interface AuthContextValue {
 // =====================================================
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-// Singleton Supabase Client - EINE Instanz fuer die gesamte App
-const supabase = createClient();
-
-// Timeout fuer Auth-Aufrufe
-const AUTH_TIMEOUT = 10000;
-
-// Promise mit Timeout wrappen
-async function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
-  const timeoutPromise = new Promise<never>((_, reject) =>
-    setTimeout(() => reject(new Error('Auth timeout')), ms)
-  );
-  return Promise.race([promise, timeoutPromise]);
-}
-
 // =====================================================
 // AUTH PROVIDER
 // =====================================================
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
+  const { data: session, status } = useSession();
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [initialized, setInitialized] = useState(false);
+  const [profileLoading, setProfileLoading] = useState(false);
 
-  // Profil laden
+  const loading = status === 'loading' || profileLoading;
+
+  // Profil laden via API
   const fetchProfile = useCallback(async (userId: string): Promise<Profile | null> => {
     try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single();
-
-      if (error) {
-        console.log('[AuthContext] Profil nicht gefunden:', error.code);
+      const response = await fetch(`/api/profile/${userId}`);
+      if (!response.ok) {
+        console.log('[AuthContext] Profil nicht gefunden');
         return null;
       }
-
+      const data = await response.json();
       return data as Profile;
     } catch (err) {
       console.error('[AuthContext] Fehler beim Laden des Profils:', err);
@@ -77,115 +58,43 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Profil neu laden
   const refreshProfile = useCallback(async () => {
-    if (user?.id) {
-      const newProfile = await fetchProfile(user.id);
+    if (session?.user?.id) {
+      setProfileLoading(true);
+      const newProfile = await fetchProfile(session.user.id);
       setProfile(newProfile);
+      setProfileLoading(false);
     }
-  }, [user?.id, fetchProfile]);
+  }, [session?.user?.id, fetchProfile]);
 
-  // Auth-State initialisieren - NUR EINMAL
+  // Profil laden wenn Session sich aendert
   useEffect(() => {
-    // Verhindere doppelte Initialisierung
-    if (initialized) return;
+    if (session?.user?.id) {
+      setProfileLoading(true);
+      fetchProfile(session.user.id).then((newProfile) => {
+        setProfile(newProfile);
+        setProfileLoading(false);
+      });
+    } else {
+      setProfile(null);
+    }
+  }, [session?.user?.id, fetchProfile]);
 
-    let isMounted = true;
-
-    const initAuth = async () => {
-      try {
-        const sessionResult = await withTimeout<{ data: { session: Session | null }; error: Error | null }>(
-          supabase.auth.getSession(),
-          AUTH_TIMEOUT
-        );
-        const currentSession = sessionResult.data.session;
-        const sessionError = sessionResult.error;
-
-        if (!isMounted) return;
-
-        if (sessionError) {
-          console.error('[AuthContext] Session error:', sessionError);
-          setError('Fehler bei der Authentifizierung');
-          setLoading(false);
-          setInitialized(true);
-          return;
-        }
-
-        setSession(currentSession);
-        setUser(currentSession?.user ?? null);
-
-        if (currentSession?.user) {
-          try {
-            const userProfile = await withTimeout(
-              fetchProfile(currentSession.user.id),
-              AUTH_TIMEOUT
-            );
-            if (isMounted) {
-              setProfile(userProfile);
-            }
-          } catch (profileErr) {
-            console.warn('[AuthContext] Profil konnte nicht geladen werden:', profileErr);
-          }
-        }
-      } catch (err) {
-        console.error('[AuthContext] Initialisierungsfehler:', err);
-        if (isMounted) {
-          setError('Verbindungsproblem - bitte Seite neu laden');
-        }
-      } finally {
-        if (isMounted) {
-          setLoading(false);
-          setInitialized(true);
-        }
-      }
-    };
-
-    initAuth();
-
-    // Auth-State Listener - wird nur einmal registriert
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event: AuthChangeEvent, newSession: Session | null) => {
-        if (!isMounted) return;
-
-        setSession(newSession);
-        setUser(newSession?.user ?? null);
-
-        if (newSession?.user) {
-          try {
-            const userProfile = await withTimeout(
-              fetchProfile(newSession.user.id),
-              AUTH_TIMEOUT
-            );
-            if (isMounted) {
-              setProfile(userProfile);
-            }
-          } catch (err) {
-            console.warn('[AuthContext] Profil-Laden fehlgeschlagen:', err);
-          }
-        } else {
-          setProfile(null);
-        }
-
-        setLoading(false);
-      }
-    );
-
-    return () => {
-      isMounted = false;
-      subscription.unsubscribe();
-    };
-  }, [initialized, fetchProfile]);
-
-  // Sign In
+  // Sign In mit NextAuth Credentials
   const signIn = useCallback(async (email: string, password: string) => {
     try {
       setError(null);
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const result = await nextAuthSignIn('credentials', {
         email,
         password,
+        redirect: false,
       });
 
-      if (error) {
-        setError(error.message);
-        return { error: error.message };
+      if (result?.error) {
+        const errorMessage = result.error === 'CredentialsSignin'
+          ? 'Ungueltige E-Mail oder Passwort'
+          : result.error;
+        setError(errorMessage);
+        return { error: errorMessage };
       }
 
       return { error: null };
@@ -196,7 +105,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  // Sign Up - via API-Route (DB-Trigger ist deaktiviert)
+  // Sign Up - via API-Route
   const signUp = useCallback(async (email: string, password: string, fullName?: string, website?: string) => {
     try {
       setError(null);
@@ -225,24 +134,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Sign Out
   const signOut = useCallback(async () => {
     try {
-      await supabase.auth.signOut();
-      setUser(null);
-      setSession(null);
+      await nextAuthSignOut({ redirect: false });
       setProfile(null);
     } catch (err) {
       console.error('[AuthContext] Logout Fehler:', err);
     }
   }, []);
 
-  // Computed values
-  const role: UserRole = profile?.role ?? 'user';
+  // Computed values - nutze session.user.role falls vorhanden
+  const role: UserRole = (session?.user as { role?: UserRole })?.role ?? profile?.role ?? 'user';
   const isAdmin = role === 'admin';
   const isManager = role === 'manager';
   const isManagerOrAdmin = isAdmin || isManager;
 
-  const authUser: AuthUser | null = user ? {
-    id: user.id,
-    email: user.email ?? '',
+  const authUser: AuthUser | null = session?.user ? {
+    id: session.user.id,
+    email: session.user.email ?? '',
     profile,
   } : null;
 

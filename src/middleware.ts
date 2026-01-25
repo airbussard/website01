@@ -1,70 +1,31 @@
-import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
+import { getToken } from 'next-auth/jwt';
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  let supabaseResponse = NextResponse.next({
-    request,
+  // NextAuth JWT Token pruefen
+  const token = await getToken({
+    req: request,
+    secret: process.env.NEXTAUTH_SECRET,
   });
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-  if (!supabaseUrl || !supabaseAnonKey) {
-    return supabaseResponse;
-  }
-
-  const supabase = createServerClient(
-    supabaseUrl,
-    supabaseAnonKey,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll();
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value)
-          );
-          supabaseResponse = NextResponse.next({
-            request,
-          });
-          cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
-          );
-        },
-      },
-    }
-  );
-
-  // Refresh session if expired
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
   // =====================================================
-  // GESCHÜTZTE ROUTEN
+  // GESCHUETZTE ROUTEN
   // =====================================================
 
   // Dashboard-Bereich erfordert Login
   if (pathname.startsWith('/dashboard')) {
-    if (!user) {
+    if (!token) {
       const url = request.nextUrl.clone();
       url.pathname = '/auth/login';
       url.searchParams.set('redirect', pathname);
       return NextResponse.redirect(url);
     }
 
-    // Admin-Bereich nur für Admins
+    // Admin-Bereich nur fuer Admins
     if (pathname.startsWith('/dashboard/admin')) {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single();
-
-      if (profile?.role !== 'admin') {
+      if (token.role !== 'admin') {
         const url = request.nextUrl.clone();
         url.pathname = '/dashboard';
         return NextResponse.redirect(url);
@@ -74,13 +35,13 @@ export async function middleware(request: NextRequest) {
 
   // Auth-Seiten: Eingeloggte User zum Dashboard weiterleiten
   // AUSNAHME: /auth/reset-password - User muss Passwort aendern koennen
-  if (pathname.startsWith('/auth/') && user && pathname !== '/auth/reset-password') {
+  if (pathname.startsWith('/auth/') && token && pathname !== '/auth/reset-password') {
     const url = request.nextUrl.clone();
     url.pathname = '/dashboard';
     return NextResponse.redirect(url);
   }
 
-  return supabaseResponse;
+  return NextResponse.next();
 }
 
 export const config = {
@@ -91,8 +52,8 @@ export const config = {
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      * - public folder
-     * - api routes
+     * - api routes (NextAuth needs these)
      */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|api/|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 };
