@@ -1,4 +1,4 @@
-import { createAdminSupabaseClient } from '@/lib/supabase/admin';
+import { prisma } from '@/lib/prisma';
 import type {
   ContactRequest,
   CreateContactRequest,
@@ -23,20 +23,12 @@ export class ContactService {
    */
   static async getAll(): Promise<ContactRequest[]> {
     try {
-      const supabase = createAdminSupabaseClient();
+      const data = await prisma.contact_requests.findMany({
+        where: { is_spam: false },
+        orderBy: { created_at: 'desc' },
+      });
 
-      const { data, error } = await supabase
-        .from('contact_requests')
-        .select('*')
-        .eq('is_spam', false)
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('[ContactService] Fehler beim Laden:', error);
-        return [];
-      }
-
-      return (data || []) as ContactRequest[];
+      return data as unknown as ContactRequest[];
     } catch (err) {
       console.error('[ContactService] getAll Exception:', err);
       return [];
@@ -48,20 +40,12 @@ export class ContactService {
    */
   static async getSpam(): Promise<ContactRequest[]> {
     try {
-      const supabase = createAdminSupabaseClient();
+      const data = await prisma.contact_requests.findMany({
+        where: { is_spam: true },
+        orderBy: { created_at: 'desc' },
+      });
 
-      const { data, error } = await supabase
-        .from('contact_requests')
-        .select('*')
-        .eq('is_spam', true)
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('[ContactService] Fehler beim Laden der Spam-Anfragen:', error);
-        return [];
-      }
-
-      return (data || []) as ContactRequest[];
+      return data as unknown as ContactRequest[];
     } catch (err) {
       console.error('[ContactService] getSpam Exception:', err);
       return [];
@@ -73,20 +57,12 @@ export class ContactService {
    */
   static async getById(id: string): Promise<ContactRequest | null> {
     try {
-      const supabase = createAdminSupabaseClient();
+      const data = await prisma.contact_requests.findUnique({
+        where: { id },
+      });
 
-      const { data, error } = await supabase
-        .from('contact_requests')
-        .select('*')
-        .eq('id', id)
-        .single();
-
-      if (error) {
-        console.error('[ContactService] Fehler beim Laden:', error);
-        return null;
-      }
-
-      return data as ContactRequest;
+      if (!data) return null;
+      return data as unknown as ContactRequest;
     } catch (err) {
       console.error('[ContactService] getById Exception:', err);
       return null;
@@ -98,20 +74,12 @@ export class ContactService {
    */
   static async getByStatus(status: ContactRequestStatus): Promise<ContactRequest[]> {
     try {
-      const supabase = createAdminSupabaseClient();
+      const data = await prisma.contact_requests.findMany({
+        where: { status },
+        orderBy: { created_at: 'desc' },
+      });
 
-      const { data, error } = await supabase
-        .from('contact_requests')
-        .select('*')
-        .eq('status', status)
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('[ContactService] Fehler beim Laden:', error);
-        return [];
-      }
-
-      return (data || []) as ContactRequest[];
+      return data as unknown as ContactRequest[];
     } catch (err) {
       console.error('[ContactService] getByStatus Exception:', err);
       return [];
@@ -123,22 +91,20 @@ export class ContactService {
    */
   static async getStats(): Promise<ContactStats> {
     try {
-      const supabase = createAdminSupabaseClient();
-
       const [total, neu, inBearbeitung, erledigt, spam] = await Promise.all([
-        supabase.from('contact_requests').select('*', { count: 'exact', head: true }).eq('is_spam', false),
-        supabase.from('contact_requests').select('*', { count: 'exact', head: true }).eq('status', 'neu').eq('is_spam', false),
-        supabase.from('contact_requests').select('*', { count: 'exact', head: true }).eq('status', 'in_bearbeitung').eq('is_spam', false),
-        supabase.from('contact_requests').select('*', { count: 'exact', head: true }).eq('status', 'erledigt').eq('is_spam', false),
-        supabase.from('contact_requests').select('*', { count: 'exact', head: true }).eq('is_spam', true),
+        prisma.contact_requests.count({ where: { is_spam: false } }),
+        prisma.contact_requests.count({ where: { status: 'neu', is_spam: false } }),
+        prisma.contact_requests.count({ where: { status: 'in_bearbeitung', is_spam: false } }),
+        prisma.contact_requests.count({ where: { status: 'erledigt', is_spam: false } }),
+        prisma.contact_requests.count({ where: { is_spam: true } }),
       ]);
 
       return {
-        total: total.count || 0,
-        neu: neu.count || 0,
-        in_bearbeitung: inBearbeitung.count || 0,
-        erledigt: erledigt.count || 0,
-        spam: spam.count || 0,
+        total,
+        neu,
+        in_bearbeitung: inBearbeitung,
+        erledigt,
+        spam,
       };
     } catch (err) {
       console.error('[ContactService] getStats Exception:', err);
@@ -155,11 +121,8 @@ export class ContactService {
    */
   static async create(request: CreateContactRequest): Promise<ContactRequest | null> {
     try {
-      const supabase = createAdminSupabaseClient();
-
-      const { data, error } = await supabase
-        .from('contact_requests')
-        .insert({
+      const data = await prisma.contact_requests.create({
+        data: {
           name: request.name,
           email: request.email,
           company: request.company || null,
@@ -167,17 +130,11 @@ export class ContactService {
           message: request.message,
           project_type: request.project_type || null,
           status: 'neu',
-        })
-        .select()
-        .single();
-
-      if (error) {
-        console.error('[ContactService] Fehler beim Erstellen:', error);
-        return null;
-      }
+        },
+      });
 
       console.log('[ContactService] Anfrage erstellt:', data.id);
-      return data as ContactRequest;
+      return data as unknown as ContactRequest;
     } catch (err) {
       console.error('[ContactService] create Exception:', err);
       return null;
@@ -189,17 +146,10 @@ export class ContactService {
    */
   static async updateStatus(id: string, status: ContactRequestStatus): Promise<boolean> {
     try {
-      const supabase = createAdminSupabaseClient();
-
-      const { error } = await supabase
-        .from('contact_requests')
-        .update({ status })
-        .eq('id', id);
-
-      if (error) {
-        console.error('[ContactService] Fehler beim Status-Update:', error);
-        return false;
-      }
+      await prisma.contact_requests.update({
+        where: { id },
+        data: { status },
+      });
 
       return true;
     } catch (err) {
@@ -213,17 +163,10 @@ export class ContactService {
    */
   static async updateNotes(id: string, notes: string): Promise<boolean> {
     try {
-      const supabase = createAdminSupabaseClient();
-
-      const { error } = await supabase
-        .from('contact_requests')
-        .update({ notes })
-        .eq('id', id);
-
-      if (error) {
-        console.error('[ContactService] Fehler beim Notes-Update:', error);
-        return false;
-      }
+      await prisma.contact_requests.update({
+        where: { id },
+        data: { notes },
+      });
 
       return true;
     } catch (err) {
@@ -237,17 +180,9 @@ export class ContactService {
    */
   static async delete(id: string): Promise<boolean> {
     try {
-      const supabase = createAdminSupabaseClient();
-
-      const { error } = await supabase
-        .from('contact_requests')
-        .delete()
-        .eq('id', id);
-
-      if (error) {
-        console.error('[ContactService] Fehler beim Löschen:', error);
-        return false;
-      }
+      await prisma.contact_requests.delete({
+        where: { id },
+      });
 
       return true;
     } catch (err) {
@@ -261,17 +196,10 @@ export class ContactService {
    */
   static async markAsNotSpam(id: string): Promise<boolean> {
     try {
-      const supabase = createAdminSupabaseClient();
-
-      const { error } = await supabase
-        .from('contact_requests')
-        .update({ is_spam: false })
-        .eq('id', id);
-
-      if (error) {
-        console.error('[ContactService] Fehler beim Markieren als Nicht-Spam:', error);
-        return false;
-      }
+      await prisma.contact_requests.update({
+        where: { id },
+        data: { is_spam: false },
+      });
 
       console.log(`[ContactService] Anfrage ${id} als Nicht-Spam markiert`);
       return true;
@@ -290,20 +218,12 @@ export class ContactService {
    */
   static async getMessages(contactRequestId: string): Promise<EmailMessage[]> {
     try {
-      const supabase = createAdminSupabaseClient();
+      const data = await prisma.email_messages.findMany({
+        where: { contact_request_id: contactRequestId },
+        orderBy: { created_at: 'asc' },
+      });
 
-      const { data, error } = await supabase
-        .from('email_messages')
-        .select('*')
-        .eq('contact_request_id', contactRequestId)
-        .order('created_at', { ascending: true });
-
-      if (error) {
-        console.error('[ContactService] Fehler beim Laden der Nachrichten:', error);
-        return [];
-      }
-
-      return (data || []) as EmailMessage[];
+      return data as unknown as EmailMessage[];
     } catch (err) {
       console.error('[ContactService] getMessages Exception:', err);
       return [];
@@ -315,11 +235,8 @@ export class ContactService {
    */
   static async createMessage(message: CreateEmailMessage): Promise<EmailMessage | null> {
     try {
-      const supabase = createAdminSupabaseClient();
-
-      const { data, error } = await supabase
-        .from('email_messages')
-        .insert({
+      const data = await prisma.email_messages.create({
+        data: {
           contact_request_id: message.contact_request_id,
           direction: message.direction,
           from_email: message.from_email,
@@ -328,16 +245,10 @@ export class ContactService {
           subject: message.subject || null,
           content_html: message.content_html || null,
           content_text: message.content_text || null,
-        })
-        .select()
-        .single();
+        },
+      });
 
-      if (error) {
-        console.error('[ContactService] Fehler beim Erstellen der Nachricht:', error);
-        return null;
-      }
-
-      return data as EmailMessage;
+      return data as unknown as EmailMessage;
     } catch (err) {
       console.error('[ContactService] createMessage Exception:', err);
       return null;

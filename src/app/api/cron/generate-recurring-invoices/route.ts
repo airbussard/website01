@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createAdminSupabaseClient } from '@/lib/supabase/admin';
+import { prisma } from '@/lib/prisma';
 import { EmailService } from '@/lib/services/email/EmailService';
 import { getProjectRecipients } from '@/lib/services/notifications/getProjectRecipients';
 import {
@@ -33,20 +33,24 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const adminSupabase = createAdminSupabaseClient();
-    const today = new Date().toISOString().split('T')[0];
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
     // Alle faelligen aktiven Recurring Invoices laden
-    const { data: dueRecurringInvoices, error: loadError } = await adminSupabase
-      .from('recurring_invoices')
-      .select(`
-        *,
-        project:pm_projects(id, name, client_id, organization_id)
-      `)
-      .eq('is_active', true)
-      .lte('next_invoice_date', today);
-
-    if (loadError) {
+    let dueRecurringInvoices;
+    try {
+      dueRecurringInvoices = await prisma.recurring_invoices.findMany({
+        where: {
+          is_active: true,
+          next_invoice_date: { lte: today },
+        },
+        include: {
+          pm_projects: {
+            select: { id: true, name: true, client_id: true, organization_id: true },
+          },
+        },
+      });
+    } catch (loadError) {
       console.error('[Cron] Load recurring invoices error:', loadError);
       return NextResponse.json({ error: 'Fehler beim Laden' }, { status: 500 });
     }
@@ -59,11 +63,10 @@ export async function GET(request: NextRequest) {
     }
 
     // Lexoffice Settings laden
-    const { data: settings } = await adminSupabase
-      .from('system_settings')
-      .select('value')
-      .eq('key', 'lexoffice')
-      .single();
+    const settings = await prisma.system_settings.findUnique({
+      where: { key: 'lexoffice' },
+      select: { value: true },
+    });
 
     const lexofficeSettings = settings?.value as {
       is_enabled: boolean;
@@ -77,15 +80,17 @@ export async function GET(request: NextRequest) {
       error?: string;
     }> = [];
 
+    const todayStr = today.toISOString().split('T')[0];
+
     for (const recurring of dueRecurringInvoices) {
       try {
         // Pruefen ob end_date erreicht
         if (recurring.end_date && recurring.end_date < today) {
           // Deaktivieren
-          await adminSupabase
-            .from('recurring_invoices')
-            .update({ is_active: false })
-            .eq('id', recurring.id);
+          await prisma.recurring_invoices.update({
+            where: { id: recurring.id },
+            data: { is_active: false },
+          });
 
           results.push({
             recurring_id: recurring.id,
@@ -97,46 +102,58 @@ export async function GET(request: NextRequest) {
 
         // Rechnungsnummer generieren
         const year = new Date().getFullYear();
-        const { count } = await adminSupabase
-          .from('invoices')
-          .select('*', { count: 'exact', head: true })
-          .gte('created_at', `${year}-01-01`)
-          .lt('created_at', `${year + 1}-01-01`);
+        const yearStart = new Date(`${year}-01-01`);
+        const yearEnd = new Date(`${year + 1}-01-01`);
+
+        const count = await prisma.invoices.count({
+          where: {
+            created_at: { gte: yearStart, lt: yearEnd },
+          },
+        });
 
         const invoiceNumber = `RE-${year}-${String((count || 0) + 1).padStart(4, '0')}`;
 
-        const lineItems = recurring.line_items as InvoiceLineItem[];
-        const netAmount = recurring.net_amount;
-        const taxRate = recurring.tax_rate || 19;
+        const lineItems = recurring.line_items as unknown as InvoiceLineItem[];
+        const netAmount = Number(recurring.net_amount);
+        const taxRate = Number(recurring.tax_rate) || 19;
         const taxAmount = netAmount * (taxRate / 100);
         const totalAmount = netAmount + taxAmount;
+
+        // Project ID ist erforderlich
+        if (!recurring.project_id) {
+          results.push({
+            recurring_id: recurring.id,
+            success: false,
+            error: 'Keine Projekt-ID vorhanden',
+          });
+          continue;
+        }
 
         // Faelligkeitsdatum (30 Tage)
         const dueDate = new Date();
         dueDate.setDate(dueDate.getDate() + 30);
 
         // Rechnung erstellen
-        const { data: invoice, error: insertError } = await adminSupabase
-          .from('invoices')
-          .insert({
-            invoice_number: invoiceNumber,
-            title: recurring.title,
-            description: recurring.description,
-            amount: netAmount,
-            tax_amount: taxAmount,
-            total_amount: totalAmount,
-            currency: 'EUR',
-            status: 'draft',
-            project_id: recurring.project_id,
-            issue_date: today,
-            due_date: dueDate.toISOString().split('T')[0],
-            line_items: lineItems,
-            created_by: recurring.created_by,
-          })
-          .select()
-          .single();
-
-        if (insertError || !invoice) {
+        let invoice;
+        try {
+          invoice = await prisma.invoices.create({
+            data: {
+              invoice_number: invoiceNumber,
+              title: recurring.title,
+              description: recurring.description,
+              amount: netAmount,
+              tax_amount: taxAmount,
+              total_amount: totalAmount,
+              currency: 'EUR',
+              status: 'draft',
+              project_id: recurring.project_id,
+              issue_date: today,
+              due_date: dueDate,
+              line_items: lineItems as object,
+              created_by: recurring.created_by,
+            },
+          });
+        } catch (insertError) {
           console.error('[Cron] Invoice insert error:', insertError);
           results.push({
             recurring_id: recurring.id,
@@ -155,26 +172,21 @@ export async function GET(request: NextRequest) {
           recurring.auto_send
         ) {
           try {
-            const project = recurring.project as {
-              client_id?: string;
-              organization_id?: string;
-            } | null;
+            const project = recurring.pm_projects;
             let contactId: string | null = null;
 
             if (project?.client_id) {
-              const { data: contactMapping } = await adminSupabase
-                .from('lexoffice_contacts')
-                .select('lexoffice_contact_id')
-                .eq('profile_id', project.client_id)
-                .single();
+              const contactMapping = await prisma.lexoffice_contacts.findFirst({
+                where: { profile_id: project.client_id },
+                select: { lexoffice_contact_id: true },
+              });
 
               contactId = contactMapping?.lexoffice_contact_id || null;
             } else if (project?.organization_id) {
-              const { data: contactMapping } = await adminSupabase
-                .from('lexoffice_contacts')
-                .select('lexoffice_contact_id')
-                .eq('organization_id', project.organization_id)
-                .single();
+              const contactMapping = await prisma.lexoffice_contacts.findFirst({
+                where: { organization_id: project.organization_id },
+                select: { lexoffice_contact_id: true },
+              });
 
               contactId = contactMapping?.lexoffice_contact_id || null;
             }
@@ -182,7 +194,7 @@ export async function GET(request: NextRequest) {
             if (contactId) {
               const lexoffice = createLexofficeClient(lexofficeSettings.api_key);
               const lexofficeData = mapToLexofficeInvoice({
-                invoice: invoice as Invoice,
+                invoice: invoice as unknown as Invoice,
                 lexofficeContactId: contactId,
                 lineItems,
               });
@@ -191,68 +203,73 @@ export async function GET(request: NextRequest) {
               lexofficeId = response.id;
 
               // Invoice aktualisieren
-              await adminSupabase
-                .from('invoices')
-                .update({
+              await prisma.invoices.update({
+                where: { id: invoice.id },
+                data: {
                   lexoffice_id: lexofficeId,
                   lexoffice_status: 'open',
                   status: 'sent',
-                  synced_at: new Date().toISOString(),
-                })
-                .eq('id', invoice.id);
+                  synced_at: new Date(),
+                },
+              });
 
               // Sync Log
-              await adminSupabase.from('lexoffice_sync_log').insert({
-                entity_type: 'invoice',
-                entity_id: invoice.id,
-                lexoffice_id: lexofficeId,
-                action: 'create_from_recurring',
-                status: 'success',
+              await prisma.lexoffice_sync_log.create({
+                data: {
+                  entity_type: 'invoice',
+                  entity_id: invoice.id,
+                  lexoffice_id: lexofficeId,
+                  action: 'create_from_recurring',
+                  status: 'success',
+                },
               });
             }
           } catch (lexError) {
             console.error('[Cron] Lexoffice sync error:', lexError);
             if (lexError instanceof LexofficeApiError) {
-              await adminSupabase.from('lexoffice_sync_log').insert({
-                entity_type: 'invoice',
-                entity_id: invoice.id,
-                action: 'create_from_recurring',
-                status: 'failed',
-                error_message: lexError.message,
+              await prisma.lexoffice_sync_log.create({
+                data: {
+                  entity_type: 'invoice',
+                  entity_id: invoice.id,
+                  action: 'create_from_recurring',
+                  status: 'failed',
+                  error_message: lexError.message,
+                },
               });
             }
           }
         }
 
         // History eintragen
-        await adminSupabase.from('recurring_invoice_history').insert({
-          recurring_invoice_id: recurring.id,
-          invoice_id: invoice.id,
-          generated_at: new Date().toISOString(),
+        await prisma.recurring_invoice_history.create({
+          data: {
+            recurring_invoice_id: recurring.id,
+            invoice_id: invoice.id,
+            generated_at: new Date(),
+          },
         });
 
         // Naechstes Datum berechnen
         const nextDate = calculateNextDate(
-          new Date(recurring.next_invoice_date),
+          new Date(recurring.next_invoice_date!),
           recurring.interval_type as RecurringInterval,
           recurring.interval_value
         );
 
         // Recurring Invoice aktualisieren
-        await adminSupabase
-          .from('recurring_invoices')
-          .update({
-            next_invoice_date: nextDate.toISOString().split('T')[0],
-            last_generated_at: new Date().toISOString(),
+        await prisma.recurring_invoices.update({
+          where: { id: recurring.id },
+          data: {
+            next_invoice_date: nextDate,
+            last_generated_at: new Date(),
             invoices_generated: (recurring.invoices_generated || 0) + 1,
-          })
-          .eq('id', recurring.id);
+          },
+        });
 
         // Email-Benachrichtigung wenn aktiviert
         if (recurring.send_notification) {
           try {
-            const projectName =
-              (recurring.project as { name?: string } | null)?.name || 'Projekt';
+            const projectName = recurring.pm_projects?.name || 'Projekt';
             const recipients = await getProjectRecipients(recurring.project_id);
             const dashboardUrl = `${BASE_URL}/dashboard/invoices/${invoice.id}`;
 

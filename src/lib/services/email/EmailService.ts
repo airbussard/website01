@@ -1,4 +1,4 @@
-import { createAdminSupabaseClient } from '@/lib/supabase/admin';
+import { prisma } from '@/lib/prisma';
 import type {
   EmailSettings,
   UpdateEmailSettings,
@@ -23,20 +23,10 @@ export class EmailService {
    */
   static async getSettings(): Promise<EmailSettings | null> {
     try {
-      const supabase = createAdminSupabaseClient();
+      const data = await prisma.email_settings.findFirst();
 
-      const { data, error } = await supabase
-        .from('email_settings')
-        .select('*')
-        .limit(1)
-        .single();
-
-      if (error) {
-        console.error('[EmailService] Fehler beim Laden der Settings:', error);
-        return null;
-      }
-
-      return data as EmailSettings;
+      if (!data) return null;
+      return data as unknown as EmailSettings;
     } catch (err) {
       console.error('[EmailService] getSettings Exception:', err);
       return null;
@@ -48,36 +38,22 @@ export class EmailService {
    */
   static async updateSettings(settings: UpdateEmailSettings): Promise<boolean> {
     try {
-      const supabase = createAdminSupabaseClient();
-
       // Ersten (und einzigen) Eintrag holen
-      const { data: existing } = await supabase
-        .from('email_settings')
-        .select('id')
-        .limit(1)
-        .single();
+      const existing = await prisma.email_settings.findFirst({
+        select: { id: true },
+      });
 
       if (!existing) {
         // Neuen Eintrag erstellen
-        const { error } = await supabase
-          .from('email_settings')
-          .insert(settings);
-
-        if (error) {
-          console.error('[EmailService] Fehler beim Erstellen der Settings:', error);
-          return false;
-        }
+        await prisma.email_settings.create({
+          data: settings as Record<string, unknown>,
+        });
       } else {
         // Existierenden Eintrag aktualisieren
-        const { error } = await supabase
-          .from('email_settings')
-          .update(settings)
-          .eq('id', existing.id);
-
-        if (error) {
-          console.error('[EmailService] Fehler beim Aktualisieren der Settings:', error);
-          return false;
-        }
+        await prisma.email_settings.update({
+          where: { id: existing.id },
+          data: settings as Record<string, unknown>,
+        });
       }
 
       return true;
@@ -96,35 +72,24 @@ export class EmailService {
    */
   static async queueEmail(item: CreateEmailQueueItem): Promise<EmailQueueItem | null> {
     try {
-      const supabase = createAdminSupabaseClient();
-
-      const queueItem = {
-        contact_request_id: item.contact_request_id || null,
-        recipient_email: item.recipient_email,
-        recipient_name: item.recipient_name || null,
-        subject: item.subject,
-        content_html: item.content_html,
-        content_text: item.content_text || null,
-        type: item.type || 'notification',
-        metadata: item.metadata || {},
-        status: 'pending',
-        attempts: 0,
-        max_attempts: 3,
-      };
-
-      const { data, error } = await supabase
-        .from('email_queue')
-        .insert(queueItem)
-        .select()
-        .single();
-
-      if (error) {
-        console.error('[EmailService] Fehler beim Queuen der E-Mail:', error);
-        return null;
-      }
+      const data = await prisma.email_queue.create({
+        data: {
+          contact_request_id: item.contact_request_id || null,
+          recipient_email: item.recipient_email,
+          recipient_name: item.recipient_name || null,
+          subject: item.subject,
+          content_html: item.content_html,
+          content_text: item.content_text || null,
+          type: item.type || 'notification',
+          metadata: (item.metadata || {}) as object,
+          status: 'pending',
+          attempts: 0,
+          max_attempts: 3,
+        },
+      });
 
       console.log('[EmailService] E-Mail gequeued:', data.id);
-      return data as EmailQueueItem;
+      return data as unknown as EmailQueueItem;
     } catch (err) {
       console.error('[EmailService] queueEmail Exception:', err);
       return null;
@@ -133,21 +98,15 @@ export class EmailService {
 
   /**
    * Atomisches Claimen von pending E-Mails für Verarbeitung
-   * Nutzt die PostgreSQL-Funktion claim_pending_emails
+   * Nutzt die PostgreSQL-Funktion claim_pending_emails via Raw SQL
    */
   static async claimPendingEmails(limit: number = 10): Promise<EmailQueueItem[]> {
     try {
-      const supabase = createAdminSupabaseClient();
+      const data = await prisma.$queryRaw<EmailQueueItem[]>`
+        SELECT * FROM claim_pending_emails(${limit})
+      `;
 
-      const { data, error } = await supabase
-        .rpc('claim_pending_emails', { max_count: limit });
-
-      if (error) {
-        console.error('[EmailService] Fehler beim Claimen der E-Mails:', error);
-        return [];
-      }
-
-      return (data || []) as EmailQueueItem[];
+      return data || [];
     } catch (err) {
       console.error('[EmailService] claimPendingEmails Exception:', err);
       return [];
@@ -166,26 +125,19 @@ export class EmailService {
     }
   ): Promise<boolean> {
     try {
-      const supabase = createAdminSupabaseClient();
-
       const updateData: Record<string, unknown> = { status };
 
       if (options?.error_message !== undefined) {
         updateData.error_message = options.error_message;
       }
       if (options?.sent_at) {
-        updateData.sent_at = options.sent_at;
+        updateData.sent_at = new Date(options.sent_at);
       }
 
-      const { error } = await supabase
-        .from('email_queue')
-        .update(updateData)
-        .eq('id', id);
-
-      if (error) {
-        console.error('[EmailService] Fehler beim Status-Update:', error);
-        return false;
-      }
+      await prisma.email_queue.update({
+        where: { id },
+        data: updateData,
+      });
 
       return true;
     } catch (err) {
@@ -199,22 +151,20 @@ export class EmailService {
    */
   static async getQueueStats(): Promise<QueueStats> {
     try {
-      const supabase = createAdminSupabaseClient();
-
       const [total, pending, processing, sent, failed] = await Promise.all([
-        supabase.from('email_queue').select('*', { count: 'exact', head: true }),
-        supabase.from('email_queue').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
-        supabase.from('email_queue').select('*', { count: 'exact', head: true }).eq('status', 'processing'),
-        supabase.from('email_queue').select('*', { count: 'exact', head: true }).eq('status', 'sent'),
-        supabase.from('email_queue').select('*', { count: 'exact', head: true }).eq('status', 'failed'),
+        prisma.email_queue.count(),
+        prisma.email_queue.count({ where: { status: 'pending' } }),
+        prisma.email_queue.count({ where: { status: 'processing' } }),
+        prisma.email_queue.count({ where: { status: 'sent' } }),
+        prisma.email_queue.count({ where: { status: 'failed' } }),
       ]);
 
       return {
-        total: total.count || 0,
-        pending: pending.count || 0,
-        processing: processing.count || 0,
-        sent: sent.count || 0,
-        failed: failed.count || 0,
+        total,
+        pending,
+        processing,
+        sent,
+        failed,
       };
     } catch (err) {
       console.error('[EmailService] getQueueStats Exception:', err);
@@ -230,29 +180,13 @@ export class EmailService {
     limit?: number;
   }): Promise<EmailQueueItem[]> {
     try {
-      const supabase = createAdminSupabaseClient();
+      const data = await prisma.email_queue.findMany({
+        where: options?.status ? { status: options.status } : undefined,
+        orderBy: { created_at: 'desc' },
+        take: options?.limit,
+      });
 
-      let query = supabase
-        .from('email_queue')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (options?.status) {
-        query = query.eq('status', options.status);
-      }
-
-      if (options?.limit) {
-        query = query.limit(options.limit);
-      }
-
-      const { data, error } = await query;
-
-      if (error) {
-        console.error('[EmailService] Fehler beim Laden der Queue-Items:', error);
-        return [];
-      }
-
-      return (data || []) as EmailQueueItem[];
+      return data as unknown as EmailQueueItem[];
     } catch (err) {
       console.error('[EmailService] getQueueItems Exception:', err);
       return [];
@@ -264,21 +198,14 @@ export class EmailService {
    */
   static async retryQueueItem(id: string): Promise<boolean> {
     try {
-      const supabase = createAdminSupabaseClient();
-
-      const { error } = await supabase
-        .from('email_queue')
-        .update({
+      await prisma.email_queue.update({
+        where: { id },
+        data: {
           status: 'pending',
           attempts: 0,
           error_message: null,
-        })
-        .eq('id', id);
-
-      if (error) {
-        console.error('[EmailService] Fehler beim Retry:', error);
-        return false;
-      }
+        },
+      });
 
       return true;
     } catch (err) {
@@ -292,17 +219,9 @@ export class EmailService {
    */
   static async deleteQueueItem(id: string): Promise<boolean> {
     try {
-      const supabase = createAdminSupabaseClient();
-
-      const { error } = await supabase
-        .from('email_queue')
-        .delete()
-        .eq('id', id);
-
-      if (error) {
-        console.error('[EmailService] Fehler beim Löschen:', error);
-        return false;
-      }
+      await prisma.email_queue.delete({
+        where: { id },
+      });
 
       return true;
     } catch (err) {
@@ -316,24 +235,18 @@ export class EmailService {
    */
   static async resetStuckProcessingEmails(olderThanMinutes: number = 30): Promise<number> {
     try {
-      const supabase = createAdminSupabaseClient();
-
       const cutoffTime = new Date();
       cutoffTime.setMinutes(cutoffTime.getMinutes() - olderThanMinutes);
 
-      const { data, error } = await supabase
-        .from('email_queue')
-        .update({ status: 'pending' })
-        .eq('status', 'processing')
-        .lt('last_attempt_at', cutoffTime.toISOString())
-        .select('id');
+      const result = await prisma.email_queue.updateMany({
+        where: {
+          status: 'processing',
+          last_attempt_at: { lt: cutoffTime },
+        },
+        data: { status: 'pending' },
+      });
 
-      if (error) {
-        console.error('[EmailService] Fehler beim Reset stuck E-Mails:', error);
-        return 0;
-      }
-
-      const count = data?.length || 0;
+      const count = result.count;
       if (count > 0) {
         console.log(`[EmailService] ${count} stuck E-Mails zurückgesetzt`);
       }

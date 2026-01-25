@@ -32,7 +32,11 @@
       "Bash(dig:*)",
       "Bash(openssl rand:*)",
       "Bash(git diff:*)",
-      "Bash(git log:*)"
+      "Bash(git log:*)",
+      "Bash(npx prisma init:*)",
+      "Bash(npx prisma db pull:*)",
+      "Bash(npx prisma generate:*)",
+      "Bash(node -e:*)"
     ],
     "deny": [],
     "ask": []

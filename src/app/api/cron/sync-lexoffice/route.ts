@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createAdminSupabaseClient } from '@/lib/supabase/admin';
+import { prisma } from '@/lib/prisma';
 import {
   createLexofficeClient,
   mapLexofficeStatusToLocal,
@@ -25,14 +25,11 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const adminSupabase = createAdminSupabaseClient();
-
     // Lexoffice Settings laden
-    const { data: settings } = await adminSupabase
-      .from('system_settings')
-      .select('value')
-      .eq('key', 'lexoffice')
-      .single();
+    const settings = await prisma.system_settings.findUnique({
+      where: { key: 'lexoffice' },
+      select: { value: true },
+    });
 
     const lexofficeSettings = settings?.value as {
       is_enabled: boolean;
@@ -61,14 +58,19 @@ export async function GET(request: NextRequest) {
     // =====================================================
 
     // Offene Rechnungen mit Lexoffice ID laden
-    const { data: openInvoices, error: invoicesError } = await adminSupabase
-      .from('invoices')
-      .select('id, status, lexoffice_id, lexoffice_status')
-      .not('lexoffice_id', 'is', null)
-      .in('status', ['draft', 'sent', 'overdue']);
-
-    if (invoicesError) {
+    type InvoiceSelect = { id: string; status: string; lexoffice_id: string | null; lexoffice_status: string | null; invoice_number: string };
+    let openInvoices: InvoiceSelect[] = [];
+    try {
+      openInvoices = await prisma.invoices.findMany({
+        where: {
+          lexoffice_id: { not: null },
+          status: { in: ['draft', 'sent', 'overdue'] },
+        },
+        select: { id: true, status: true, lexoffice_id: true, lexoffice_status: true, invoice_number: true },
+      });
+    } catch (invoicesError) {
       console.error('[Lexoffice Sync] Load invoices error:', invoicesError);
+      openInvoices = [];
     }
 
     if (openInvoices && openInvoices.length > 0) {
@@ -85,72 +87,45 @@ export async function GET(request: NextRequest) {
             const updates: Record<string, unknown> = {
               status: localStatus,
               lexoffice_status: lexofficeStatus,
-              synced_at: new Date().toISOString(),
+              synced_at: new Date(),
             };
 
             // Bei Bezahlung: paid_at setzen
             if (localStatus === 'paid') {
-              updates.paid_at = new Date().toISOString();
+              updates.paid_at = new Date();
             }
 
-            await adminSupabase.from('invoices').update(updates).eq('id', invoice.id);
+            await prisma.invoices.update({
+              where: { id: invoice.id },
+              data: updates,
+            });
 
-            // PDF aktualisieren wenn noch nicht vorhanden
-            if (!invoice.lexoffice_id) {
-              try {
-                const pdfBuffer = await lexoffice.getInvoicePdf(invoice.lexoffice_id);
-
-                // Query invoice_number
-                const { data: invoiceData } = await adminSupabase
-                  .from('invoices')
-                  .select('invoice_number')
-                  .eq('id', invoice.id)
-                  .single();
-
-                if (invoiceData?.invoice_number) {
-                  const pdfFileName = `invoices/${invoiceData.invoice_number}.pdf`;
-                  await adminSupabase.storage
-                    .from('documents')
-                    .upload(pdfFileName, pdfBuffer, {
-                      contentType: 'application/pdf',
-                      upsert: true,
-                    });
-
-                  const { data: urlData } = adminSupabase.storage
-                    .from('documents')
-                    .getPublicUrl(pdfFileName);
-
-                  await adminSupabase
-                    .from('invoices')
-                    .update({ pdf_url: urlData.publicUrl })
-                    .eq('id', invoice.id);
-                }
-              } catch (pdfError) {
-                console.error('[Lexoffice Sync] PDF fetch error:', pdfError);
-              }
-            }
+            // PDF Upload wird in Phase 6 (Storage Migration) behandelt
+            // Hier erstmal auskommentiert da Supabase Storage noch nicht migriert
 
             // Sync Log
-            await adminSupabase.from('lexoffice_sync_log').insert({
-              entity_type: 'invoice',
-              entity_id: invoice.id,
-              lexoffice_id: invoice.lexoffice_id,
-              action: 'status_sync',
-              status: 'success',
-              response_data: {
-                old_status: invoice.status,
-                new_status: localStatus,
-                lexoffice_status: lexofficeStatus,
+            await prisma.lexoffice_sync_log.create({
+              data: {
+                entity_type: 'invoice',
+                entity_id: invoice.id,
+                lexoffice_id: invoice.lexoffice_id,
+                action: 'status_sync',
+                status: 'success',
+                response_data: {
+                  old_status: invoice.status,
+                  new_status: localStatus,
+                  lexoffice_status: lexofficeStatus,
+                },
               },
             });
 
             results.invoices.push({ id: invoice.id, status_changed: true });
           } else {
             // Nur synced_at aktualisieren
-            await adminSupabase
-              .from('invoices')
-              .update({ synced_at: new Date().toISOString() })
-              .eq('id', invoice.id);
+            await prisma.invoices.update({
+              where: { id: invoice.id },
+              data: { synced_at: new Date() },
+            });
 
             results.invoices.push({ id: invoice.id, status_changed: false });
           }
@@ -162,13 +137,15 @@ export async function GET(request: NextRequest) {
             errorMessage
           );
 
-          await adminSupabase.from('lexoffice_sync_log').insert({
-            entity_type: 'invoice',
-            entity_id: invoice.id,
-            lexoffice_id: invoice.lexoffice_id,
-            action: 'status_sync',
-            status: 'failed',
-            error_message: errorMessage,
+          await prisma.lexoffice_sync_log.create({
+            data: {
+              entity_type: 'invoice',
+              entity_id: invoice.id,
+              lexoffice_id: invoice.lexoffice_id,
+              action: 'status_sync',
+              status: 'failed',
+              error_message: errorMessage,
+            },
           });
 
           results.invoices.push({ id: invoice.id, status_changed: false, error: errorMessage });
@@ -181,14 +158,19 @@ export async function GET(request: NextRequest) {
     // =====================================================
 
     // Offene Angebote mit Lexoffice ID laden
-    const { data: openQuotations, error: quotationsError } = await adminSupabase
-      .from('quotations')
-      .select('id, status, lexoffice_id, lexoffice_status')
-      .not('lexoffice_id', 'is', null)
-      .in('status', ['draft', 'sent']);
-
-    if (quotationsError) {
+    type QuotationSelect = { id: string; status: string; lexoffice_id: string | null; lexoffice_status: string | null };
+    let openQuotations: QuotationSelect[] = [];
+    try {
+      openQuotations = await prisma.quotations.findMany({
+        where: {
+          lexoffice_id: { not: null },
+          status: { in: ['draft', 'sent'] },
+        },
+        select: { id: true, status: true, lexoffice_id: true, lexoffice_status: true },
+      });
+    } catch (quotationsError) {
       console.error('[Lexoffice Sync] Load quotations error:', quotationsError);
+      openQuotations = [];
     }
 
     if (openQuotations && openQuotations.length > 0) {
@@ -212,38 +194,43 @@ export async function GET(request: NextRequest) {
             const updates: Record<string, unknown> = {
               status: localStatus,
               lexoffice_status: lexofficeStatus,
-              synced_at: new Date().toISOString(),
+              synced_at: new Date(),
             };
 
             if (localStatus === 'accepted') {
-              updates.accepted_at = new Date().toISOString();
+              updates.accepted_at = new Date();
             } else if (localStatus === 'rejected') {
-              updates.rejected_at = new Date().toISOString();
+              updates.rejected_at = new Date();
             }
 
-            await adminSupabase.from('quotations').update(updates).eq('id', quotation.id);
+            await prisma.quotations.update({
+              where: { id: quotation.id },
+              data: updates,
+            });
 
             // Sync Log
-            await adminSupabase.from('lexoffice_sync_log').insert({
-              entity_type: 'quotation',
-              entity_id: quotation.id,
-              lexoffice_id: quotation.lexoffice_id,
-              action: 'status_sync',
-              status: 'success',
-              response_data: {
-                old_status: quotation.status,
-                new_status: localStatus,
-                lexoffice_status: lexofficeStatus,
+            await prisma.lexoffice_sync_log.create({
+              data: {
+                entity_type: 'quotation',
+                entity_id: quotation.id,
+                lexoffice_id: quotation.lexoffice_id,
+                action: 'status_sync',
+                status: 'success',
+                response_data: {
+                  old_status: quotation.status,
+                  new_status: localStatus,
+                  lexoffice_status: lexofficeStatus,
+                },
               },
             });
 
             results.quotations.push({ id: quotation.id, status_changed: true });
           } else {
             // Nur synced_at aktualisieren
-            await adminSupabase
-              .from('quotations')
-              .update({ synced_at: new Date().toISOString() })
-              .eq('id', quotation.id);
+            await prisma.quotations.update({
+              where: { id: quotation.id },
+              data: { synced_at: new Date() },
+            });
 
             results.quotations.push({ id: quotation.id, status_changed: false });
           }
@@ -255,13 +242,15 @@ export async function GET(request: NextRequest) {
             errorMessage
           );
 
-          await adminSupabase.from('lexoffice_sync_log').insert({
-            entity_type: 'quotation',
-            entity_id: quotation.id,
-            lexoffice_id: quotation.lexoffice_id,
-            action: 'status_sync',
-            status: 'failed',
-            error_message: errorMessage,
+          await prisma.lexoffice_sync_log.create({
+            data: {
+              entity_type: 'quotation',
+              entity_id: quotation.id,
+              lexoffice_id: quotation.lexoffice_id,
+              action: 'status_sync',
+              status: 'failed',
+              error_message: errorMessage,
+            },
           });
 
           results.quotations.push({
