@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createAdminSupabaseClient } from '@/lib/supabase/admin';
+import { prisma } from '@/lib/prisma';
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -30,11 +30,9 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       role,
     } = body;
 
-    const supabase = createAdminSupabaseClient();
-
     // Nur definierte Felder updaten
     const updateData: Record<string, unknown> = {
-      updated_at: new Date().toISOString(),
+      updated_at: new Date(),
     };
 
     if (first_name !== undefined) updateData.first_name = first_name;
@@ -52,26 +50,16 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     if (company_country !== undefined) updateData.company_country = company_country;
     if (role !== undefined) updateData.role = role;
 
-    const { data, error } = await supabase
-      .from('profiles')
-      .update(updateData)
-      .eq('id', id)
-      .select()
-      .single();
-
-    if (error) {
-      console.error('[Users API] Update error:', error);
-      return NextResponse.json(
-        { error: 'Fehler beim Aktualisieren des Profils' },
-        { status: 500 }
-      );
-    }
+    const data = await prisma.profiles.update({
+      where: { id },
+      data: updateData,
+    });
 
     return NextResponse.json({ profile: data });
   } catch (error) {
-    console.error('[Users API] Error:', error);
+    console.error('[Users API] Update error:', error);
     return NextResponse.json(
-      { error: 'Interner Serverfehler' },
+      { error: 'Fehler beim Aktualisieren des Profils' },
       { status: 500 }
     );
   }
@@ -79,41 +67,23 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 
 /**
  * DELETE /api/admin/users/[id]
- * Löscht einen Benutzer (Auth + Profile)
+ * Löscht einen Benutzer (Profile mit Cascade)
  */
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params;
 
-    const supabase = createAdminSupabaseClient();
-
-    // Zuerst Profil löschen (cascade sollte dies automatisch machen, aber sicherheitshalber)
-    const { error: profileError } = await supabase
-      .from('profiles')
-      .delete()
-      .eq('id', id);
-
-    if (profileError) {
-      console.error('[Users API] Profile delete error:', profileError);
-      // Fortfahren, da der Auth-User wichtiger ist
-    }
-
-    // Auth-User löschen via Admin API
-    const { error: authError } = await supabase.auth.admin.deleteUser(id);
-
-    if (authError) {
-      console.error('[Users API] Auth delete error:', authError);
-      return NextResponse.json(
-        { error: 'Fehler beim Löschen des Benutzers' },
-        { status: 500 }
-      );
-    }
+    // Profil löschen (CASCADE löscht abhängige Daten)
+    // Mit NextAuth gibt es keinen separaten Auth-User mehr
+    await prisma.profiles.delete({
+      where: { id },
+    });
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('[Users API] Error:', error);
+    console.error('[Users API] Delete error:', error);
     return NextResponse.json(
-      { error: 'Interner Serverfehler' },
+      { error: 'Fehler beim Löschen des Benutzers' },
       { status: 500 }
     );
   }

@@ -359,6 +359,8 @@ model profiles {
   company_city                                 String?
   company_country                              String?                @default("Deutschland")
   mobile                                       String?
+  reset_token                                  String?
+  reset_token_expires                          DateTime?              @db.Timestamptz(6)
   activity_log                                 activity_log[]
   comments                                     comments[]
   contracts_contracts_created_byToprofiles     contracts[]            @relation("contracts_created_byToprofiles")

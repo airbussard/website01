@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@/lib/supabase/server';
-import { createAdminSupabaseClient } from '@/lib/supabase/admin';
+import { auth } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
 
 /**
  * GET /api/admin/users
@@ -8,29 +8,20 @@ import { createAdminSupabaseClient } from '@/lib/supabase/admin';
  */
 export async function GET(request: NextRequest) {
   try {
-    // Auth prüfen
-    const supabase = await createServerSupabaseClient();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    // Auth prüfen via NextAuth
+    const session = await auth();
 
-    if (authError || !user) {
+    if (!session?.user) {
       return NextResponse.json(
         { error: 'Nicht authentifiziert' },
         { status: 401 }
       );
     }
 
-    // Admin Client erstellen (umgeht RLS)
-    const adminSupabase = createAdminSupabaseClient();
-
-    // Admin-Rolle prüfen (mit Admin-Client um RLS zu umgehen)
-    const { data: profile, error: profileError } = await adminSupabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-
-    if (profileError || profile?.role !== 'admin') {
-      console.error('[Users API] Role check failed:', profileError, 'Role:', profile?.role);
+    // Admin-Rolle prüfen (aus JWT Session)
+    const userRole = (session.user as { role?: string }).role;
+    if (userRole !== 'admin') {
+      console.error('[Users API] Role check failed. Role:', userRole);
       return NextResponse.json(
         { error: 'Keine Admin-Berechtigung' },
         { status: 403 }
@@ -44,52 +35,55 @@ export async function GET(request: NextRequest) {
     const role = searchParams.get('role');
     const search = searchParams.get('search');
 
-    let query = adminSupabase
-      .from('profiles')
-      .select(`
-        *,
-        organization_memberships:organization_members(
-          id,
-          role,
-          organization:organizations(id, name, slug)
-        )
-      `, { count: 'exact' })
-      .order('created_at', { ascending: false })
-      .range(page * limit, (page + 1) * limit - 1);
+    // Build where clause
+    const where: Record<string, unknown> = {};
 
-    // Filter by role
     if (role && role !== 'all') {
-      query = query.eq('role', role);
+      where.role = role;
     }
 
-    // Search
     if (search) {
-      query = query.or(`full_name.ilike.%${search}%,email.ilike.%${search}%,company.ilike.%${search}%`);
+      where.OR = [
+        { full_name: { contains: search, mode: 'insensitive' } },
+        { email: { contains: search, mode: 'insensitive' } },
+        { company: { contains: search, mode: 'insensitive' } },
+      ];
     }
 
-    const { data, error, count } = await query;
+    // Parallel query for data and count
+    const [data, totalCount] = await Promise.all([
+      prisma.profiles.findMany({
+        where,
+        include: {
+          organization_members: {
+            include: {
+              organizations: {
+                select: { id: true, name: true, slug: true },
+              },
+            },
+          },
+        },
+        orderBy: { created_at: 'desc' },
+        skip: page * limit,
+        take: limit,
+      }),
+      prisma.profiles.count({ where }),
+    ]);
 
-    if (error) {
-      console.error('[Users API] Error:', error);
-      return NextResponse.json(
-        { error: 'Fehler beim Laden der Benutzer' },
-        { status: 500 }
-      );
-    }
-
-    // Normalize organization memberships (organization kann Array sein)
-    const users = (data || []).map(user => ({
+    // Normalize organization memberships for frontend compatibility
+    const users = data.map(user => ({
       ...user,
-      organization_memberships: user.organization_memberships?.map((m: { id: string; role: string; organization: unknown }) => ({
+      organization_memberships: user.organization_members.map(m => ({
         id: m.id,
         role: m.role,
-        organization: Array.isArray(m.organization) ? m.organization[0] : m.organization,
-      })) || [],
+        organization: m.organizations,
+      })),
+      organization_members: undefined,
     }));
 
     return NextResponse.json({
       users,
-      totalCount: count || 0,
+      totalCount,
       page,
       limit,
     });
