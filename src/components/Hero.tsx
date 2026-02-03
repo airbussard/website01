@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Linkedin, Mail, MapPin, User, FileCheck } from 'lucide-react';
+import { Mail, MapPin, User, FileCheck } from 'lucide-react';
 import Link from 'next/link';
 
 const trustBadges = [
@@ -100,14 +100,6 @@ export default function Hero() {
             transition={{ duration: 0.5, delay: 0.3 }}
             className="flex items-center justify-center space-x-6"
           >
-            <Link
-              href="https://linkedin.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-gray-600 hover:text-primary-600 transition-colors"
-            >
-              <Linkedin className="h-6 w-6" />
-            </Link>
             <Link
               href="mailto:hello@getemergence.com"
               className="text-gray-600 hover:text-primary-600 transition-colors"
