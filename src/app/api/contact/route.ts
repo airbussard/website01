@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import { EmailService } from '@/lib/services/email/EmailService';
+import nodemailer from 'nodemailer';
 import {
   contactNotificationTemplate,
   contactNotificationTextTemplate,
@@ -54,6 +53,11 @@ export async function POST(request: NextRequest) {
 
     if (isSpam) {
       console.log(`[Contact] Bot detected (IP: ${ip}): ${spamReasons.join(', ')}`);
+      // Bei Spam: Success zurueckgeben (Bot merkt nichts), aber keine E-Mail senden
+      return NextResponse.json(
+        { message: 'Contact request received successfully' },
+        { status: 200 }
+      );
     }
 
     // Validate required fields
@@ -73,65 +77,27 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // In Datenbank speichern (inkl. Spam-Flag)
-    try {
-      await prisma.contact_requests.create({
-        data: {
-          name,
-          email,
-          company,
-          subject,
-          message,
-          project_type: projectType,
-          is_spam: isSpam,
-        },
-      });
-    } catch (dbError) {
-      console.error('Database error:', dbError);
-    }
+    // E-Mail direkt per SMTP senden
+    const templateData = { name, email, company, subject, message, projectType };
 
-    // Bei Spam: Keine E-Mail senden, aber Success zurueckgeben (Bot merkt nichts)
-    if (isSpam) {
-      return NextResponse.json(
-        { message: 'Contact request received successfully' },
-        { status: 200 }
-      );
-    }
+    const transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: Number(process.env.SMTP_PORT) || 587,
+      secure: Number(process.env.SMTP_PORT) === 465,
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+      },
+    });
 
-    // Nur bei echten Anfragen: E-Mail zur Queue hinzufuegen
-    try {
-      const templateData = {
-        name,
-        email,
-        company,
-        subject,
-        message,
-        projectType,
-      };
-
-      const queueResult = await EmailService.queueEmail({
-        recipient_email: 'hello@getemergence.com',
-        subject: `Neue Kontaktanfrage: ${subject}`,
-        content_html: contactNotificationTemplate(templateData),
-        content_text: contactNotificationTextTemplate(templateData),
-        type: 'contact',
-        metadata: {
-          sender_name: name,
-          sender_email: email,
-          sender_company: company || null,
-          project_type: projectType || null,
-        },
-      });
-
-      if (!queueResult) {
-        console.error('[Contact] Fehler beim Queuen der E-Mail');
-      } else {
-        console.log('[Contact] E-Mail gequeued:', queueResult.id);
-      }
-    } catch (emailError) {
-      console.error('[Contact] E-Mail Queue Fehler:', emailError);
-      // Kein Fehler an Client - Anfrage wurde trotzdem gespeichert
-    }
+    await transporter.sendMail({
+      from: `"getemergence.com" <${process.env.SMTP_USER}>`,
+      to: 'hello@getemergence.com',
+      replyTo: email,
+      subject: `Neue Kontaktanfrage: ${subject}`,
+      html: contactNotificationTemplate(templateData),
+      text: contactNotificationTextTemplate(templateData),
+    });
 
     return NextResponse.json(
       { message: 'Contact request received successfully' },
