@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@/lib/supabase/server';
-import { createAdminSupabaseClient } from '@/lib/supabase/admin';
+import { auth } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
 import { calculateTotalsFromLineItems } from '@/lib/lexoffice';
 import type { InvoiceLineItem, RecurringInterval } from '@/types/dashboard';
 
@@ -10,25 +10,23 @@ import type { InvoiceLineItem, RecurringInterval } from '@/types/dashboard';
  */
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createServerSupabaseClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
+    const session = await auth();
+    if (!session?.user) {
       return NextResponse.json({ error: 'Nicht authentifiziert' }, { status: 401 });
     }
 
-    const adminSupabase = createAdminSupabaseClient();
-    const { data: profile } = await adminSupabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
+    const userId = (session.user as { id?: string }).id;
+    if (!userId) {
+      return NextResponse.json({ error: 'User ID nicht gefunden' }, { status: 401 });
+    }
+
+    const profile = await prisma.profiles.findUnique({
+      where: { id: userId },
+      select: { role: true },
+    });
 
     // Nur Manager/Admin duerfen Recurring Invoices sehen
-    if (!profile || !['manager', 'admin'].includes(profile.role)) {
+    if (!profile || !['manager', 'admin'].includes(profile.role || '')) {
       return NextResponse.json({ error: 'Keine Berechtigung' }, { status: 403 });
     }
 
@@ -36,31 +34,32 @@ export async function GET(request: NextRequest) {
     const projectId = searchParams.get('project_id');
     const activeOnly = searchParams.get('active') === 'true';
 
-    let query = adminSupabase
-      .from('recurring_invoices')
-      .select(`
-        *,
-        project:pm_projects(id, name, client_id, organization_id),
-        creator:profiles!recurring_invoices_created_by_fkey(id, full_name, email)
-      `)
-      .order('created_at', { ascending: false });
+    const recurringInvoices = await prisma.recurring_invoices.findMany({
+      where: {
+        ...(projectId ? { project_id: projectId } : {}),
+        ...(activeOnly ? { is_active: true } : {}),
+      },
+      include: {
+        pm_projects: {
+          select: { id: true, name: true, client_id: true, organization_id: true },
+        },
+        profiles: {
+          select: { id: true, full_name: true, email: true },
+        },
+      },
+      orderBy: { created_at: 'desc' },
+    });
 
-    if (projectId) {
-      query = query.eq('project_id', projectId);
-    }
+    // Transform to match expected format
+    const transformedInvoices = recurringInvoices.map(ri => ({
+      ...ri,
+      project: ri.pm_projects,
+      creator: ri.profiles,
+      pm_projects: undefined,
+      profiles: undefined,
+    }));
 
-    if (activeOnly) {
-      query = query.eq('is_active', true);
-    }
-
-    const { data: recurringInvoices, error } = await query;
-
-    if (error) {
-      console.error('[Recurring Invoices] Load error:', error);
-      return NextResponse.json({ error: 'Fehler beim Laden' }, { status: 500 });
-    }
-
-    return NextResponse.json({ recurring_invoices: recurringInvoices });
+    return NextResponse.json({ recurring_invoices: transformedInvoices });
   } catch (error) {
     console.error('[Recurring Invoices] Error:', error);
     return NextResponse.json({ error: 'Interner Serverfehler' }, { status: 500 });
@@ -85,25 +84,23 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createServerSupabaseClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
+    const session = await auth();
+    if (!session?.user) {
       return NextResponse.json({ error: 'Nicht authentifiziert' }, { status: 401 });
     }
 
-    // Rolle pruefen
-    const adminSupabase = createAdminSupabaseClient();
-    const { data: profile } = await adminSupabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
+    const userId = (session.user as { id?: string }).id;
+    if (!userId) {
+      return NextResponse.json({ error: 'User ID nicht gefunden' }, { status: 401 });
+    }
 
-    if (!profile || !['manager', 'admin'].includes(profile.role)) {
+    // Rolle pruefen
+    const profile = await prisma.profiles.findUnique({
+      where: { id: userId },
+      select: { role: true },
+    });
+
+    if (!profile || !['manager', 'admin'].includes(profile.role || '')) {
       return NextResponse.json({ error: 'Keine Berechtigung' }, { status: 403 });
     }
 
@@ -150,13 +147,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Projekt pruefen
-    const { data: project, error: projectError } = await adminSupabase
-      .from('pm_projects')
-      .select('id, name')
-      .eq('id', project_id)
-      .single();
+    const project = await prisma.pm_projects.findUnique({
+      where: { id: project_id },
+      select: { id: true, name: true },
+    });
 
-    if (projectError || !project) {
+    if (!project) {
       return NextResponse.json({ error: 'Projekt nicht gefunden' }, { status: 404 });
     }
 
@@ -176,32 +172,25 @@ export async function POST(request: NextRequest) {
     }
 
     // Recurring Invoice erstellen
-    const { data: recurringInvoice, error: insertError } = await adminSupabase
-      .from('recurring_invoices')
-      .insert({
+    const recurringInvoice = await prisma.recurring_invoices.create({
+      data: {
         project_id,
         title: title.trim(),
         description: description?.trim() || null,
-        line_items: typedLineItems,
+        line_items: typedLineItems as unknown as object,
         net_amount: totals.net_amount,
         tax_rate: typedLineItems[0]?.tax_rate || 19,
         interval_type,
         interval_value,
-        start_date,
-        end_date: end_date || null,
-        next_invoice_date: nextInvoiceDate.toISOString().split('T')[0],
+        start_date: new Date(start_date),
+        end_date: end_date ? new Date(end_date) : null,
+        next_invoice_date: nextInvoiceDate,
         is_active: true,
         auto_send,
         send_notification,
-        created_by: user.id,
-      })
-      .select()
-      .single();
-
-    if (insertError) {
-      console.error('[Recurring Invoices] Insert error:', insertError);
-      return NextResponse.json({ error: 'Fehler beim Erstellen' }, { status: 500 });
-    }
+        created_by: userId,
+      },
+    });
 
     return NextResponse.json({ recurring_invoice: recurringInvoice }, { status: 201 });
   } catch (error) {

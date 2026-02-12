@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@/lib/supabase/server';
-import { createAdminSupabaseClient } from '@/lib/supabase/admin';
-import { PDFDocument, rgb } from 'pdf-lib';
+import { auth } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
+// import { PDFDocument, rgb } from 'pdf-lib';  // TODO: Phase 6 Storage Migration
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -10,6 +10,8 @@ interface RouteParams {
 /**
  * POST /api/contracts/[id]/sign
  * Signiert einen Vertrag mit der bereitgestellten Unterschrift
+ *
+ * NOTE: PDF signing deaktiviert bis Phase 6 Storage Migration
  */
 export async function POST(request: NextRequest, { params }: RouteParams) {
   try {
@@ -25,26 +27,34 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     }
 
     // User verifizieren
-    const supabase = await createServerSupabaseClient();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-
-    if (authError || !user) {
+    const session = await auth();
+    if (!session?.user) {
       return NextResponse.json(
         { error: 'Nicht authentifiziert' },
         { status: 401 }
       );
     }
 
-    const adminSupabase = createAdminSupabaseClient();
+    const userId = (session.user as { id?: string }).id;
+    const userEmail = (session.user as { email?: string }).email;
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'User ID nicht gefunden' },
+        { status: 401 }
+      );
+    }
 
     // Vertrag laden mit Projekt-Info
-    const { data: contract, error: contractError } = await adminSupabase
-      .from('contracts')
-      .select('*, project:pm_projects(client_id)')
-      .eq('id', id)
-      .single();
+    const contract = await prisma.contracts.findUnique({
+      where: { id },
+      include: {
+        pm_projects: {
+          select: { client_id: true },
+        },
+      },
+    });
 
-    if (contractError || !contract) {
+    if (!contract) {
       return NextResponse.json(
         { error: 'Vertrag nicht gefunden' },
         { status: 404 }
@@ -52,14 +62,13 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     }
 
     // Pruefen ob User berechtigt ist (Client des Projekts)
-    const isClient = contract.project?.client_id === user.id;
+    const isClient = contract.pm_projects?.client_id === userId;
 
     // User-Profil laden fuer Rolle
-    const { data: profile } = await adminSupabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
+    const profile = await prisma.profiles.findUnique({
+      where: { id: userId },
+      select: { role: true },
+    });
 
     const isManagerOrAdmin = profile?.role === 'manager' || profile?.role === 'admin';
 
@@ -78,100 +87,9 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    // Original PDF laden
-    const { data: pdfData, error: downloadError } = await adminSupabase
-      .storage
-      .from('project_files')
-      .download(contract.original_pdf_path);
-
-    if (downloadError || !pdfData) {
-      console.error('[Contracts API] PDF Download Error:', downloadError);
-      return NextResponse.json(
-        { error: 'Vertragsdokument nicht gefunden' },
-        { status: 500 }
-      );
-    }
-
-    // PDF mit Unterschrift versehen
-    const pdfBytes = await pdfData.arrayBuffer();
-    const pdfDoc = await PDFDocument.load(pdfBytes);
-
-    // Unterschrift als PNG decodieren
-    const signatureBase64 = signature.replace('data:image/png;base64,', '');
-    const signatureBytes = Buffer.from(signatureBase64, 'base64');
-    const signatureImage = await pdfDoc.embedPng(signatureBytes);
-
-    // Auf letzte Seite einfuegen
-    const pages = pdfDoc.getPages();
-    const lastPage = pages[pages.length - 1];
-    const { width } = lastPage.getSize();
-
-    // Unterschrift unten rechts platzieren
-    const sigWidth = 200;
-    const sigHeight = (signatureImage.height / signatureImage.width) * sigWidth;
-
-    lastPage.drawImage(signatureImage, {
-      x: width - sigWidth - 50,
-      y: 80,
-      width: sigWidth,
-      height: sigHeight,
-    });
-
-    // Signatur-Timestamp hinzufuegen
-    const signDate = new Date().toLocaleString('de-DE', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-
-    lastPage.drawText(
-      `Elektronisch signiert am ${signDate}`,
-      {
-        x: width - sigWidth - 50,
-        y: 65,
-        size: 8,
-        color: rgb(0.4, 0.4, 0.4),
-      }
-    );
-
-    lastPage.drawText(
-      `von ${user.email}`,
-      {
-        x: width - sigWidth - 50,
-        y: 55,
-        size: 8,
-        color: rgb(0.4, 0.4, 0.4),
-      }
-    );
-
-    const signedPdfBytes = await pdfDoc.save();
-
-    // Signiertes PDF hochladen
-    const signedPath = contract.original_pdf_path.replace('.pdf', '_signed.pdf');
-
-    const { error: uploadError } = await adminSupabase
-      .storage
-      .from('project_files')
-      .upload(signedPath, signedPdfBytes, {
-        contentType: 'application/pdf',
-        upsert: true,
-      });
-
-    if (uploadError) {
-      console.error('[Contracts API] Upload Error:', uploadError);
-      return NextResponse.json(
-        { error: 'Fehler beim Speichern des signierten PDFs' },
-        { status: 500 }
-      );
-    }
-
-    // Signed URL generieren
-    const { data: urlData } = await adminSupabase
-      .storage
-      .from('project_files')
-      .createSignedUrl(signedPath, 60 * 60 * 24 * 365); // 1 Jahr
+    // TODO: Phase 6 Storage Migration - PDF mit Unterschrift versehen
+    // Aktuell nur Metadaten speichern, kein PDF-Processing
+    console.log('[Contracts API] PDF signing deaktiviert - Storage Migration pending');
 
     // IP und User-Agent erfassen
     const ip = request.headers.get('x-forwarded-for') ||
@@ -179,49 +97,43 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
                'unknown';
     const userAgent = request.headers.get('user-agent') || 'unknown';
 
-    // Contract aktualisieren
-    const { data: updatedContract, error: updateError } = await adminSupabase
-      .from('contracts')
-      .update({
+    // Contract aktualisieren (ohne PDF-Verarbeitung)
+    const updatedContract = await prisma.contracts.update({
+      where: { id },
+      data: {
         status: 'signed',
-        signed_pdf_path: signedPath,
-        signed_pdf_url: urlData?.signedUrl,
+        // signed_pdf_path: signedPath,  // TODO: Phase 6
+        // signed_pdf_url: signedUrl,    // TODO: Phase 6
         signature_data: signature,
-        signed_at: new Date().toISOString(),
-        signed_by: user.id,
-        signer_ip: ip.split(',')[0].trim(), // Nur erste IP bei mehreren
-        signer_user_agent: userAgent.substring(0, 500), // Limitieren
-      })
-      .eq('id', id)
-      .select()
-      .single();
-
-    if (updateError) {
-      console.error('[Contracts API] Update Error:', updateError);
-      return NextResponse.json(
-        { error: 'Fehler beim Aktualisieren des Vertrags' },
-        { status: 500 }
-      );
-    }
+        signed_at: new Date(),
+        signed_by: userId,
+        signer_ip: ip.split(',')[0].trim(),
+        signer_user_agent: userAgent.substring(0, 500),
+      },
+    });
 
     // Activity Log
-    await adminSupabase.from('activity_log').insert({
-      project_id: contract.project_id,
-      user_id: user.id,
-      action: 'contract_signed',
-      entity_type: 'contract',
-      entity_id: id,
-      details: {
-        contract_title: contract.title,
-        signed_at: new Date().toISOString(),
-      },
-      ip_address: ip.split(',')[0].trim(),
-      user_agent: userAgent.substring(0, 500),
-    });
+    if (contract.project_id) {
+      await prisma.activity_log.create({
+        data: {
+          project_id: contract.project_id,
+          user_id: userId,
+          action: 'contract_signed',
+          entity_type: 'contract',
+          entity_id: id,
+          details: {
+            contract_title: contract.title,
+            signed_at: new Date().toISOString(),
+          } as object,
+          ip_address: ip.split(',')[0].trim(),
+          user_agent: userAgent.substring(0, 500),
+        },
+      });
+    }
 
     return NextResponse.json({
       contract: updatedContract,
-      message: 'Vertrag erfolgreich signiert',
+      message: 'Vertrag erfolgreich signiert (PDF-Generierung pending)',
     });
   } catch (error) {
     console.error('[Contracts API] Error:', error);

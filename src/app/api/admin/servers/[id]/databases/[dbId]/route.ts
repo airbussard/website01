@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@/lib/supabase/server';
-import { createAdminSupabaseClient } from '@/lib/supabase/admin';
+import { auth } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
 
 interface RouteParams {
   params: Promise<{ id: string; dbId: string }>;
@@ -16,30 +16,19 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     const { searchParams } = new URL(request.url);
     const endpoint = searchParams.get('endpoint') || 'stats';
 
-    const supabase = await createServerSupabaseClient();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-
-    if (authError || !user) {
+    const session = await auth();
+    if (!session?.user) {
       return NextResponse.json({ error: 'Nicht authentifiziert' }, { status: 401 });
     }
 
-    const adminSupabase = createAdminSupabaseClient();
-
-    const { data: profile } = await adminSupabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-
-    if (profile?.role !== 'admin') {
+    const userRole = (session.user as { role?: string }).role;
+    if (userRole !== 'admin') {
       return NextResponse.json({ error: 'Keine Admin-Berechtigung' }, { status: 403 });
     }
 
-    const { data: server } = await adminSupabase
-      .from('monitored_servers')
-      .select('*')
-      .eq('id', id)
-      .single();
+    const server = await prisma.monitored_servers.findUnique({
+      where: { id },
+    });
 
     if (!server) {
       return NextResponse.json({ error: 'Server nicht gefunden' }, { status: 404 });
@@ -94,30 +83,19 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: 'Ungueltige Aktion' }, { status: 400 });
     }
 
-    const supabase = await createServerSupabaseClient();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-
-    if (authError || !user) {
+    const session = await auth();
+    if (!session?.user) {
       return NextResponse.json({ error: 'Nicht authentifiziert' }, { status: 401 });
     }
 
-    const adminSupabase = createAdminSupabaseClient();
-
-    const { data: profile } = await adminSupabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-
-    if (profile?.role !== 'admin') {
+    const userRole = (session.user as { role?: string }).role;
+    if (userRole !== 'admin') {
       return NextResponse.json({ error: 'Keine Admin-Berechtigung' }, { status: 403 });
     }
 
-    const { data: server } = await adminSupabase
-      .from('monitored_servers')
-      .select('*')
-      .eq('id', id)
-      .single();
+    const server = await prisma.monitored_servers.findUnique({
+      where: { id },
+    });
 
     if (!server) {
       return NextResponse.json({ error: 'Server nicht gefunden' }, { status: 404 });

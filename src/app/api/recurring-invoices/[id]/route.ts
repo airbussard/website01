@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@/lib/supabase/server';
-import { createAdminSupabaseClient } from '@/lib/supabase/admin';
+import { auth } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -13,38 +13,39 @@ interface RouteParams {
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params;
-    const supabase = await createServerSupabaseClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
 
-    if (authError || !user) {
+    const session = await auth();
+    if (!session?.user) {
       return NextResponse.json({ error: 'Nicht authentifiziert' }, { status: 401 });
     }
 
-    const adminSupabase = createAdminSupabaseClient();
-    const { data: profile } = await adminSupabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
+    const userId = (session.user as { id?: string }).id;
+    if (!userId) {
+      return NextResponse.json({ error: 'User ID nicht gefunden' }, { status: 401 });
+    }
 
-    if (!profile || !['manager', 'admin'].includes(profile.role)) {
+    const profile = await prisma.profiles.findUnique({
+      where: { id: userId },
+      select: { role: true },
+    });
+
+    if (!profile || !['manager', 'admin'].includes(profile.role || '')) {
       return NextResponse.json({ error: 'Keine Berechtigung' }, { status: 403 });
     }
 
-    const { data: recurringInvoice, error } = await adminSupabase
-      .from('recurring_invoices')
-      .select(`
-        *,
-        project:pm_projects(id, name, client_id, organization_id),
-        creator:profiles!recurring_invoices_created_by_fkey(id, full_name, email)
-      `)
-      .eq('id', id)
-      .single();
+    const recurringInvoice = await prisma.recurring_invoices.findUnique({
+      where: { id },
+      include: {
+        pm_projects: {
+          select: { id: true, name: true, client_id: true, organization_id: true },
+        },
+        profiles: {
+          select: { id: true, full_name: true, email: true },
+        },
+      },
+    });
 
-    if (error || !recurringInvoice) {
+    if (!recurringInvoice) {
       return NextResponse.json(
         { error: 'Wiederkehrende Rechnung nicht gefunden' },
         { status: 404 }
@@ -52,19 +53,35 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     }
 
     // Generierte Rechnungen laden
-    const { data: history } = await adminSupabase
-      .from('recurring_invoice_history')
-      .select(`
-        *,
-        invoice:invoices(id, invoice_number, status, total_amount)
-      `)
-      .eq('recurring_invoice_id', id)
-      .order('generated_at', { ascending: false })
-      .limit(10);
+    const history = await prisma.recurring_invoice_history.findMany({
+      where: { recurring_invoice_id: id },
+      include: {
+        invoices: {
+          select: { id: true, invoice_number: true, status: true, total_amount: true },
+        },
+      },
+      orderBy: { generated_at: 'desc' },
+      take: 10,
+    });
+
+    // Transform
+    const transformedInvoice = {
+      ...recurringInvoice,
+      project: recurringInvoice.pm_projects,
+      creator: recurringInvoice.profiles,
+      pm_projects: undefined,
+      profiles: undefined,
+    };
+
+    const transformedHistory = history.map(h => ({
+      ...h,
+      invoice: h.invoices,
+      invoices: undefined,
+    }));
 
     return NextResponse.json({
-      recurring_invoice: recurringInvoice,
-      history: history || [],
+      recurring_invoice: transformedInvoice,
+      history: transformedHistory,
     });
   } catch (error) {
     console.error('[Recurring Invoice] Error:', error);
@@ -87,35 +104,33 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 export async function PATCH(request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params;
-    const supabase = await createServerSupabaseClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
 
-    if (authError || !user) {
+    const session = await auth();
+    if (!session?.user) {
       return NextResponse.json({ error: 'Nicht authentifiziert' }, { status: 401 });
     }
 
-    const adminSupabase = createAdminSupabaseClient();
-    const { data: profile } = await adminSupabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
+    const userId = (session.user as { id?: string }).id;
+    if (!userId) {
+      return NextResponse.json({ error: 'User ID nicht gefunden' }, { status: 401 });
+    }
 
-    if (!profile || !['manager', 'admin'].includes(profile.role)) {
+    const profile = await prisma.profiles.findUnique({
+      where: { id: userId },
+      select: { role: true },
+    });
+
+    if (!profile || !['manager', 'admin'].includes(profile.role || '')) {
       return NextResponse.json({ error: 'Keine Berechtigung' }, { status: 403 });
     }
 
     // Existenz pruefen
-    const { data: existing, error: loadError } = await adminSupabase
-      .from('recurring_invoices')
-      .select('id')
-      .eq('id', id)
-      .single();
+    const existing = await prisma.recurring_invoices.findUnique({
+      where: { id },
+      select: { id: true },
+    });
 
-    if (loadError || !existing) {
+    if (!existing) {
       return NextResponse.json(
         { error: 'Wiederkehrende Rechnung nicht gefunden' },
         { status: 404 }
@@ -126,28 +141,22 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     const { is_active, title, description, end_date, auto_send, send_notification } =
       body;
 
-    const updates: Record<string, unknown> = {
-      updated_at: new Date().toISOString(),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const updates: Record<string, any> = {
+      updated_at: new Date(),
     };
 
     if (is_active !== undefined) updates.is_active = is_active;
     if (title !== undefined) updates.title = title.trim();
     if (description !== undefined) updates.description = description?.trim() || null;
-    if (end_date !== undefined) updates.end_date = end_date || null;
+    if (end_date !== undefined) updates.end_date = end_date ? new Date(end_date) : null;
     if (auto_send !== undefined) updates.auto_send = auto_send;
     if (send_notification !== undefined) updates.send_notification = send_notification;
 
-    const { data: recurringInvoice, error: updateError } = await adminSupabase
-      .from('recurring_invoices')
-      .update(updates)
-      .eq('id', id)
-      .select()
-      .single();
-
-    if (updateError) {
-      console.error('[Recurring Invoice] Update error:', updateError);
-      return NextResponse.json({ error: 'Fehler beim Aktualisieren' }, { status: 500 });
-    }
+    const recurringInvoice = await prisma.recurring_invoices.update({
+      where: { id },
+      data: updates,
+    });
 
     return NextResponse.json({ recurring_invoice: recurringInvoice });
   } catch (error) {
@@ -163,22 +172,21 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params;
-    const supabase = await createServerSupabaseClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
 
-    if (authError || !user) {
+    const session = await auth();
+    if (!session?.user) {
       return NextResponse.json({ error: 'Nicht authentifiziert' }, { status: 401 });
     }
 
-    const adminSupabase = createAdminSupabaseClient();
-    const { data: profile } = await adminSupabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
+    const userId = (session.user as { id?: string }).id;
+    if (!userId) {
+      return NextResponse.json({ error: 'User ID nicht gefunden' }, { status: 401 });
+    }
+
+    const profile = await prisma.profiles.findUnique({
+      where: { id: userId },
+      select: { role: true },
+    });
 
     if (!profile || profile.role !== 'admin') {
       return NextResponse.json(
@@ -188,21 +196,14 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     }
 
     // Erst History loeschen (Foreign Key)
-    await adminSupabase
-      .from('recurring_invoice_history')
-      .delete()
-      .eq('recurring_invoice_id', id);
+    await prisma.recurring_invoice_history.deleteMany({
+      where: { recurring_invoice_id: id },
+    });
 
     // Dann Recurring Invoice loeschen
-    const { error: deleteError } = await adminSupabase
-      .from('recurring_invoices')
-      .delete()
-      .eq('id', id);
-
-    if (deleteError) {
-      console.error('[Recurring Invoice] Delete error:', deleteError);
-      return NextResponse.json({ error: 'Fehler beim Loeschen' }, { status: 500 });
-    }
+    await prisma.recurring_invoices.delete({
+      where: { id },
+    });
 
     return NextResponse.json({ success: true });
   } catch (error) {

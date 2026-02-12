@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@/lib/supabase/server';
-import { createAdminSupabaseClient } from '@/lib/supabase/admin';
+import { auth } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -16,43 +16,48 @@ interface RouteParams {
 export async function POST(request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params;
-    const supabase = await createServerSupabaseClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
 
-    if (authError || !user) {
+    const session = await auth();
+    if (!session?.user) {
       return NextResponse.json({ error: 'Nicht authentifiziert' }, { status: 401 });
     }
 
-    // Rolle pruefen - nur Manager/Admin
-    const adminSupabase = createAdminSupabaseClient();
-    const { data: profile } = await adminSupabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
+    const userId = (session.user as { id?: string }).id;
+    if (!userId) {
+      return NextResponse.json({ error: 'User ID nicht gefunden' }, { status: 401 });
+    }
 
-    if (!profile || !['manager', 'admin'].includes(profile.role)) {
+    // Rolle pruefen - nur Manager/Admin
+    const profile = await prisma.profiles.findUnique({
+      where: { id: userId },
+      select: { role: true },
+    });
+
+    if (!profile || !['manager', 'admin'].includes(profile.role || '')) {
       return NextResponse.json({ error: 'Keine Berechtigung' }, { status: 403 });
     }
 
     // Angebot laden
-    const { data: quotation, error: loadError } = await adminSupabase
-      .from('quotations')
-      .select('*')
-      .eq('id', id)
-      .single();
+    const quotation = await prisma.quotations.findUnique({
+      where: { id },
+    });
 
-    if (loadError || !quotation) {
+    if (!quotation) {
       return NextResponse.json({ error: 'Angebot nicht gefunden' }, { status: 404 });
     }
 
     // Nur sent oder accepted Angebote konvertieren
-    if (!['sent', 'accepted'].includes(quotation.status)) {
+    if (!['sent', 'accepted'].includes(quotation.status || '')) {
       return NextResponse.json(
         { error: 'Nur gesendete oder akzeptierte Angebote koennen konvertiert werden' },
+        { status: 400 }
+      );
+    }
+
+    // project_id ist erforderlich fuer Rechnungen
+    if (!quotation.project_id) {
+      return NextResponse.json(
+        { error: 'Angebot hat kein Projekt - kann nicht konvertiert werden' },
         { status: 400 }
       );
     }
@@ -69,80 +74,71 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     }
 
     // Rechnungsnummer generieren
-    const { count } = await adminSupabase
-      .from('invoices')
-      .select('*', { count: 'exact', head: true });
-
     const year = new Date().getFullYear();
-    const nextNumber = (count || 0) + 1;
-    const invoiceNumber = `RE-${year}-${String(nextNumber).padStart(4, '0')}`;
+    const count = await prisma.invoices.count({
+      where: {
+        created_at: {
+          gte: new Date(`${year}-01-01`),
+          lt: new Date(`${year + 1}-01-01`),
+        },
+      },
+    });
+
+    const invoiceNumber = `RE-${year}-${String(count + 1).padStart(4, '0')}`;
 
     // Faelligkeitsdatum (14 Tage ab heute)
     const dueDate = new Date();
     dueDate.setDate(dueDate.getDate() + 14);
 
-    // Rechnung erstellen
-    const invoiceData = {
-      invoice_number: invoiceNumber,
-      title: quotation.title,
-      description: quotation.description,
-      project_id: quotation.project_id,
-      line_items: quotation.line_items,
-      amount: quotation.net_amount,
-      tax_amount: quotation.tax_amount,
-      total_amount: quotation.total_amount,
-      currency: quotation.currency || 'EUR',
-      status: 'draft',
-      issue_date: new Date().toISOString().split('T')[0],
-      due_date: dueDate.toISOString().split('T')[0],
-      created_by: user.id,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    };
-
-    const { data: invoice, error: insertError } = await adminSupabase
-      .from('invoices')
-      .insert(invoiceData)
-      .select()
-      .single();
-
-    if (insertError) {
-      console.error('[Quotation Convert] Insert error:', insertError);
-      return NextResponse.json({ error: 'Fehler beim Erstellen der Rechnung' }, { status: 500 });
-    }
+    // Rechnung erstellen (project_id ist durch Guard oben garantiert nicht null)
+    const invoice = await prisma.invoices.create({
+      data: {
+        invoice_number: invoiceNumber,
+        title: quotation.title,
+        description: quotation.description,
+        project_id: quotation.project_id,
+        line_items: quotation.line_items ?? undefined,
+        amount: quotation.net_amount,
+        tax_amount: quotation.tax_amount,
+        total_amount: quotation.total_amount,
+        currency: quotation.currency || 'EUR',
+        status: 'draft',
+        issue_date: new Date(),
+        due_date: dueDate,
+        created_by: userId,
+      },
+    });
 
     // Optional: Angebot-Status auf "accepted" setzen
     let updatedQuotation = quotation;
     if (setAccepted && quotation.status !== 'accepted') {
-      const { data: updated, error: updateError } = await adminSupabase
-        .from('quotations')
-        .update({
+      updatedQuotation = await prisma.quotations.update({
+        where: { id },
+        data: {
           status: 'accepted',
-          accepted_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', id)
-        .select()
-        .single();
-
-      if (!updateError && updated) {
-        updatedQuotation = updated;
-      }
+          accepted_at: new Date(),
+          updated_at: new Date(),
+        },
+      });
     }
 
     // Activity Log
-    await adminSupabase.from('activity_log').insert({
-      project_id: quotation.project_id,
-      user_id: user.id,
-      action: 'quotation_converted',
-      entity_type: 'quotation',
-      entity_id: quotation.id,
-      details: {
-        quotation_number: quotation.quotation_number,
-        invoice_id: invoice.id,
-        invoice_number: invoiceNumber,
-      },
-    });
+    if (quotation.project_id) {
+      await prisma.activity_log.create({
+        data: {
+          project_id: quotation.project_id,
+          user_id: userId,
+          action: 'quotation_converted',
+          entity_type: 'quotation',
+          entity_id: quotation.id,
+          details: {
+            quotation_number: quotation.quotation_number,
+            invoice_id: invoice.id,
+            invoice_number: invoiceNumber,
+          } as object,
+        },
+      });
+    }
 
     return NextResponse.json({
       success: true,

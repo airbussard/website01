@@ -17,7 +17,6 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { createClient } from '@/lib/supabase/client';
 import type { Task, TaskStatus, Priority } from '@/types/dashboard';
 
 const statusColors: Record<TaskStatus, string> = {
@@ -55,7 +54,6 @@ export default function TaskDetailPage() {
   const router = useRouter();
   const taskId = params.id as string;
   const { user, isManagerOrAdmin, loading: authLoading } = useAuth();
-  const supabase = createClient();
 
   const [task, setTask] = useState<Task | null>(null);
   const [loading, setLoading] = useState(true);
@@ -66,14 +64,12 @@ export default function TaskDetailPage() {
       if (!user || authLoading) return;
 
       try {
-        const { data, error } = await supabase
-          .from('tasks')
-          .select('*, project:pm_projects(id, name)')
-          .eq('id', taskId)
-          .single();
-
-        if (error) throw error;
-        setTask(data);
+        const response = await fetch(`/api/tasks/${taskId}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch task');
+        }
+        const data = await response.json();
+        setTask(data.task);
       } catch (error) {
         console.error('Error fetching task:', error);
       } finally {
@@ -82,20 +78,24 @@ export default function TaskDetailPage() {
     };
 
     fetchTask();
-  }, [user, authLoading, taskId, supabase]);
+  }, [user, authLoading, taskId]);
 
   const updateStatus = async (newStatus: TaskStatus) => {
     if (!task) return;
 
     setUpdating(true);
     try {
-      const { error } = await supabase
-        .from('tasks')
-        .update({ status: newStatus, updated_at: new Date().toISOString() })
-        .eq('id', task.id);
+      const response = await fetch(`/api/tasks/${task.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus }),
+      });
 
-      if (error) throw error;
-      setTask({ ...task, status: newStatus });
+      if (!response.ok) {
+        throw new Error('Failed to update task');
+      }
+      const data = await response.json();
+      setTask(data.task);
     } catch (error) {
       console.error('Error updating task:', error);
     } finally {
@@ -107,8 +107,12 @@ export default function TaskDetailPage() {
     if (!task || !confirm('Aufgabe wirklich löschen?')) return;
 
     try {
-      const { error } = await supabase.from('tasks').delete().eq('id', task.id);
-      if (error) throw error;
+      const response = await fetch(`/api/tasks/${task.id}`, {
+        method: 'DELETE',
+      });
+      if (!response.ok) {
+        throw new Error('Failed to delete task');
+      }
       router.push('/dashboard/tasks');
     } catch (error) {
       console.error('Error deleting task:', error);

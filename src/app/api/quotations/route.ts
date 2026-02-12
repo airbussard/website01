@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@/lib/supabase/server';
-import { createAdminSupabaseClient } from '@/lib/supabase/admin';
+import { auth } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
 import {
   createLexofficeClient,
   mapToLexofficeQuotation,
@@ -15,66 +15,64 @@ import type { InvoiceLineItem } from '@/types/dashboard';
  */
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createServerSupabaseClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
+    const session = await auth();
+    if (!session?.user) {
       return NextResponse.json({ error: 'Nicht authentifiziert' }, { status: 401 });
     }
 
-    const adminSupabase = createAdminSupabaseClient();
-    const { data: profile } = await adminSupabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
+    const userId = (session.user as { id?: string }).id;
+    if (!userId) {
+      return NextResponse.json({ error: 'User ID nicht gefunden' }, { status: 401 });
+    }
+
+    const profile = await prisma.profiles.findUnique({
+      where: { id: userId },
+      select: { role: true },
+    });
 
     const { searchParams } = new URL(request.url);
     const projectId = searchParams.get('project_id');
 
-    let query = adminSupabase
-      .from('quotations')
-      .select(`
-        *,
-        project:pm_projects(id, name, client_id),
-        creator:profiles!quotations_created_by_fkey(id, full_name, email)
-      `)
-      .order('created_at', { ascending: false });
-
-    // Filter nach Projekt wenn angegeben
-    if (projectId) {
-      query = query.eq('project_id', projectId);
-    }
-
     // Normale User sehen nur Angebote ihrer Projekte
-    if (!profile || !['manager', 'admin'].includes(profile.role)) {
-      // Projekte finden, bei denen der User Mitglied ist
-      const { data: memberProjects } = await adminSupabase
-        .from('pm_project_members')
-        .select('project_id')
-        .eq('user_id', user.id);
+    let projectIds: string[] | undefined;
+    if (!profile || !['manager', 'admin'].includes(profile.role || '')) {
+      const memberProjects = await prisma.project_members.findMany({
+        where: { user_id: userId },
+        select: { project_id: true },
+      });
+      projectIds = memberProjects.map(p => p.project_id);
 
-      const projectIds = memberProjects?.map((p) => p.project_id) || [];
-
-      if (projectIds.length > 0) {
-        query = query.in('project_id', projectIds);
-      } else {
-        // Keine Projekte = keine Angebote
+      if (projectIds.length === 0) {
         return NextResponse.json({ quotations: [] });
       }
     }
 
-    const { data: quotations, error } = await query;
+    const quotations = await prisma.quotations.findMany({
+      where: {
+        ...(projectId ? { project_id: projectId } : {}),
+        ...(projectIds ? { project_id: { in: projectIds } } : {}),
+      },
+      include: {
+        pm_projects: {
+          select: { id: true, name: true, client_id: true },
+        },
+        profiles: {
+          select: { id: true, full_name: true, email: true },
+        },
+      },
+      orderBy: { created_at: 'desc' },
+    });
 
-    if (error) {
-      console.error('[Quotations] Load error:', error);
-      return NextResponse.json({ error: 'Fehler beim Laden' }, { status: 500 });
-    }
+    // Transform to match expected format
+    const transformedQuotations = quotations.map(q => ({
+      ...q,
+      project: q.pm_projects,
+      creator: q.profiles,
+      pm_projects: undefined,
+      profiles: undefined,
+    }));
 
-    return NextResponse.json({ quotations });
+    return NextResponse.json({ quotations: transformedQuotations });
   } catch (error) {
     console.error('[Quotations] Error:', error);
     return NextResponse.json({ error: 'Interner Serverfehler' }, { status: 500 });
@@ -84,36 +82,26 @@ export async function GET(request: NextRequest) {
 /**
  * POST /api/quotations
  * Erstellt ein neues Angebot (lokal + optional Lexoffice)
- *
- * Body:
- * - project_id: UUID (required)
- * - title: string (required)
- * - description: string (optional)
- * - line_items: InvoiceLineItem[] (required)
- * - valid_until: string (optional) - ISO date
- * - sync_to_lexoffice: boolean (optional) - Default true wenn Lexoffice aktiv
  */
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createServerSupabaseClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
+    const session = await auth();
+    if (!session?.user) {
       return NextResponse.json({ error: 'Nicht authentifiziert' }, { status: 401 });
     }
 
-    // Rolle pruefen
-    const adminSupabase = createAdminSupabaseClient();
-    const { data: profile } = await adminSupabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
+    const userId = (session.user as { id?: string }).id;
+    if (!userId) {
+      return NextResponse.json({ error: 'User ID nicht gefunden' }, { status: 401 });
+    }
 
-    if (!profile || !['manager', 'admin'].includes(profile.role)) {
+    // Rolle pruefen
+    const profile = await prisma.profiles.findUnique({
+      where: { id: userId },
+      select: { role: true },
+    });
+
+    if (!profile || !['manager', 'admin'].includes(profile.role || '')) {
       return NextResponse.json({ error: 'Keine Berechtigung' }, { status: 403 });
     }
 
@@ -136,13 +124,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Projekt pruefen
-    const { data: project, error: projectError } = await adminSupabase
-      .from('pm_projects')
-      .select('id, name, client_id, organization_id')
-      .eq('id', project_id)
-      .single();
+    const project = await prisma.pm_projects.findUnique({
+      where: { id: project_id },
+      select: { id: true, name: true, client_id: true, organization_id: true },
+    });
 
-    if (projectError || !project) {
+    if (!project) {
       return NextResponse.json({ error: 'Projekt nicht gefunden' }, { status: 404 });
     }
 
@@ -152,38 +139,34 @@ export async function POST(request: NextRequest) {
 
     // Angebotsnummer generieren
     const year = new Date().getFullYear();
-    const { count } = await adminSupabase
-      .from('quotations')
-      .select('*', { count: 'exact', head: true })
-      .gte('created_at', `${year}-01-01`)
-      .lt('created_at', `${year + 1}-01-01`);
+    const count = await prisma.quotations.count({
+      where: {
+        created_at: {
+          gte: new Date(`${year}-01-01`),
+          lt: new Date(`${year + 1}-01-01`),
+        },
+      },
+    });
 
-    const quotationNumber = `ANG-${year}-${String((count || 0) + 1).padStart(4, '0')}`;
+    const quotationNumber = `ANG-${year}-${String(count + 1).padStart(4, '0')}`;
 
     // Angebot lokal erstellen
-    const { data: quotation, error: insertError } = await adminSupabase
-      .from('quotations')
-      .insert({
+    const quotation = await prisma.quotations.create({
+      data: {
         project_id,
         quotation_number: quotationNumber,
         title,
         description,
-        line_items: typedLineItems,
+        line_items: typedLineItems as unknown as object,
         net_amount: totals.net_amount,
         tax_amount: totals.tax_amount,
         total_amount: totals.total_amount,
         currency: 'EUR',
         status: 'draft',
-        valid_until: valid_until || null,
-        created_by: user.id,
-      })
-      .select()
-      .single();
-
-    if (insertError) {
-      console.error('[Quotations] Insert error:', insertError);
-      return NextResponse.json({ error: 'Fehler beim Erstellen' }, { status: 500 });
-    }
+        valid_until: valid_until ? new Date(valid_until) : null,
+        created_by: userId,
+      },
+    });
 
     // Lexoffice Sync wenn aktiviert
     let lexofficeId: string | null = null;
@@ -191,11 +174,10 @@ export async function POST(request: NextRequest) {
 
     if (sync_to_lexoffice) {
       // Lexoffice Settings pruefen
-      const { data: settings } = await adminSupabase
-        .from('system_settings')
-        .select('value')
-        .eq('key', 'lexoffice')
-        .single();
+      const settings = await prisma.system_settings.findUnique({
+        where: { key: 'lexoffice' },
+        select: { value: true },
+      });
 
       const lexofficeSettings = settings?.value as {
         is_enabled: boolean;
@@ -208,20 +190,16 @@ export async function POST(request: NextRequest) {
           let contactId: string | null = null;
 
           if (project.client_id) {
-            const { data: contactMapping } = await adminSupabase
-              .from('lexoffice_contacts')
-              .select('lexoffice_contact_id')
-              .eq('profile_id', project.client_id)
-              .single();
-
+            const contactMapping = await prisma.lexoffice_contacts.findFirst({
+              where: { profile_id: project.client_id },
+              select: { lexoffice_contact_id: true },
+            });
             contactId = contactMapping?.lexoffice_contact_id || null;
           } else if (project.organization_id) {
-            const { data: contactMapping } = await adminSupabase
-              .from('lexoffice_contacts')
-              .select('lexoffice_contact_id')
-              .eq('organization_id', project.organization_id)
-              .single();
-
+            const contactMapping = await prisma.lexoffice_contacts.findFirst({
+              where: { organization_id: project.organization_id },
+              select: { lexoffice_contact_id: true },
+            });
             contactId = contactMapping?.lexoffice_contact_id || null;
           }
 
@@ -237,23 +215,25 @@ export async function POST(request: NextRequest) {
             lexofficeId = response.id;
 
             // Quotation mit Lexoffice ID updaten
-            await adminSupabase
-              .from('quotations')
-              .update({
+            await prisma.quotations.update({
+              where: { id: quotation.id },
+              data: {
                 lexoffice_id: lexofficeId,
-                synced_at: new Date().toISOString(),
-              })
-              .eq('id', quotation.id);
+                synced_at: new Date(),
+              },
+            });
 
             // Sync Log
-            await adminSupabase.from('lexoffice_sync_log').insert({
-              entity_type: 'quotation',
-              entity_id: quotation.id,
-              lexoffice_id: lexofficeId,
-              action: 'create',
-              status: 'success',
-              request_data: lexofficeData,
-              response_data: response,
+            await prisma.lexoffice_sync_log.create({
+              data: {
+                entity_type: 'quotation',
+                entity_id: quotation.id,
+                lexoffice_id: lexofficeId,
+                action: 'create',
+                status: 'success',
+                request_data: lexofficeData as object,
+                response_data: response as object,
+              },
             });
           } else {
             lexofficeError = 'Kein Lexoffice-Kontakt fuer dieses Projekt gefunden';
@@ -261,12 +241,14 @@ export async function POST(request: NextRequest) {
         } catch (error) {
           if (error instanceof LexofficeApiError) {
             lexofficeError = error.message;
-            await adminSupabase.from('lexoffice_sync_log').insert({
-              entity_type: 'quotation',
-              entity_id: quotation.id,
-              action: 'create',
-              status: 'failed',
-              error_message: error.message,
+            await prisma.lexoffice_sync_log.create({
+              data: {
+                entity_type: 'quotation',
+                entity_id: quotation.id,
+                action: 'create',
+                status: 'failed',
+                error_message: error.message,
+              },
             });
           } else {
             lexofficeError = 'Unbekannter Lexoffice-Fehler';

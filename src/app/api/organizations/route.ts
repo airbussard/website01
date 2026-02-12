@@ -1,60 +1,59 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@/lib/supabase/server';
-import { createAdminSupabaseClient } from '@/lib/supabase/admin';
+import { auth } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
 
 /**
  * GET /api/organizations
- * Lädt alle Organisationen des aktuellen Users
+ * Laedt alle Organisationen des aktuellen Users
  */
 export async function GET() {
   try {
-    const supabase = await createServerSupabaseClient();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-
-    if (authError || !user) {
+    const session = await auth();
+    if (!session?.user) {
       return NextResponse.json(
         { error: 'Nicht authentifiziert' },
         { status: 401 }
       );
     }
 
-    // Organisationen des Users laden (über organization_members)
-    const { data, error } = await supabase
-      .from('organization_members')
-      .select(`
-        role,
-        organization:organizations(
-          id,
-          name,
-          slug,
-          logo_url,
-          street,
-          postal_code,
-          city,
-          country,
-          email,
-          phone,
-          website,
-          created_at,
-          updated_at
-        )
-      `)
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      console.error('[Organizations API] Error:', error);
+    const userId = (session.user as { id?: string }).id;
+    if (!userId) {
       return NextResponse.json(
-        { error: 'Fehler beim Laden der Organisationen' },
-        { status: 500 }
+        { error: 'User ID nicht gefunden' },
+        { status: 401 }
       );
     }
 
+    // Organisationen des Users laden (ueber organization_members)
+    const memberships = await prisma.organization_members.findMany({
+      where: { user_id: userId },
+      include: {
+        organizations: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            logo_url: true,
+            street: true,
+            postal_code: true,
+            city: true,
+            country: true,
+            email: true,
+            phone: true,
+            website: true,
+            created_at: true,
+            updated_at: true,
+          },
+        },
+      },
+      orderBy: { created_at: 'desc' },
+    });
+
     // Daten umstrukturieren: Organization mit User-Rolle
-    const organizations = data?.map(item => ({
-      ...item.organization,
+    const organizations = memberships.map(item => ({
+      ...item.organizations,
       user_role: item.role,
-    })) || [];
+    }));
 
     return NextResponse.json({ organizations });
 
@@ -73,12 +72,18 @@ export async function GET() {
  */
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createServerSupabaseClient();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-
-    if (authError || !user) {
+    const session = await auth();
+    if (!session?.user) {
       return NextResponse.json(
         { error: 'Nicht authentifiziert' },
+        { status: 401 }
+      );
+    }
+
+    const userId = (session.user as { id?: string }).id;
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'User ID nicht gefunden' },
         { status: 401 }
       );
     }
@@ -93,56 +98,38 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Admin-Client für Insert (um RLS zu umgehen bei neuer Org)
-    const adminSupabase = createAdminSupabaseClient();
-
-    // Organisation erstellen
-    const { data: org, error: orgError } = await adminSupabase
-      .from('organizations')
-      .insert({
-        name: name.trim(),
-        street,
-        postal_code,
-        city,
-        country: country || 'Deutschland',
-        email,
-        phone,
-        website,
-        created_by: user.id,
-      })
-      .select()
-      .single();
-
-    if (orgError) {
-      console.error('[Organizations API] Create error:', orgError);
-      return NextResponse.json(
-        { error: 'Fehler beim Erstellen der Organisation' },
-        { status: 500 }
-      );
-    }
-
-    // User als Owner hinzufügen
-    const { error: memberError } = await adminSupabase
-      .from('organization_members')
-      .insert({
-        organization_id: org.id,
-        user_id: user.id,
-        role: 'owner',
+    // Organisation erstellen mit User als Owner in einer Transaktion
+    const result = await prisma.$transaction(async (tx) => {
+      // Organisation erstellen
+      const org = await tx.organizations.create({
+        data: {
+          name: name.trim(),
+          street,
+          postal_code,
+          city,
+          country: country || 'Deutschland',
+          email,
+          phone,
+          website,
+          created_by: userId,
+        },
       });
 
-    if (memberError) {
-      console.error('[Organizations API] Member error:', memberError);
-      // Org wieder löschen bei Fehler
-      await adminSupabase.from('organizations').delete().eq('id', org.id);
-      return NextResponse.json(
-        { error: 'Fehler beim Erstellen der Mitgliedschaft' },
-        { status: 500 }
-      );
-    }
+      // User als Owner hinzufuegen
+      await tx.organization_members.create({
+        data: {
+          organization_id: org.id,
+          user_id: userId,
+          role: 'owner',
+        },
+      });
+
+      return org;
+    });
 
     return NextResponse.json({
       success: true,
-      organization: org,
+      organization: result,
     });
 
   } catch (error) {

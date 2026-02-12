@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@/lib/supabase/server';
-import { createAdminSupabaseClient } from '@/lib/supabase/admin';
+import { auth } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -13,43 +13,34 @@ interface RouteParams {
 export async function POST(request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params;
-    const supabase = await createServerSupabaseClient();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
 
-    if (authError || !user) {
+    const session = await auth();
+    if (!session?.user) {
       return NextResponse.json({ error: 'Nicht authentifiziert' }, { status: 401 });
     }
 
-    const adminSupabase = createAdminSupabaseClient();
-
-    const { data: profile } = await adminSupabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-
-    if (profile?.role !== 'admin') {
+    const userRole = (session.user as { role?: string }).role;
+    if (userRole !== 'admin') {
       return NextResponse.json({ error: 'Keine Admin-Berechtigung' }, { status: 403 });
     }
 
     // Server mit Auth-Token laden
-    const { data: server } = await adminSupabase
-      .from('monitored_servers')
-      .select('*')
-      .eq('id', id)
-      .single();
+    const server = await prisma.monitored_servers.findUnique({
+      where: { id },
+    });
 
     if (!server) {
       return NextResponse.json({ error: 'Server nicht gefunden' }, { status: 404 });
     }
 
     // Alle aktiven Datenbanken fuer diesen Server laden (MIT Passwort)
-    const { data: databases } = await adminSupabase
-      .from('server_databases')
-      .select('*')
-      .eq('server_id', id)
-      .eq('is_active', true)
-      .order('name');
+    const databases = await prisma.server_databases.findMany({
+      where: {
+        server_id: id,
+        is_active: true,
+      },
+      orderBy: { name: 'asc' },
+    });
 
     // Config an Agent senden
     const controller = new AbortController();
@@ -64,7 +55,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          databases: databases?.map(db => ({
+          databases: databases.map(db => ({
             id: db.id,
             name: db.name,
             host: db.host,
@@ -73,7 +64,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
             user: db.username,
             password: db.password,
             ssl: db.ssl_enabled
-          })) || []
+          }))
         }),
         signal: controller.signal
       });
@@ -91,7 +82,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       const result = await response.json();
       return NextResponse.json({
         success: true,
-        databases_synced: databases?.length || 0,
+        databases_synced: databases.length,
         agent_response: result
       });
 

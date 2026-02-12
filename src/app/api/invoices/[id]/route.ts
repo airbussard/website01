@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@/lib/supabase/server';
-import { createAdminSupabaseClient } from '@/lib/supabase/admin';
+import { auth } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
 import { calculateTotalsFromLineItems } from '@/lib/lexoffice';
 import type { InvoiceLineItem } from '@/types/dashboard';
 
@@ -15,54 +15,64 @@ interface RouteParams {
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params;
-    const supabase = await createServerSupabaseClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
 
-    if (authError || !user) {
+    const session = await auth();
+    if (!session?.user) {
       return NextResponse.json({ error: 'Nicht authentifiziert' }, { status: 401 });
     }
 
-    const adminSupabase = createAdminSupabaseClient();
+    const userId = (session.user as { id?: string }).id;
+    if (!userId) {
+      return NextResponse.json({ error: 'User ID nicht gefunden' }, { status: 401 });
+    }
 
-    const { data: invoice, error } = await adminSupabase
-      .from('invoices')
-      .select(`
-        *,
-        project:pm_projects(id, name, client_id, organization_id),
-        creator:profiles!invoices_created_by_fkey(id, full_name, email)
-      `)
-      .eq('id', id)
-      .single();
+    const invoice = await prisma.invoices.findUnique({
+      where: { id },
+      include: {
+        pm_projects: {
+          select: { id: true, name: true, client_id: true, organization_id: true },
+        },
+        profiles: {
+          select: { id: true, full_name: true, email: true },
+        },
+      },
+    });
 
-    if (error || !invoice) {
+    if (!invoice) {
       return NextResponse.json({ error: 'Rechnung nicht gefunden' }, { status: 404 });
     }
 
     // Berechtigungspruefung
-    const { data: profile } = await adminSupabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
+    const profile = await prisma.profiles.findUnique({
+      where: { id: userId },
+      select: { role: true },
+    });
 
-    if (!profile || !['manager', 'admin'].includes(profile.role)) {
+    if (!profile || !['manager', 'admin'].includes(profile.role || '')) {
       // Pruefen ob User Mitglied des Projekts ist
-      const { data: membership } = await adminSupabase
-        .from('pm_project_members')
-        .select('id')
-        .eq('project_id', invoice.project_id)
-        .eq('user_id', user.id)
-        .single();
+      const membership = await prisma.project_members.findFirst({
+        where: {
+          project_id: invoice.project_id,
+          user_id: userId,
+        },
+        select: { id: true },
+      });
 
       if (!membership) {
         return NextResponse.json({ error: 'Keine Berechtigung' }, { status: 403 });
       }
     }
 
-    return NextResponse.json({ invoice });
+    // Transform to match expected format
+    const transformedInvoice = {
+      ...invoice,
+      project: invoice.pm_projects,
+      creator: invoice.profiles,
+      pm_projects: undefined,
+      profiles: undefined,
+    };
+
+    return NextResponse.json({ invoice: transformedInvoice });
   } catch (error) {
     console.error('[Invoice] Error:', error);
     return NextResponse.json({ error: 'Interner Serverfehler' }, { status: 500 });
@@ -72,47 +82,37 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 /**
  * PATCH /api/invoices/[id]
  * Aktualisiert eine Rechnung (nur wenn nicht zu Lexoffice synchronisiert)
- *
- * Body:
- * - title: string (optional)
- * - description: string (optional)
- * - status: string (optional)
- * - due_date: string (optional)
- * - line_items: InvoiceLineItem[] (optional)
  */
 export async function PATCH(request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params;
-    const supabase = await createServerSupabaseClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
 
-    if (authError || !user) {
+    const session = await auth();
+    if (!session?.user) {
       return NextResponse.json({ error: 'Nicht authentifiziert' }, { status: 401 });
     }
 
-    // Rolle pruefen
-    const adminSupabase = createAdminSupabaseClient();
-    const { data: profile } = await adminSupabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
+    const userId = (session.user as { id?: string }).id;
+    if (!userId) {
+      return NextResponse.json({ error: 'User ID nicht gefunden' }, { status: 401 });
+    }
 
-    if (!profile || !['manager', 'admin'].includes(profile.role)) {
+    // Rolle pruefen
+    const profile = await prisma.profiles.findUnique({
+      where: { id: userId },
+      select: { role: true },
+    });
+
+    if (!profile || !['manager', 'admin'].includes(profile.role || '')) {
       return NextResponse.json({ error: 'Keine Berechtigung' }, { status: 403 });
     }
 
     // Rechnung laden
-    const { data: existingInvoice, error: loadError } = await adminSupabase
-      .from('invoices')
-      .select('*')
-      .eq('id', id)
-      .single();
+    const existingInvoice = await prisma.invoices.findUnique({
+      where: { id },
+    });
 
-    if (loadError || !existingInvoice) {
+    if (!existingInvoice) {
       return NextResponse.json({ error: 'Rechnung nicht gefunden' }, { status: 404 });
     }
 
@@ -127,19 +127,20 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     const body = await request.json();
     const { title, description, status, due_date, line_items } = body;
 
-    const updates: Record<string, unknown> = {
-      updated_at: new Date().toISOString(),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const updates: Record<string, any> = {
+      updated_at: new Date(),
     };
 
     if (title !== undefined) updates.title = title;
     if (description !== undefined) updates.description = description;
     if (status !== undefined) updates.status = status;
-    if (due_date !== undefined) updates.due_date = due_date;
+    if (due_date !== undefined) updates.due_date = due_date ? new Date(due_date) : null;
 
     // Line Items und Totals berechnen
     if (line_items !== undefined) {
       const typedLineItems = line_items as InvoiceLineItem[];
-      updates.line_items = typedLineItems;
+      updates.line_items = typedLineItems || null;
 
       if (typedLineItems && typedLineItems.length > 0) {
         const totals = calculateTotalsFromLineItems(typedLineItems);
@@ -149,17 +150,10 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       }
     }
 
-    const { data: invoice, error: updateError } = await adminSupabase
-      .from('invoices')
-      .update(updates)
-      .eq('id', id)
-      .select()
-      .single();
-
-    if (updateError) {
-      console.error('[Invoice] Update error:', updateError);
-      return NextResponse.json({ error: 'Fehler beim Aktualisieren' }, { status: 500 });
-    }
+    const invoice = await prisma.invoices.update({
+      where: { id },
+      data: updates,
+    });
 
     return NextResponse.json({ invoice });
   } catch (error) {
@@ -175,36 +169,34 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params;
-    const supabase = await createServerSupabaseClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
 
-    if (authError || !user) {
+    const session = await auth();
+    if (!session?.user) {
       return NextResponse.json({ error: 'Nicht authentifiziert' }, { status: 401 });
     }
 
+    const userId = (session.user as { id?: string }).id;
+    if (!userId) {
+      return NextResponse.json({ error: 'User ID nicht gefunden' }, { status: 401 });
+    }
+
     // Rolle pruefen - nur Admin
-    const adminSupabase = createAdminSupabaseClient();
-    const { data: profile } = await adminSupabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
+    const profile = await prisma.profiles.findUnique({
+      where: { id: userId },
+      select: { role: true },
+    });
 
     if (!profile || profile.role !== 'admin') {
       return NextResponse.json({ error: 'Nur Admins koennen Rechnungen loeschen' }, { status: 403 });
     }
 
     // Rechnung laden
-    const { data: invoice, error: loadError } = await adminSupabase
-      .from('invoices')
-      .select('status, lexoffice_id')
-      .eq('id', id)
-      .single();
+    const invoice = await prisma.invoices.findUnique({
+      where: { id },
+      select: { status: true, lexoffice_id: true },
+    });
 
-    if (loadError || !invoice) {
+    if (!invoice) {
       return NextResponse.json({ error: 'Rechnung nicht gefunden' }, { status: 404 });
     }
 
@@ -224,15 +216,9 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    const { error: deleteError } = await adminSupabase
-      .from('invoices')
-      .delete()
-      .eq('id', id);
-
-    if (deleteError) {
-      console.error('[Invoice] Delete error:', deleteError);
-      return NextResponse.json({ error: 'Fehler beim Loeschen' }, { status: 500 });
-    }
+    await prisma.invoices.delete({
+      where: { id },
+    });
 
     return NextResponse.json({ success: true });
   } catch (error) {

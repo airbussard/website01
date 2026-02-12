@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@/lib/supabase/server';
-import { createAdminSupabaseClient } from '@/lib/supabase/admin';
+import { auth } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
 
 /**
  * PATCH /api/progress-updates/[id]
@@ -12,35 +12,38 @@ export async function PATCH(
 ) {
   try {
     const { id } = await params;
-    const supabase = await createServerSupabaseClient();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
 
-    if (authError || !user) {
+    const session = await auth();
+    if (!session?.user) {
       return NextResponse.json(
         { error: 'Nicht authentifiziert' },
         { status: 401 }
       );
     }
 
-    const adminSupabase = createAdminSupabaseClient();
+    const userId = (session.user as { id?: string }).id;
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'User ID nicht gefunden' },
+        { status: 401 }
+      );
+    }
 
     // Rolle und Update laden
-    const [profileResult, updateResult] = await Promise.all([
-      adminSupabase.from('profiles').select('role').eq('id', user.id).single(),
-      adminSupabase.from('progress_updates').select('*').eq('id', id).single(),
+    const [profile, existingUpdate] = await Promise.all([
+      prisma.profiles.findUnique({ where: { id: userId }, select: { role: true } }),
+      prisma.progress_updates.findUnique({ where: { id } }),
     ]);
 
-    if (updateResult.error || !updateResult.data) {
+    if (!existingUpdate) {
       return NextResponse.json(
         { error: 'Update nicht gefunden' },
         { status: 404 }
       );
     }
 
-    const profile = profileResult.data;
-    const existingUpdate = updateResult.data;
-    const isManagerOrAdmin = profile && ['manager', 'admin'].includes(profile.role);
-    const isAuthor = existingUpdate.author_id === user.id;
+    const isManagerOrAdmin = profile && ['manager', 'admin'].includes(profile.role || '');
+    const isAuthor = existingUpdate.author_id === userId;
 
     // Berechtigung pruefen: Manager/Admin oder Autor
     if (!isManagerOrAdmin && !isAuthor) {
@@ -61,8 +64,9 @@ export async function PATCH(
     } = body;
 
     // Update-Daten vorbereiten (nur geaenderte Felder)
-    const updateData: Record<string, unknown> = {
-      updated_at: new Date().toISOString(),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const updateData: Record<string, any> = {
+      updated_at: new Date(),
     };
 
     if (title !== undefined) updateData.title = title.trim();
@@ -74,30 +78,24 @@ export async function PATCH(
     if (images !== undefined) updateData.images = images;
 
     // Update durchfuehren
-    const { data: updatedUpdate, error: updateError } = await adminSupabase
-      .from('progress_updates')
-      .update(updateData)
-      .eq('id', id)
-      .select()
-      .single();
-
-    if (updateError) {
-      console.error('[Progress Updates API] Update error:', updateError);
-      return NextResponse.json(
-        { error: 'Fehler beim Aktualisieren' },
-        { status: 500 }
-      );
-    }
+    const updatedUpdate = await prisma.progress_updates.update({
+      where: { id },
+      data: updateData,
+    });
 
     // Activity Log
-    await adminSupabase.from('activity_log').insert({
-      project_id: existingUpdate.project_id,
-      user_id: user.id,
-      action: 'progress_update_edited',
-      entity_type: 'progress_update',
-      entity_id: id,
-      details: { title: updateData.title || existingUpdate.title },
-    });
+    if (existingUpdate.project_id) {
+      await prisma.activity_log.create({
+        data: {
+          project_id: existingUpdate.project_id,
+          user_id: userId,
+          action: 'progress_update_edited',
+          entity_type: 'progress_update',
+          entity_id: id,
+          details: { title: updateData.title || existingUpdate.title } as object,
+        },
+      });
+    }
 
     return NextResponse.json({ update: updatedUpdate });
 
@@ -113,6 +111,8 @@ export async function PATCH(
 /**
  * DELETE /api/progress-updates/[id]
  * Update loeschen - nur Manager/Admin
+ *
+ * NOTE: Storage cleanup deaktiviert bis Phase 6 Storage Migration
  */
 export async function DELETE(
   request: NextRequest,
@@ -120,91 +120,69 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-    const supabase = await createServerSupabaseClient();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
 
-    if (authError || !user) {
+    const session = await auth();
+    if (!session?.user) {
       return NextResponse.json(
         { error: 'Nicht authentifiziert' },
         { status: 401 }
       );
     }
 
-    const adminSupabase = createAdminSupabaseClient();
+    const userId = (session.user as { id?: string }).id;
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'User ID nicht gefunden' },
+        { status: 401 }
+      );
+    }
 
     // Rolle pruefen
-    const { data: profile } = await adminSupabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
+    const profile = await prisma.profiles.findUnique({
+      where: { id: userId },
+      select: { role: true },
+    });
 
-    if (!profile || !['manager', 'admin'].includes(profile.role)) {
+    if (!profile || !['manager', 'admin'].includes(profile.role || '')) {
       return NextResponse.json(
         { error: 'Keine Berechtigung - nur Manager/Admin' },
         { status: 403 }
       );
     }
 
-    // Update laden fuer Activity Log und Storage Cleanup
-    const { data: existingUpdate, error: fetchError } = await adminSupabase
-      .from('progress_updates')
-      .select('*')
-      .eq('id', id)
-      .single();
+    // Update laden fuer Activity Log
+    const existingUpdate = await prisma.progress_updates.findUnique({
+      where: { id },
+    });
 
-    if (fetchError || !existingUpdate) {
+    if (!existingUpdate) {
       return NextResponse.json(
         { error: 'Update nicht gefunden' },
         { status: 404 }
       );
     }
 
-    // Bilder aus Storage loeschen falls vorhanden
-    if (existingUpdate.images && existingUpdate.images.length > 0) {
-      try {
-        const filePaths = existingUpdate.images
-          .map((url: string) => {
-            // URL parsen um Pfad zu extrahieren
-            const match = url.match(/progress-updates\/(.+)$/);
-            return match ? match[1] : null;
-          })
-          .filter(Boolean);
-
-        if (filePaths.length > 0) {
-          await adminSupabase.storage
-            .from('progress-updates')
-            .remove(filePaths);
-        }
-      } catch (storageError) {
-        // Storage-Fehler loggen aber nicht abbrechen
-        console.error('[Progress Updates API] Storage cleanup error:', storageError);
-      }
-    }
+    // TODO: Phase 6 Storage Migration - Bilder aus lokalem Storage loeschen
+    console.log('[Progress Updates API] Image cleanup deaktiviert - Storage Migration pending');
 
     // Update loeschen
-    const { error: deleteError } = await adminSupabase
-      .from('progress_updates')
-      .delete()
-      .eq('id', id);
-
-    if (deleteError) {
-      console.error('[Progress Updates API] Delete error:', deleteError);
-      return NextResponse.json(
-        { error: 'Fehler beim Loeschen' },
-        { status: 500 }
-      );
-    }
+    await prisma.progress_updates.delete({
+      where: { id },
+    });
 
     // Activity Log
-    await adminSupabase.from('activity_log').insert({
-      project_id: existingUpdate.project_id,
-      user_id: user.id,
-      action: 'progress_update_deleted',
-      entity_type: 'progress_update',
-      entity_id: id,
-      details: { title: existingUpdate.title },
-    });
+    if (existingUpdate.project_id) {
+      await prisma.activity_log.create({
+        data: {
+          project_id: existingUpdate.project_id,
+          user_id: userId,
+          action: 'progress_update_deleted',
+          entity_type: 'progress_update',
+          entity_id: id,
+          details: { title: existingUpdate.title } as object,
+        },
+      });
+    }
 
     return NextResponse.json({ success: true });
 

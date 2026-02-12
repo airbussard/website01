@@ -17,7 +17,6 @@ import {
   ChevronDown,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { createClient } from '@/lib/supabase/client';
 import type { Invoice, InvoiceStatus } from '@/types/dashboard';
 
 const statusOptions: { value: InvoiceStatus | 'all'; label: string }[] = [
@@ -56,47 +55,30 @@ export default function InvoicesPage() {
     const fetchInvoices = async () => {
       if (!user) return;
 
-      const supabase = createClient();
-
       try {
-        // Fetch invoices for projects where user is client
-        const { data: projects } = await supabase
-          .from('pm_projects')
-          .select('id')
-          .eq('client_id', user.id);
-
-        if (!projects || projects.length === 0) {
-          setInvoices([]);
-          setLoading(false);
-          return;
-        }
-
-        const projectIds = projects.map((p: { id: string }) => p.id);
-
-        let query = supabase
-          .from('invoices')
-          .select(`
-            *,
-            project:pm_projects(id, name, client_id)
-          `)
-          .in('project_id', projectIds)
-          .order('issue_date', { ascending: false });
-
-        // Filter by status
+        const params = new URLSearchParams();
         if (statusFilter !== 'all') {
-          query = query.eq('status', statusFilter);
+          params.set('status', statusFilter);
         }
 
-        // Search
+        const response = await fetch(`/api/invoices?${params.toString()}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch invoices');
+        }
+
+        const data = await response.json();
+        let filteredInvoices = data.invoices || [];
+
+        // Client-side search filter
         if (searchQuery) {
-          query = query.or(`invoice_number.ilike.%${searchQuery}%,title.ilike.%${searchQuery}%`);
+          const query = searchQuery.toLowerCase();
+          filteredInvoices = filteredInvoices.filter((inv: Invoice) =>
+            inv.invoice_number.toLowerCase().includes(query) ||
+            inv.title.toLowerCase().includes(query)
+          );
         }
 
-        const { data, error } = await query;
-
-        if (error) throw error;
-
-        setInvoices(data || []);
+        setInvoices(filteredInvoices);
       } catch (error) {
         console.error('Error fetching invoices:', error);
       } finally {

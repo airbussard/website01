@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@/lib/supabase/server';
-import { createAdminSupabaseClient } from '@/lib/supabase/admin';
+import { auth } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
 import { EmailService } from '@/lib/services/email/EmailService';
 import { getProjectRecipients } from '@/lib/services/notifications/getProjectRecipients';
 import {
@@ -16,10 +16,8 @@ const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://oscarknabe.de';
  */
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createServerSupabaseClient();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-
-    if (authError || !user) {
+    const session = await auth();
+    if (!session?.user) {
       return NextResponse.json(
         { error: 'Nicht authentifiziert' },
         { status: 401 }
@@ -31,36 +29,37 @@ export async function GET(request: NextRequest) {
     const projectId = searchParams.get('project_id');
     const status = searchParams.get('status');
 
-    // Query aufbauen
-    let query = supabase
-      .from('contracts')
-      .select(`
-        *,
-        project:pm_projects(id, name, client_id),
-        signer:profiles!contracts_signed_by_fkey(id, email, first_name, last_name),
-        creator:profiles!contracts_created_by_fkey(id, email, first_name, last_name)
-      `)
-      .order('created_at', { ascending: false });
+    const contracts = await prisma.contracts.findMany({
+      where: {
+        ...(projectId ? { project_id: projectId } : {}),
+        ...(status ? { status } : {}),
+      },
+      include: {
+        pm_projects: {
+          select: { id: true, name: true, client_id: true },
+        },
+        profiles_contracts_signed_byToprofiles: {
+          select: { id: true, email: true, first_name: true, last_name: true },
+        },
+        profiles_contracts_created_byToprofiles: {
+          select: { id: true, email: true, first_name: true, last_name: true },
+        },
+      },
+      orderBy: { created_at: 'desc' },
+    });
 
-    if (projectId) {
-      query = query.eq('project_id', projectId);
-    }
+    // Transform to match expected format
+    const transformedContracts = contracts.map(c => ({
+      ...c,
+      project: c.pm_projects,
+      signer: c.profiles_contracts_signed_byToprofiles,
+      creator: c.profiles_contracts_created_byToprofiles,
+      pm_projects: undefined,
+      profiles_contracts_signed_byToprofiles: undefined,
+      profiles_contracts_created_byToprofiles: undefined,
+    }));
 
-    if (status) {
-      query = query.eq('status', status);
-    }
-
-    const { data: contracts, error } = await query;
-
-    if (error) {
-      console.error('[Contracts API] Query error:', error);
-      return NextResponse.json(
-        { error: 'Fehler beim Laden der Vertraege' },
-        { status: 500 }
-      );
-    }
-
-    return NextResponse.json({ contracts });
+    return NextResponse.json({ contracts: transformedContracts });
   } catch (error) {
     console.error('[Contracts API] Error:', error);
     return NextResponse.json(
@@ -73,6 +72,8 @@ export async function GET(request: NextRequest) {
 /**
  * POST /api/contracts
  * Erstellt einen neuen Vertrag (nur Manager/Admin)
+ *
+ * NOTE: Storage Migration Phase 6 pending - PDF upload deaktiviert
  */
 export async function POST(request: NextRequest) {
   try {
@@ -99,101 +100,73 @@ export async function POST(request: NextRequest) {
     }
 
     // User verifizieren
-    const supabase = await createServerSupabaseClient();
-    const { data: { user } } = await supabase.auth.getUser();
-
-    if (!user) {
+    const session = await auth();
+    if (!session?.user) {
       return NextResponse.json(
         { error: 'Nicht authentifiziert' },
         { status: 401 }
       );
     }
 
-    // Rolle pruefen
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
+    const userId = (session.user as { id?: string }).id;
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'User ID nicht gefunden' },
+        { status: 401 }
+      );
+    }
 
-    if (!profile || !['manager', 'admin'].includes(profile.role)) {
+    // Rolle pruefen
+    const profile = await prisma.profiles.findUnique({
+      where: { id: userId },
+      select: { role: true },
+    });
+
+    if (!profile || !['manager', 'admin'].includes(profile.role || '')) {
       return NextResponse.json(
         { error: 'Keine Berechtigung - nur Manager/Admin' },
         { status: 403 }
       );
     }
 
-    const adminSupabase = createAdminSupabaseClient();
-
-    // PDF hochladen
+    // TODO: Phase 6 Storage Migration - PDF Upload zu lokalem Storage
+    // Aktuell: Placeholder fuer Storage-Path
     const fileName = `${Date.now()}_${pdfFile.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
     const storagePath = `${projectId}/contracts/${fileName}`;
-
-    const arrayBuffer = await pdfFile.arrayBuffer();
-    const { error: uploadError } = await adminSupabase
-      .storage
-      .from('project_files')
-      .upload(storagePath, arrayBuffer, {
-        contentType: 'application/pdf',
-      });
-
-    if (uploadError) {
-      console.error('[Contracts API] Upload error:', uploadError);
-      return NextResponse.json(
-        { error: 'Fehler beim Hochladen der PDF' },
-        { status: 500 }
-      );
-    }
-
-    // Signed URL generieren (1 Jahr gueltig)
-    const { data: urlData } = await adminSupabase
-      .storage
-      .from('project_files')
-      .createSignedUrl(storagePath, 60 * 60 * 24 * 365);
+    console.log('[Contracts API] PDF Upload deaktiviert - Storage Migration pending');
 
     // Contract in DB erstellen
-    const { data: contract, error: insertError } = await adminSupabase
-      .from('contracts')
-      .insert({
+    const contract = await prisma.contracts.create({
+      data: {
         project_id: projectId,
         title,
         description: description || null,
         original_pdf_path: storagePath,
-        original_pdf_url: urlData?.signedUrl || null,
-        valid_until: validUntil || null,
-        created_by: user.id,
-      })
-      .select()
-      .single();
-
-    if (insertError) {
-      console.error('[Contracts API] Insert error:', insertError);
-      // Cleanup: PDF loeschen wenn DB Insert fehlschlaegt
-      await adminSupabase.storage.from('project_files').remove([storagePath]);
-      return NextResponse.json(
-        { error: 'Fehler beim Erstellen des Vertrags' },
-        { status: 500 }
-      );
-    }
+        original_pdf_url: null, // TODO: Storage Migration
+        valid_until: validUntil ? new Date(validUntil) : null,
+        created_by: userId,
+      },
+    });
 
     // Activity Log
-    await adminSupabase.from('activity_log').insert({
-      project_id: projectId,
-      user_id: user.id,
-      action: 'contract_uploaded',
-      entity_type: 'contract',
-      entity_id: contract.id,
-      details: { contract_title: title },
+    await prisma.activity_log.create({
+      data: {
+        project_id: projectId,
+        user_id: userId,
+        action: 'contract_uploaded',
+        entity_type: 'contract',
+        entity_id: contract.id,
+        details: { contract_title: title } as object,
+      },
     });
 
     // Email-Benachrichtigungen senden
     try {
       // Projekt laden fuer Projektname
-      const { data: project } = await adminSupabase
-        .from('pm_projects')
-        .select('name')
-        .eq('id', projectId)
-        .single();
+      const project = await prisma.pm_projects.findUnique({
+        where: { id: projectId },
+        select: { name: true },
+      });
 
       const projectName = project?.name || 'Projekt';
       const recipients = await getProjectRecipients(projectId);

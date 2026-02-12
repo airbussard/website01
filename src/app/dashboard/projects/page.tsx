@@ -10,12 +10,10 @@ import {
   Filter,
   Calendar,
   Users,
-  MoreVertical,
   ExternalLink,
   ChevronDown,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { createClient } from '@/lib/supabase/client';
 import type { PMProject, ProjectStatus, Priority } from '@/types/dashboard';
 
 const statusOptions: { value: ProjectStatus | 'all'; label: string }[] = [
@@ -61,65 +59,22 @@ export default function ProjectsPage() {
     const fetchProjects = async () => {
       if (!user) return;
 
-      const supabase = createClient();
-
       try {
-        let query = supabase
-          .from('pm_projects')
-          .select(`
-            *,
-            client:profiles!pm_projects_client_id_fkey(id, full_name, avatar_url),
-            manager:profiles!pm_projects_manager_id_fkey(id, full_name, avatar_url)
-          `)
-          .order('updated_at', { ascending: false });
-
-        // Filter by user role
-        if (!isManagerOrAdmin) {
-          // User's organizations laden
-          const { data: userOrgs } = await supabase
-            .from('organization_members')
-            .select('organization_id')
-            .eq('user_id', user.id);
-
-          const orgIds = userOrgs?.map((o: { organization_id: string }) => o.organization_id) || [];
-
-          // User's project_members Eintraege laden
-          const { data: memberProjects } = await supabase
-            .from('project_members')
-            .select('project_id')
-            .eq('user_id', user.id);
-
-          const memberProjectIds = memberProjects?.map((m: { project_id: string }) => m.project_id) || [];
-
-          // Filter bauen: client_id ODER organization ODER project_member
-          const filters: string[] = [`client_id.eq.${user.id}`];
-
-          if (orgIds.length > 0) {
-            filters.push(`organization_id.in.(${orgIds.join(',')})`);
-          }
-
-          if (memberProjectIds.length > 0) {
-            filters.push(`id.in.(${memberProjectIds.join(',')})`);
-          }
-
-          query = query.or(filters.join(','));
-        }
-
-        // Filter by status
+        const params = new URLSearchParams();
         if (statusFilter !== 'all') {
-          query = query.eq('status', statusFilter);
+          params.set('status', statusFilter);
         }
-
-        // Search
         if (searchQuery) {
-          query = query.ilike('name', `%${searchQuery}%`);
+          params.set('search', searchQuery);
         }
 
-        const { data, error } = await query;
+        const response = await fetch(`/api/projects?${params.toString()}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch projects');
+        }
 
-        if (error) throw error;
-
-        setProjects(data || []);
+        const data = await response.json();
+        setProjects(data.projects || []);
       } catch (error) {
         console.error('Error fetching projects:', error);
       } finally {
@@ -128,7 +83,7 @@ export default function ProjectsPage() {
     };
 
     fetchProjects();
-  }, [user, isManagerOrAdmin, statusFilter, searchQuery]);
+  }, [user, statusFilter, searchQuery]);
 
   const calculateProgress = (project: PMProject) => {
     if (project.task_count && project.completed_task_count) {

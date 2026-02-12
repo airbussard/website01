@@ -15,7 +15,6 @@ import {
   FileSignature,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { createClient } from '@/lib/supabase/client';
 import type { PMProject, Task, ActivityLog } from '@/types/dashboard';
 
 interface DashboardStats {
@@ -59,114 +58,25 @@ export default function DashboardPage() {
     const fetchDashboardData = async () => {
       if (!user) return;
 
-      const supabase = createClient();
-
       try {
-        // Filter fuer normale User berechnen (client_id, organization, project_members)
-        let userProjectFilter = 'id.not.is.null'; // Default fuer Admin
-
-        if (!isManagerOrAdmin) {
-          // User's organizations laden
-          const { data: userOrgs } = await supabase
-            .from('organization_members')
-            .select('organization_id')
-            .eq('user_id', user.id);
-
-          const orgIds = userOrgs?.map((o: { organization_id: string }) => o.organization_id) || [];
-
-          // User's project_members Eintraege laden
-          const { data: memberProjects } = await supabase
-            .from('project_members')
-            .select('project_id')
-            .eq('user_id', user.id);
-
-          const memberProjectIds = memberProjects?.map((m: { project_id: string }) => m.project_id) || [];
-
-          // Filter bauen: client_id ODER organization ODER project_member
-          const filters: string[] = [`client_id.eq.${user.id}`];
-
-          if (orgIds.length > 0) {
-            filters.push(`organization_id.in.(${orgIds.join(',')})`);
-          }
-
-          if (memberProjectIds.length > 0) {
-            filters.push(`id.in.(${memberProjectIds.join(',')})`);
-          }
-
-          userProjectFilter = filters.join(',');
+        const response = await fetch('/api/dashboard');
+        if (!response.ok) {
+          throw new Error('Failed to fetch dashboard data');
         }
 
-        // Fetch projects based on role
-        const { data: projects } = await supabase
-          .from('pm_projects')
-          .select('*')
-          .order('updated_at', { ascending: false })
-          .or(userProjectFilter)
-          .limit(5);
-
-        // Fetch tasks
-        let tasksQuery = supabase
-          .from('tasks')
-          .select('*, project:pm_projects(name)')
-          .in('status', ['todo', 'in_progress'])
-          .order('due_date', { ascending: true });
-
-        if (!isManagerOrAdmin) {
-          tasksQuery = tasksQuery.eq('assignee_id', user.id);
-        }
-
-        const { data: tasks } = await tasksQuery.limit(5);
-
-        // Calculate stats
-        const { count: totalProjects } = await supabase
-          .from('pm_projects')
-          .select('*', { count: 'exact', head: true })
-          .or(userProjectFilter);
-
-        const { count: activeProjects } = await supabase
-          .from('pm_projects')
-          .select('*', { count: 'exact', head: true })
-          .eq('status', 'active')
-          .or(userProjectFilter);
-
-        const { count: pendingTasks } = await supabase
-          .from('tasks')
-          .select('*', { count: 'exact', head: true })
-          .in('status', ['todo', 'in_progress']);
-
-        const { count: overdueTasks } = await supabase
-          .from('tasks')
-          .select('*', { count: 'exact', head: true })
-          .lt('due_date', new Date().toISOString())
-          .not('status', 'eq', 'done');
-
-        // Fetch recent activity
-        if (isManagerOrAdmin) {
-          const { data: activity } = await supabase
-            .from('activity_log')
-            .select('*, user:profiles(full_name, avatar_url)')
-            .order('created_at', { ascending: false })
-            .limit(5);
-
-          setRecentActivity(activity || []);
-        }
-
-        // Fetch pending contracts count
-        const { count: pendingContracts } = await supabase
-          .from('contracts')
-          .select('*', { count: 'exact', head: true })
-          .eq('status', 'pending_signature');
+        const data = await response.json();
 
         setStats({
-          totalProjects: totalProjects || 0,
-          activeProjects: activeProjects || 0,
-          pendingTasks: pendingTasks || 0,
-          overdueTasks: overdueTasks || 0,
-          pendingContracts: pendingContracts || 0,
+          totalProjects: data.stats.totalProjects || 0,
+          activeProjects: data.stats.activeProjects || 0,
+          pendingTasks: data.stats.pendingTasks || 0,
+          overdueTasks: data.stats.overdueTasks || 0,
+          pendingContracts: data.stats.pendingContracts || 0,
         });
 
-        setRecentProjects(projects || []);
-        setUpcomingTasks(tasks || []);
+        setRecentProjects(data.recentProjects || []);
+        setUpcomingTasks(data.upcomingTasks || []);
+        setRecentActivity(data.recentActivity || []);
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
       } finally {
@@ -175,7 +85,7 @@ export default function DashboardPage() {
     };
 
     fetchDashboardData();
-  }, [user, isManagerOrAdmin]);
+  }, [user]);
 
   const statCards = [
     {

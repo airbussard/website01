@@ -3,10 +3,8 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import {
-  Settings,
   Lock,
   Bell,
-  Mail,
   Save,
   Loader2,
   Eye,
@@ -14,14 +12,12 @@ import {
   CheckCircle,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { createClient } from '@/lib/supabase/client';
 
 export default function SettingsPage() {
   const { user, profile, loading: authLoading, refreshProfile } = useAuth();
-  const supabase = createClient();
 
-  // Tab state
-  const [activeTab, setActiveTab] = useState<'password' | 'email' | 'notifications'>('password');
+  // Tab state (Email-Tab entfernt - NextAuth verwendet andere Auth-Flows)
+  const [activeTab, setActiveTab] = useState<'password' | 'notifications'>('password');
 
   // Password form state
   const [currentPassword, setCurrentPassword] = useState('');
@@ -32,12 +28,6 @@ export default function SettingsPage() {
   const [passwordLoading, setPasswordLoading] = useState(false);
   const [passwordError, setPasswordError] = useState<string | null>(null);
   const [passwordSuccess, setPasswordSuccess] = useState(false);
-
-  // Email change state
-  const [newEmail, setNewEmail] = useState('');
-  const [emailLoading, setEmailLoading] = useState(false);
-  const [emailError, setEmailError] = useState<string | null>(null);
-  const [emailSuccess, setEmailSuccess] = useState(false);
 
   // Notification settings state
   const [notifyProjectUpdates, setNotifyProjectUpdates] = useState(true);
@@ -58,7 +48,7 @@ export default function SettingsPage() {
     }
 
     if (newPassword !== confirmPassword) {
-      setPasswordError('Die Passwörter stimmen nicht überein');
+      setPasswordError('Die Passwoerter stimmen nicht ueberein');
       return;
     }
 
@@ -67,11 +57,21 @@ export default function SettingsPage() {
     setPasswordSuccess(false);
 
     try {
-      const { error } = await supabase.auth.updateUser({
-        password: newPassword,
+      const response = await fetch('/api/profile/me', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'change-password',
+          current_password: currentPassword,
+          new_password: newPassword,
+        }),
       });
 
-      if (error) throw error;
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Fehler beim Aendern des Passworts');
+      }
 
       setPasswordSuccess(true);
       setCurrentPassword('');
@@ -80,42 +80,10 @@ export default function SettingsPage() {
       setTimeout(() => setPasswordSuccess(false), 3000);
     } catch (err: unknown) {
       console.error('Error updating password:', err);
-      const errorMessage = err instanceof Error ? err.message : 'Fehler beim Ändern des Passworts';
+      const errorMessage = err instanceof Error ? err.message : 'Fehler beim Aendern des Passworts';
       setPasswordError(errorMessage);
     } finally {
       setPasswordLoading(false);
-    }
-  };
-
-  const handleEmailChange = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!user || !newEmail) return;
-
-    // Simple validation
-    if (newEmail === user.email) {
-      setEmailError('Die neue E-Mail-Adresse ist identisch mit der aktuellen');
-      return;
-    }
-
-    setEmailLoading(true);
-    setEmailError(null);
-    setEmailSuccess(false);
-
-    try {
-      const { error } = await supabase.auth.updateUser({
-        email: newEmail,
-      });
-
-      if (error) throw error;
-
-      setEmailSuccess(true);
-      setNewEmail('');
-    } catch (err: unknown) {
-      console.error('Error changing email:', err);
-      const errorMessage = err instanceof Error ? err.message : 'Fehler beim Ändern der E-Mail';
-      setEmailError(errorMessage);
-    } finally {
-      setEmailLoading(false);
     }
   };
 
@@ -135,15 +103,15 @@ export default function SettingsPage() {
         },
       };
 
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          settings,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', user.id);
+      const response = await fetch('/api/profile/me', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ settings }),
+      });
 
-      if (error) throw error;
+      if (!response.ok) {
+        throw new Error('Fehler beim Speichern');
+      }
 
       await refreshProfile();
       setNotificationSuccess(true);
@@ -165,7 +133,6 @@ export default function SettingsPage() {
 
   const tabs = [
     { id: 'password', label: 'Passwort', icon: Lock },
-    { id: 'email', label: 'E-Mail', icon: Mail },
     { id: 'notifications', label: 'Benachrichtigungen', icon: Bell },
   ] as const;
 
@@ -310,89 +277,6 @@ export default function SettingsPage() {
                       <>
                         <Save className="h-5 w-5 mr-2" />
                         Passwort ändern
-                      </>
-                    )}
-                  </button>
-                </div>
-              </form>
-            </motion.div>
-          )}
-
-          {activeTab === 'email' && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-            >
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">E-Mail-Adresse ändern</h3>
-              <p className="text-sm text-gray-500 mb-6">
-                Nach der Änderung erhalten Sie eine Bestätigungs-E-Mail an die neue Adresse.
-              </p>
-
-              {emailError && (
-                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm mb-4">
-                  {emailError}
-                </div>
-              )}
-
-              {emailSuccess && (
-                <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg text-sm flex items-center mb-4">
-                  <CheckCircle className="h-4 w-4 mr-2" />
-                  Bestätigungs-E-Mail wurde an die neue Adresse gesendet
-                </div>
-              )}
-
-              <form onSubmit={handleEmailChange} className="space-y-4">
-                {/* Current Email */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Aktuelle E-Mail-Adresse
-                  </label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                    <input
-                      type="email"
-                      value={user?.email || ''}
-                      disabled
-                      className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-200 bg-gray-50 text-gray-500"
-                    />
-                  </div>
-                </div>
-
-                {/* New Email */}
-                <div>
-                  <label htmlFor="newEmail" className="block text-sm font-medium text-gray-700 mb-2">
-                    Neue E-Mail-Adresse
-                  </label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                    <input
-                      id="newEmail"
-                      type="email"
-                      value={newEmail}
-                      onChange={(e) => setNewEmail(e.target.value)}
-                      required
-                      className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 bg-white text-gray-900 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors"
-                      placeholder="neue@email.de"
-                    />
-                  </div>
-                </div>
-
-                {/* Submit */}
-                <div className="pt-4">
-                  <button
-                    type="submit"
-                    disabled={emailLoading || !newEmail}
-                    className="w-full flex items-center justify-center px-6 py-3 bg-primary-600 text-white rounded-lg font-semibold hover:bg-primary-700 focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
-                  >
-                    {emailLoading ? (
-                      <>
-                        <Loader2 className="h-5 w-5 animate-spin mr-2" />
-                        Sende Bestätigung...
-                      </>
-                    ) : (
-                      <>
-                        <Save className="h-5 w-5 mr-2" />
-                        E-Mail ändern
                       </>
                     )}
                   </button>

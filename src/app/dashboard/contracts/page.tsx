@@ -20,7 +20,6 @@ import {
   ChevronDown,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { createClient } from '@/lib/supabase/client';
 import ContractUploadModal from '@/components/contracts/ContractUploadModal';
 import ContractSigningDialog from '@/components/contracts/ContractSigningDialog';
 import type { Contract, ContractStatus } from '@/types/dashboard';
@@ -73,17 +72,19 @@ export default function ContractsPage() {
     const fetchProjects = async () => {
       if (!isManagerOrAdmin) return;
 
-      const supabase = createClient();
-      const { data } = await supabase
-        .from('pm_projects')
-        .select('id, name')
-        .order('name');
+      try {
+        const response = await fetch('/api/projects');
+        if (!response.ok) return;
 
-      if (data) {
-        setProjects(data);
-        if (data.length > 0) {
-          setSelectedProjectId(data[0].id);
+        const data = await response.json();
+        const projectsList = data.projects || [];
+
+        setProjects(projectsList.map((p: { id: string; name: string }) => ({ id: p.id, name: p.name })));
+        if (projectsList.length > 0) {
+          setSelectedProjectId(projectsList[0].id);
         }
+      } catch (error) {
+        console.error('Error fetching projects:', error);
       }
     };
 
@@ -95,34 +96,29 @@ export default function ContractsPage() {
     const fetchContracts = async () => {
       if (!user) return;
 
-      const supabase = createClient();
-
       try {
-        let query = supabase
-          .from('contracts')
-          .select(`
-            *,
-            project:pm_projects(id, name, client_id),
-            signer:profiles!contracts_signed_by_fkey(id, email, first_name, last_name),
-            creator:profiles!contracts_created_by_fkey(id, email, first_name, last_name)
-          `)
-          .order('created_at', { ascending: false });
-
-        // Filter by status
+        const params = new URLSearchParams();
         if (statusFilter !== 'all') {
-          query = query.eq('status', statusFilter);
+          params.set('status', statusFilter);
         }
 
-        // Search
+        const response = await fetch(`/api/contracts?${params.toString()}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch contracts');
+        }
+
+        const data = await response.json();
+        let filteredContracts = data.contracts || [];
+
+        // Client-side search filter
         if (searchQuery) {
-          query = query.ilike('title', `%${searchQuery}%`);
+          const query = searchQuery.toLowerCase();
+          filteredContracts = filteredContracts.filter((c: Contract) =>
+            c.title.toLowerCase().includes(query)
+          );
         }
 
-        const { data, error } = await query;
-
-        if (error) throw error;
-
-        setContracts(data || []);
+        setContracts(filteredContracts);
       } catch (error) {
         console.error('Error fetching contracts:', error);
       } finally {

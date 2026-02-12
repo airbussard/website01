@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@/lib/supabase/server';
-import { createAdminSupabaseClient } from '@/lib/supabase/admin';
+import { auth } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
 import {
   createLexofficeClient,
   mapToLexofficeQuotation,
@@ -22,39 +22,38 @@ interface RouteParams {
 export async function POST(request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params;
-    const supabase = await createServerSupabaseClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
 
-    if (authError || !user) {
+    const session = await auth();
+    if (!session?.user) {
       return NextResponse.json({ error: 'Nicht authentifiziert' }, { status: 401 });
     }
 
-    // Rolle pruefen
-    const adminSupabase = createAdminSupabaseClient();
-    const { data: profile } = await adminSupabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
+    const userId = (session.user as { id?: string }).id;
+    if (!userId) {
+      return NextResponse.json({ error: 'User ID nicht gefunden' }, { status: 401 });
+    }
 
-    if (!profile || !['manager', 'admin'].includes(profile.role)) {
+    // Rolle pruefen
+    const profile = await prisma.profiles.findUnique({
+      where: { id: userId },
+      select: { role: true },
+    });
+
+    if (!profile || !['manager', 'admin'].includes(profile.role || '')) {
       return NextResponse.json({ error: 'Keine Berechtigung' }, { status: 403 });
     }
 
     // Angebot mit Projekt laden
-    const { data: quotation, error: loadError } = await adminSupabase
-      .from('quotations')
-      .select(`
-        *,
-        project:pm_projects(id, name, client_id, organization_id)
-      `)
-      .eq('id', id)
-      .single();
+    const quotation = await prisma.quotations.findUnique({
+      where: { id },
+      include: {
+        pm_projects: {
+          select: { id: true, name: true, client_id: true, organization_id: true },
+        },
+      },
+    });
 
-    if (loadError || !quotation) {
+    if (!quotation) {
       return NextResponse.json({ error: 'Angebot nicht gefunden' }, { status: 404 });
     }
 
@@ -67,11 +66,10 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     }
 
     // Lexoffice Settings pruefen
-    const { data: settings } = await adminSupabase
-      .from('system_settings')
-      .select('value')
-      .eq('key', 'lexoffice')
-      .single();
+    const settings = await prisma.system_settings.findUnique({
+      where: { key: 'lexoffice' },
+      select: { value: true },
+    });
 
     const lexofficeSettings = settings?.value as {
       is_enabled: boolean;
@@ -90,23 +88,19 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
     // Kontakt-Mapping finden
     let contactId: string | null = null;
-    const project = quotation.project as { client_id?: string; organization_id?: string } | null;
+    const project = quotation.pm_projects;
 
     if (project?.client_id) {
-      const { data: contactMapping } = await adminSupabase
-        .from('lexoffice_contacts')
-        .select('lexoffice_contact_id')
-        .eq('profile_id', project.client_id)
-        .single();
-
+      const contactMapping = await prisma.lexoffice_contacts.findFirst({
+        where: { profile_id: project.client_id },
+        select: { lexoffice_contact_id: true },
+      });
       contactId = contactMapping?.lexoffice_contact_id || null;
     } else if (project?.organization_id) {
-      const { data: contactMapping } = await adminSupabase
-        .from('lexoffice_contacts')
-        .select('lexoffice_contact_id')
-        .eq('organization_id', project.organization_id)
-        .single();
-
+      const contactMapping = await prisma.lexoffice_contacts.findFirst({
+        where: { organization_id: project.organization_id },
+        select: { lexoffice_contact_id: true },
+      });
       contactId = contactMapping?.lexoffice_contact_id || null;
     }
 
@@ -128,49 +122,38 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         const lexofficeData = mapToLexofficeQuotation({
           quotation: {
             title: quotation.title,
-            description: quotation.description,
-            valid_until: quotation.valid_until,
+            description: quotation.description ?? undefined,
+            valid_until: quotation.valid_until?.toISOString().split('T')[0],
           },
           lexofficeContactId: contactId,
-          lineItems: quotation.line_items as InvoiceLineItem[],
+          lineItems: quotation.line_items as unknown as InvoiceLineItem[],
         });
 
         const response = await lexoffice.createQuotation(lexofficeData, finalize);
         lexofficeId = response.id;
 
         // Sync Log
-        await adminSupabase.from('lexoffice_sync_log').insert({
-          entity_type: 'quotation',
-          entity_id: quotation.id,
-          lexoffice_id: lexofficeId,
-          action: finalize ? 'finalize' : 'create',
-          status: 'success',
-          request_data: lexofficeData,
-          response_data: response,
+        await prisma.lexoffice_sync_log.create({
+          data: {
+            entity_type: 'quotation',
+            entity_id: quotation.id,
+            lexoffice_id: lexofficeId,
+            action: finalize ? 'finalize' : 'create',
+            status: 'success',
+            request_data: lexofficeData as object,
+            response_data: response as object,
+          },
         });
       }
 
-      // PDF abrufen wenn finalisiert
+      // PDF abrufen wenn finalisiert - Phase 6 Storage Migration
+      // TODO: PDF Upload zu lokalem Storage statt Supabase Storage
       if (finalize && lexofficeId) {
         try {
-          const pdfBuffer = await lexoffice.getQuotationPdf(lexofficeId);
-
-          // PDF zu Supabase Storage hochladen
-          const pdfFileName = `quotations/${quotation.quotation_number}.pdf`;
-          const { error: uploadError } = await adminSupabase.storage
-            .from('documents')
-            .upload(pdfFileName, pdfBuffer, {
-              contentType: 'application/pdf',
-              upsert: true,
-            });
-
-          if (!uploadError) {
-            const { data: urlData } = adminSupabase.storage
-              .from('documents')
-              .getPublicUrl(pdfFileName);
-
-            pdfUrl = urlData.publicUrl;
-          }
+          // PDF fetch deaktiviert bis Storage Migration abgeschlossen
+          // const pdfBuffer = await lexoffice.getQuotationPdf(lexofficeId);
+          // PDF zu lokalem Storage hochladen
+          console.log('[Quotation] PDF fetch deaktiviert - Storage Migration pending');
         } catch (pdfError) {
           console.error('[Quotation] PDF fetch error:', pdfError);
           // Nicht kritisch, fortfahren
@@ -178,23 +161,17 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       }
 
       // Lokales Angebot aktualisieren
-      const { data: updatedQuotation, error: updateError } = await adminSupabase
-        .from('quotations')
-        .update({
+      const updatedQuotation = await prisma.quotations.update({
+        where: { id },
+        data: {
           status: 'sent',
-          sent_at: new Date().toISOString(),
+          sent_at: new Date(),
           lexoffice_id: lexofficeId,
           lexoffice_status: finalize ? 'open' : 'draft',
           pdf_url: pdfUrl,
-          synced_at: new Date().toISOString(),
-        })
-        .eq('id', id)
-        .select()
-        .single();
-
-      if (updateError) {
-        console.error('[Quotation] Update error:', updateError);
-      }
+          synced_at: new Date(),
+        },
+      });
 
       return NextResponse.json({
         success: true,
@@ -205,12 +182,14 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     } catch (error) {
       if (error instanceof LexofficeApiError) {
         // Sync Log
-        await adminSupabase.from('lexoffice_sync_log').insert({
-          entity_type: 'quotation',
-          entity_id: quotation.id,
-          action: 'send',
-          status: 'failed',
-          error_message: error.message,
+        await prisma.lexoffice_sync_log.create({
+          data: {
+            entity_type: 'quotation',
+            entity_id: quotation.id,
+            action: 'send',
+            status: 'failed',
+            error_message: error.message,
+          },
         });
 
         return NextResponse.json(

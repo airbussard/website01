@@ -15,7 +15,6 @@ import {
   Shield,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { createClient } from '@/lib/supabase/client';
 import type { UserRole } from '@/types/dashboard';
 
 const roleLabels: Record<UserRole, string> = {
@@ -82,12 +81,11 @@ export default function ProfilePage() {
     setError(null);
     setSuccess(false);
 
-    const supabase = createClient();
-
     try {
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .update({
+      const response = await fetch('/api/profile/me', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
           first_name: firstName || null,
           last_name: lastName || null,
           company: company || null,
@@ -101,11 +99,13 @@ export default function ProfilePage() {
           company_postal_code: companyPostalCode || null,
           company_city: companyCity || null,
           company_country: companyCountry || null,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', user.id);
+        }),
+      });
 
-      if (updateError) throw updateError;
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Fehler beim Speichern');
+      }
 
       await refreshProfile();
       setSuccess(true);

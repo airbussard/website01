@@ -1,11 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@/lib/supabase/server';
-import { createAdminSupabaseClient } from '@/lib/supabase/admin';
-import {
-  createLexofficeClient,
-  LexofficeApiError,
-} from '@/lib/lexoffice';
-import type { QuotationStatus } from '@/types/dashboard';
+import { auth } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -18,54 +13,68 @@ interface RouteParams {
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params;
-    const supabase = await createServerSupabaseClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
 
-    if (authError || !user) {
+    const session = await auth();
+    if (!session?.user) {
       return NextResponse.json({ error: 'Nicht authentifiziert' }, { status: 401 });
     }
 
-    const adminSupabase = createAdminSupabaseClient();
+    const userId = (session.user as { id?: string }).id;
+    if (!userId) {
+      return NextResponse.json({ error: 'User ID nicht gefunden' }, { status: 401 });
+    }
 
-    const { data: quotation, error } = await adminSupabase
-      .from('quotations')
-      .select(`
-        *,
-        project:pm_projects(id, name, client_id, organization_id),
-        creator:profiles!quotations_created_by_fkey(id, full_name, email)
-      `)
-      .eq('id', id)
-      .single();
+    const quotation = await prisma.quotations.findUnique({
+      where: { id },
+      include: {
+        pm_projects: {
+          select: { id: true, name: true, client_id: true, organization_id: true },
+        },
+        profiles: {
+          select: { id: true, full_name: true, email: true },
+        },
+      },
+    });
 
-    if (error || !quotation) {
+    if (!quotation) {
       return NextResponse.json({ error: 'Angebot nicht gefunden' }, { status: 404 });
     }
 
     // Berechtigungspruefung
-    const { data: profile } = await adminSupabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
+    const profile = await prisma.profiles.findUnique({
+      where: { id: userId },
+      select: { role: true },
+    });
 
-    if (!profile || !['manager', 'admin'].includes(profile.role)) {
+    if (!profile || !['manager', 'admin'].includes(profile.role || '')) {
       // Pruefen ob User Mitglied des Projekts ist
-      const { data: membership } = await adminSupabase
-        .from('pm_project_members')
-        .select('id')
-        .eq('project_id', quotation.project_id)
-        .eq('user_id', user.id)
-        .single();
+      if (!quotation.project_id) {
+        return NextResponse.json({ error: 'Keine Berechtigung' }, { status: 403 });
+      }
+
+      const membership = await prisma.project_members.findFirst({
+        where: {
+          project_id: quotation.project_id,
+          user_id: userId,
+        },
+        select: { id: true },
+      });
 
       if (!membership) {
         return NextResponse.json({ error: 'Keine Berechtigung' }, { status: 403 });
       }
     }
 
-    return NextResponse.json({ quotation });
+    // Transform to match expected format
+    const transformedQuotation = {
+      ...quotation,
+      project: quotation.pm_projects,
+      creator: quotation.profiles,
+      pm_projects: undefined,
+      profiles: undefined,
+    };
+
+    return NextResponse.json({ quotation: transformedQuotation });
   } catch (error) {
     console.error('[Quotation] Error:', error);
     return NextResponse.json({ error: 'Interner Serverfehler' }, { status: 500 });
@@ -75,46 +84,37 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 /**
  * PATCH /api/quotations/[id]
  * Aktualisiert ein Angebot
- *
- * Body:
- * - status: QuotationStatus (optional)
- * - title: string (optional)
- * - description: string (optional)
- * - valid_until: string (optional)
  */
 export async function PATCH(request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params;
-    const supabase = await createServerSupabaseClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
 
-    if (authError || !user) {
+    const session = await auth();
+    if (!session?.user) {
       return NextResponse.json({ error: 'Nicht authentifiziert' }, { status: 401 });
     }
 
-    // Rolle pruefen
-    const adminSupabase = createAdminSupabaseClient();
-    const { data: profile } = await adminSupabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
+    const userId = (session.user as { id?: string }).id;
+    if (!userId) {
+      return NextResponse.json({ error: 'User ID nicht gefunden' }, { status: 401 });
+    }
 
-    if (!profile || !['manager', 'admin'].includes(profile.role)) {
+    // Rolle pruefen
+    const profile = await prisma.profiles.findUnique({
+      where: { id: userId },
+      select: { role: true },
+    });
+
+    if (!profile || !['manager', 'admin'].includes(profile.role || '')) {
       return NextResponse.json({ error: 'Keine Berechtigung' }, { status: 403 });
     }
 
     // Angebot laden
-    const { data: existingQuotation, error: loadError } = await adminSupabase
-      .from('quotations')
-      .select('*')
-      .eq('id', id)
-      .single();
+    const existingQuotation = await prisma.quotations.findUnique({
+      where: { id },
+    });
 
-    if (loadError || !existingQuotation) {
+    if (!existingQuotation) {
       return NextResponse.json({ error: 'Angebot nicht gefunden' }, { status: 404 });
     }
 
@@ -130,8 +130,17 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     const { status, title, description, valid_until } = body;
 
     // Status-Aenderungen mit Timestamps
-    const updates: Record<string, unknown> = {
-      updated_at: new Date().toISOString(),
+    const updates: {
+      status?: string;
+      title?: string;
+      description?: string | null;
+      valid_until?: Date | null;
+      sent_at?: Date;
+      accepted_at?: Date;
+      rejected_at?: Date;
+      updated_at: Date;
+    } = {
+      updated_at: new Date(),
     };
 
     if (status) {
@@ -139,29 +148,22 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 
       // Status-spezifische Timestamps
       if (status === 'sent' && existingQuotation.status === 'draft') {
-        updates.sent_at = new Date().toISOString();
+        updates.sent_at = new Date();
       } else if (status === 'accepted') {
-        updates.accepted_at = new Date().toISOString();
+        updates.accepted_at = new Date();
       } else if (status === 'rejected') {
-        updates.rejected_at = new Date().toISOString();
+        updates.rejected_at = new Date();
       }
     }
 
     if (title !== undefined) updates.title = title;
     if (description !== undefined) updates.description = description;
-    if (valid_until !== undefined) updates.valid_until = valid_until;
+    if (valid_until !== undefined) updates.valid_until = valid_until ? new Date(valid_until) : null;
 
-    const { data: quotation, error: updateError } = await adminSupabase
-      .from('quotations')
-      .update(updates)
-      .eq('id', id)
-      .select()
-      .single();
-
-    if (updateError) {
-      console.error('[Quotation] Update error:', updateError);
-      return NextResponse.json({ error: 'Fehler beim Aktualisieren' }, { status: 500 });
-    }
+    const quotation = await prisma.quotations.update({
+      where: { id },
+      data: updates,
+    });
 
     return NextResponse.json({ quotation });
   } catch (error) {
@@ -177,36 +179,34 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params;
-    const supabase = await createServerSupabaseClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
 
-    if (authError || !user) {
+    const session = await auth();
+    if (!session?.user) {
       return NextResponse.json({ error: 'Nicht authentifiziert' }, { status: 401 });
     }
 
+    const userId = (session.user as { id?: string }).id;
+    if (!userId) {
+      return NextResponse.json({ error: 'User ID nicht gefunden' }, { status: 401 });
+    }
+
     // Rolle pruefen - nur Admin
-    const adminSupabase = createAdminSupabaseClient();
-    const { data: profile } = await adminSupabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
+    const profile = await prisma.profiles.findUnique({
+      where: { id: userId },
+      select: { role: true },
+    });
 
     if (!profile || profile.role !== 'admin') {
       return NextResponse.json({ error: 'Nur Admins koennen Angebote loeschen' }, { status: 403 });
     }
 
     // Angebot laden
-    const { data: quotation, error: loadError } = await adminSupabase
-      .from('quotations')
-      .select('status, lexoffice_id')
-      .eq('id', id)
-      .single();
+    const quotation = await prisma.quotations.findUnique({
+      where: { id },
+      select: { status: true, lexoffice_id: true },
+    });
 
-    if (loadError || !quotation) {
+    if (!quotation) {
       return NextResponse.json({ error: 'Angebot nicht gefunden' }, { status: 404 });
     }
 
@@ -226,15 +226,9 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    const { error: deleteError } = await adminSupabase
-      .from('quotations')
-      .delete()
-      .eq('id', id);
-
-    if (deleteError) {
-      console.error('[Quotation] Delete error:', deleteError);
-      return NextResponse.json({ error: 'Fehler beim Loeschen' }, { status: 500 });
-    }
+    await prisma.quotations.delete({
+      where: { id },
+    });
 
     return NextResponse.json({ success: true });
   } catch (error) {

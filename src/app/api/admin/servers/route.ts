@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@/lib/supabase/server';
-import { createAdminSupabaseClient } from '@/lib/supabase/admin';
+import { auth } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
 
 /**
  * GET /api/admin/servers
@@ -8,39 +8,23 @@ import { createAdminSupabaseClient } from '@/lib/supabase/admin';
  */
 export async function GET() {
   try {
-    const supabase = await createServerSupabaseClient();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-
-    if (authError || !user) {
+    const session = await auth();
+    if (!session?.user) {
       return NextResponse.json({ error: 'Nicht authentifiziert' }, { status: 401 });
     }
 
-    const adminSupabase = createAdminSupabaseClient();
-
-    // Admin-Rolle pruefen
-    const { data: profile } = await adminSupabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-
-    if (profile?.role !== 'admin') {
+    const userRole = (session.user as { role?: string }).role;
+    if (userRole !== 'admin') {
       return NextResponse.json({ error: 'Keine Admin-Berechtigung' }, { status: 403 });
     }
 
     // Server laden
-    const { data: servers, error } = await adminSupabase
-      .from('monitored_servers')
-      .select('*')
-      .order('name', { ascending: true });
-
-    if (error) {
-      console.error('[Servers API] Error:', error);
-      return NextResponse.json({ error: 'Fehler beim Laden der Server' }, { status: 500 });
-    }
+    const servers = await prisma.monitored_servers.findMany({
+      orderBy: { name: 'asc' },
+    });
 
     // Auth-Token aus Response entfernen (Sicherheit)
-    const safeServers = (servers || []).map(s => ({
+    const safeServers = servers.map(s => ({
       ...s,
       auth_token: '***'
     }));
@@ -58,23 +42,13 @@ export async function GET() {
  */
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createServerSupabaseClient();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-
-    if (authError || !user) {
+    const session = await auth();
+    if (!session?.user) {
       return NextResponse.json({ error: 'Nicht authentifiziert' }, { status: 401 });
     }
 
-    const adminSupabase = createAdminSupabaseClient();
-
-    // Admin-Rolle pruefen
-    const { data: profile } = await adminSupabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-
-    if (profile?.role !== 'admin') {
+    const userRole = (session.user as { role?: string }).role;
+    if (userRole !== 'admin') {
       return NextResponse.json({ error: 'Keine Admin-Berechtigung' }, { status: 403 });
     }
 
@@ -88,22 +62,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { data: server, error } = await adminSupabase
-      .from('monitored_servers')
-      .insert({
+    const server = await prisma.monitored_servers.create({
+      data: {
         name,
         host,
         agent_port,
         auth_token,
-        is_active: true
-      })
-      .select()
-      .single();
-
-    if (error) {
-      console.error('[Servers API] Insert error:', error);
-      return NextResponse.json({ error: 'Fehler beim Erstellen des Servers' }, { status: 500 });
-    }
+        is_active: true,
+      },
+    });
 
     return NextResponse.json({
       server: { ...server, auth_token: '***' }

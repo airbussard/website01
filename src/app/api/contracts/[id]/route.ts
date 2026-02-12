@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@/lib/supabase/server';
-import { createAdminSupabaseClient } from '@/lib/supabase/admin';
+import { auth } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -14,36 +14,48 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params;
 
-    const supabase = await createServerSupabaseClient();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-
-    if (authError || !user) {
+    const session = await auth();
+    if (!session?.user) {
       return NextResponse.json(
         { error: 'Nicht authentifiziert' },
         { status: 401 }
       );
     }
 
-    const { data: contract, error } = await supabase
-      .from('contracts')
-      .select(`
-        *,
-        project:pm_projects(id, name, client_id, manager_id),
-        signer:profiles!contracts_signed_by_fkey(id, email, first_name, last_name),
-        creator:profiles!contracts_created_by_fkey(id, email, first_name, last_name)
-      `)
-      .eq('id', id)
-      .single();
+    const contract = await prisma.contracts.findUnique({
+      where: { id },
+      include: {
+        pm_projects: {
+          select: { id: true, name: true, client_id: true, manager_id: true },
+        },
+        profiles_contracts_signed_byToprofiles: {
+          select: { id: true, email: true, first_name: true, last_name: true },
+        },
+        profiles_contracts_created_byToprofiles: {
+          select: { id: true, email: true, first_name: true, last_name: true },
+        },
+      },
+    });
 
-    if (error) {
-      console.error('[Contracts API] Query error:', error);
+    if (!contract) {
       return NextResponse.json(
         { error: 'Vertrag nicht gefunden' },
         { status: 404 }
       );
     }
 
-    return NextResponse.json({ contract });
+    // Transform to match expected format
+    const transformedContract = {
+      ...contract,
+      project: contract.pm_projects,
+      signer: contract.profiles_contracts_signed_byToprofiles,
+      creator: contract.profiles_contracts_created_byToprofiles,
+      pm_projects: undefined,
+      profiles_contracts_signed_byToprofiles: undefined,
+      profiles_contracts_created_byToprofiles: undefined,
+    };
+
+    return NextResponse.json({ contract: transformedContract });
   } catch (error) {
     console.error('[Contracts API] Error:', error);
     return NextResponse.json(
@@ -63,55 +75,49 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     const body = await request.json();
     const { title, description, valid_until, status } = body;
 
-    const supabase = await createServerSupabaseClient();
-    const { data: { user } } = await supabase.auth.getUser();
-
-    if (!user) {
+    const session = await auth();
+    if (!session?.user) {
       return NextResponse.json(
         { error: 'Nicht authentifiziert' },
         { status: 401 }
       );
     }
 
-    // Rolle pruefen
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
+    const userId = (session.user as { id?: string }).id;
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'User ID nicht gefunden' },
+        { status: 401 }
+      );
+    }
 
-    if (!profile || !['manager', 'admin'].includes(profile.role)) {
+    // Rolle pruefen
+    const profile = await prisma.profiles.findUnique({
+      where: { id: userId },
+      select: { role: true },
+    });
+
+    if (!profile || !['manager', 'admin'].includes(profile.role || '')) {
       return NextResponse.json(
         { error: 'Keine Berechtigung' },
         { status: 403 }
       );
     }
 
-    const adminSupabase = createAdminSupabaseClient();
-
-    const updateData: Record<string, unknown> = {
-      updated_at: new Date().toISOString(),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const updateData: Record<string, any> = {
+      updated_at: new Date(),
     };
 
     if (title !== undefined) updateData.title = title;
     if (description !== undefined) updateData.description = description;
-    if (valid_until !== undefined) updateData.valid_until = valid_until;
+    if (valid_until !== undefined) updateData.valid_until = valid_until ? new Date(valid_until) : null;
     if (status !== undefined) updateData.status = status;
 
-    const { data: contract, error } = await adminSupabase
-      .from('contracts')
-      .update(updateData)
-      .eq('id', id)
-      .select()
-      .single();
-
-    if (error) {
-      console.error('[Contracts API] Update error:', error);
-      return NextResponse.json(
-        { error: 'Fehler beim Aktualisieren' },
-        { status: 500 }
-      );
-    }
+    const contract = await prisma.contracts.update({
+      where: { id },
+      data: updateData,
+    });
 
     return NextResponse.json({ contract });
   } catch (error) {
@@ -126,27 +132,34 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 /**
  * DELETE /api/contracts/[id]
  * Vertrag loeschen (nur Admin)
+ *
+ * NOTE: Storage cleanup deaktiviert bis Phase 6 Storage Migration
  */
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params;
 
-    const supabase = await createServerSupabaseClient();
-    const { data: { user } } = await supabase.auth.getUser();
-
-    if (!user) {
+    const session = await auth();
+    if (!session?.user) {
       return NextResponse.json(
         { error: 'Nicht authentifiziert' },
         { status: 401 }
       );
     }
 
+    const userId = (session.user as { id?: string }).id;
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'User ID nicht gefunden' },
+        { status: 401 }
+      );
+    }
+
     // Nur Admin kann loeschen
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
+    const profile = await prisma.profiles.findUnique({
+      where: { id: userId },
+      select: { role: true },
+    });
 
     if (!profile || profile.role !== 'admin') {
       return NextResponse.json(
@@ -155,14 +168,11 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    const adminSupabase = createAdminSupabaseClient();
-
-    // Vertrag laden um PDFs zu loeschen
-    const { data: contract } = await adminSupabase
-      .from('contracts')
-      .select('original_pdf_path, signed_pdf_path, project_id')
-      .eq('id', id)
-      .single();
+    // Vertrag laden
+    const contract = await prisma.contracts.findUnique({
+      where: { id },
+      select: { original_pdf_path: true, signed_pdf_path: true, project_id: true },
+    });
 
     if (!contract) {
       return NextResponse.json(
@@ -171,27 +181,13 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    // PDFs aus Storage loeschen
-    const pathsToDelete = [contract.original_pdf_path];
-    if (contract.signed_pdf_path) {
-      pathsToDelete.push(contract.signed_pdf_path);
-    }
-
-    await adminSupabase.storage.from('project_files').remove(pathsToDelete);
+    // TODO: Phase 6 Storage Migration - PDFs aus lokalem Storage loeschen
+    console.log('[Contracts API] PDF Cleanup deaktiviert - Storage Migration pending');
 
     // Vertrag loeschen
-    const { error: deleteError } = await adminSupabase
-      .from('contracts')
-      .delete()
-      .eq('id', id);
-
-    if (deleteError) {
-      console.error('[Contracts API] Delete error:', deleteError);
-      return NextResponse.json(
-        { error: 'Fehler beim Loeschen' },
-        { status: 500 }
-      );
-    }
+    await prisma.contracts.delete({
+      where: { id },
+    });
 
     return NextResponse.json({ success: true });
   } catch (error) {

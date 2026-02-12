@@ -23,7 +23,6 @@ import {
   Receipt,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { createClient } from '@/lib/supabase/client';
 import type { Quotation, QuotationStatus, InvoiceLineItem } from '@/types/dashboard';
 
 const statusColors: Record<QuotationStatus, { bg: string; text: string; border: string; icon: React.ElementType }> = {
@@ -52,7 +51,6 @@ export default function QuotationDetailPage() {
   const router = useRouter();
   const quotationId = params.id as string;
   const { user, isManagerOrAdmin, loading: authLoading } = useAuth();
-  const supabase = createClient();
 
   const [quotation, setQuotation] = useState<QuotationWithRelations | null>(null);
   const [loading, setLoading] = useState(true);
@@ -65,18 +63,12 @@ export default function QuotationDetailPage() {
       if (!user || authLoading) return;
 
       try {
-        const { data, error } = await supabase
-          .from('quotations')
-          .select(`
-            *,
-            project:pm_projects(id, name, client_id),
-            creator:profiles(full_name, email)
-          `)
-          .eq('id', quotationId)
-          .single();
-
-        if (error) throw error;
-        setQuotation(data);
+        const response = await fetch(`/api/quotations/${quotationId}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch quotation');
+        }
+        const data = await response.json();
+        setQuotation(data.quotation);
       } catch (error) {
         console.error('Error fetching quotation:', error);
       } finally {
@@ -85,39 +77,25 @@ export default function QuotationDetailPage() {
     };
 
     fetchQuotation();
-  }, [user, authLoading, quotationId, supabase]);
+  }, [user, authLoading, quotationId]);
 
   const updateStatus = async (newStatus: QuotationStatus) => {
     if (!quotation || !isManagerOrAdmin) return;
 
     setUpdating(true);
     try {
-      const updateData: Record<string, unknown> = {
-        status: newStatus,
-        updated_at: new Date().toISOString(),
-      };
+      const response = await fetch(`/api/quotations/${quotation.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus }),
+      });
 
-      if (newStatus === 'accepted') {
-        updateData.accepted_at = new Date().toISOString();
-      } else if (newStatus === 'rejected') {
-        updateData.rejected_at = new Date().toISOString();
-      } else if (newStatus === 'sent') {
-        updateData.sent_at = new Date().toISOString();
+      if (!response.ok) {
+        throw new Error('Failed to update quotation');
       }
 
-      const { error } = await supabase
-        .from('quotations')
-        .update(updateData)
-        .eq('id', quotation.id);
-
-      if (error) throw error;
-      setQuotation({
-        ...quotation,
-        status: newStatus,
-        accepted_at: newStatus === 'accepted' ? new Date().toISOString() : quotation.accepted_at,
-        rejected_at: newStatus === 'rejected' ? new Date().toISOString() : quotation.rejected_at,
-        sent_at: newStatus === 'sent' ? new Date().toISOString() : quotation.sent_at,
-      });
+      const data = await response.json();
+      setQuotation(data.quotation);
     } catch (error) {
       console.error('Error updating quotation:', error);
     } finally {
@@ -158,8 +136,12 @@ export default function QuotationDetailPage() {
     if (!quotation || !isManagerOrAdmin || !confirm('Angebot wirklich loeschen?')) return;
 
     try {
-      const { error } = await supabase.from('quotations').delete().eq('id', quotation.id);
-      if (error) throw error;
+      const response = await fetch(`/api/quotations/${quotation.id}`, {
+        method: 'DELETE',
+      });
+      if (!response.ok) {
+        throw new Error('Failed to delete quotation');
+      }
       router.push('/dashboard/quotations');
     } catch (error) {
       console.error('Error deleting quotation:', error);

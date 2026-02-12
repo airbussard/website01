@@ -12,7 +12,6 @@ import {
   Eye,
   Loader2,
   CheckCircle,
-  Clock,
   XCircle,
   AlertCircle,
   FileText,
@@ -20,7 +19,6 @@ import {
   ChevronDown,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { createClient } from '@/lib/supabase/client';
 import type { Quotation, QuotationStatus } from '@/types/dashboard';
 
 const statusOptions: { value: QuotationStatus | 'all'; label: string }[] = [
@@ -59,32 +57,30 @@ export default function QuotationsPage() {
     const fetchQuotations = async () => {
       if (!user) return;
 
-      const supabase = createClient();
-
       try {
-        let query = supabase
-          .from('quotations')
-          .select(`
-            *,
-            project:pm_projects(id, name, client_id)
-          `)
-          .order('created_at', { ascending: false });
-
-        // Filter by status
+        const params = new URLSearchParams();
         if (statusFilter !== 'all') {
-          query = query.eq('status', statusFilter);
+          params.set('status', statusFilter);
         }
 
-        // Search
+        const response = await fetch(`/api/quotations?${params.toString()}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch quotations');
+        }
+
+        const data = await response.json();
+        let filteredQuotations = data.quotations || [];
+
+        // Client-side search filter
         if (searchQuery) {
-          query = query.or(`quotation_number.ilike.%${searchQuery}%,title.ilike.%${searchQuery}%`);
+          const query = searchQuery.toLowerCase();
+          filteredQuotations = filteredQuotations.filter((q: Quotation) =>
+            q.quotation_number.toLowerCase().includes(query) ||
+            q.title.toLowerCase().includes(query)
+          );
         }
 
-        const { data, error } = await query;
-
-        if (error) throw error;
-
-        setQuotations(data || []);
+        setQuotations(filteredQuotations);
       } catch (error) {
         console.error('Error fetching quotations:', error);
       } finally {

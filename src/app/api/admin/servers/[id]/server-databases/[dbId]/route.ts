@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@/lib/supabase/server';
-import { createAdminSupabaseClient } from '@/lib/supabase/admin';
+import { auth } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
 
 interface RouteParams {
   params: Promise<{ id: string; dbId: string }>;
@@ -13,33 +13,38 @@ interface RouteParams {
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
     const { id, dbId } = await params;
-    const supabase = await createServerSupabaseClient();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
 
-    if (authError || !user) {
+    const session = await auth();
+    if (!session?.user) {
       return NextResponse.json({ error: 'Nicht authentifiziert' }, { status: 401 });
     }
 
-    const adminSupabase = createAdminSupabaseClient();
-
-    const { data: profile } = await adminSupabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-
-    if (profile?.role !== 'admin') {
+    const userRole = (session.user as { role?: string }).role;
+    if (userRole !== 'admin') {
       return NextResponse.json({ error: 'Keine Admin-Berechtigung' }, { status: 403 });
     }
 
-    const { data: database, error } = await adminSupabase
-      .from('server_databases')
-      .select('id, server_id, name, host, port, database_name, username, ssl_enabled, is_active, created_at, updated_at')
-      .eq('id', dbId)
-      .eq('server_id', id)
-      .single();
+    const database = await prisma.server_databases.findFirst({
+      where: {
+        id: dbId,
+        server_id: id,
+      },
+      select: {
+        id: true,
+        server_id: true,
+        name: true,
+        host: true,
+        port: true,
+        database_name: true,
+        username: true,
+        ssl_enabled: true,
+        is_active: true,
+        created_at: true,
+        updated_at: true,
+      },
+    });
 
-    if (error || !database) {
+    if (!database) {
       return NextResponse.json({ error: 'Datenbank nicht gefunden' }, { status: 404 });
     }
 
@@ -58,22 +63,14 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 export async function PUT(request: NextRequest, { params }: RouteParams) {
   try {
     const { id, dbId } = await params;
-    const supabase = await createServerSupabaseClient();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
 
-    if (authError || !user) {
+    const session = await auth();
+    if (!session?.user) {
       return NextResponse.json({ error: 'Nicht authentifiziert' }, { status: 401 });
     }
 
-    const adminSupabase = createAdminSupabaseClient();
-
-    const { data: profile } = await adminSupabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-
-    if (profile?.role !== 'admin') {
+    const userRole = (session.user as { role?: string }).role;
+    if (userRole !== 'admin') {
       return NextResponse.json({ error: 'Keine Admin-Berechtigung' }, { status: 403 });
     }
 
@@ -81,7 +78,17 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     const { name, host, port, database_name, username, password, ssl_enabled, is_active } = body;
 
     // Update-Objekt erstellen (Passwort nur wenn angegeben)
-    const updateData: Record<string, unknown> = {};
+    const updateData: {
+      name?: string;
+      host?: string;
+      port?: number;
+      database_name?: string;
+      username?: string;
+      password?: string;
+      ssl_enabled?: boolean;
+      is_active?: boolean;
+    } = {};
+
     if (name !== undefined) updateData.name = name;
     if (host !== undefined) updateData.host = host;
     if (port !== undefined) updateData.port = port;
@@ -95,22 +102,35 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: 'Keine Aenderungen' }, { status: 400 });
     }
 
-    const { data: database, error } = await adminSupabase
-      .from('server_databases')
-      .update(updateData)
-      .eq('id', dbId)
-      .eq('server_id', id)
-      .select('id, server_id, name, host, port, database_name, username, ssl_enabled, is_active, created_at, updated_at')
-      .single();
+    // Verify database belongs to this server first
+    const existing = await prisma.server_databases.findFirst({
+      where: {
+        id: dbId,
+        server_id: id,
+      },
+    });
 
-    if (error) {
-      console.error('[Server Databases API] Update error:', error);
-      return NextResponse.json({ error: 'Fehler beim Aktualisieren' }, { status: 500 });
-    }
-
-    if (!database) {
+    if (!existing) {
       return NextResponse.json({ error: 'Datenbank nicht gefunden' }, { status: 404 });
     }
+
+    const database = await prisma.server_databases.update({
+      where: { id: dbId },
+      data: updateData,
+      select: {
+        id: true,
+        server_id: true,
+        name: true,
+        host: true,
+        port: true,
+        database_name: true,
+        username: true,
+        ssl_enabled: true,
+        is_active: true,
+        created_at: true,
+        updated_at: true,
+      },
+    });
 
     return NextResponse.json({ database });
 
@@ -127,35 +147,32 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
     const { id, dbId } = await params;
-    const supabase = await createServerSupabaseClient();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
 
-    if (authError || !user) {
+    const session = await auth();
+    if (!session?.user) {
       return NextResponse.json({ error: 'Nicht authentifiziert' }, { status: 401 });
     }
 
-    const adminSupabase = createAdminSupabaseClient();
-
-    const { data: profile } = await adminSupabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-
-    if (profile?.role !== 'admin') {
+    const userRole = (session.user as { role?: string }).role;
+    if (userRole !== 'admin') {
       return NextResponse.json({ error: 'Keine Admin-Berechtigung' }, { status: 403 });
     }
 
-    const { error } = await adminSupabase
-      .from('server_databases')
-      .delete()
-      .eq('id', dbId)
-      .eq('server_id', id);
+    // Verify database belongs to this server first
+    const existing = await prisma.server_databases.findFirst({
+      where: {
+        id: dbId,
+        server_id: id,
+      },
+    });
 
-    if (error) {
-      console.error('[Server Databases API] Delete error:', error);
-      return NextResponse.json({ error: 'Fehler beim Loeschen' }, { status: 500 });
+    if (!existing) {
+      return NextResponse.json({ error: 'Datenbank nicht gefunden' }, { status: 404 });
     }
+
+    await prisma.server_databases.delete({
+      where: { id: dbId },
+    });
 
     return NextResponse.json({ success: true });
 

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@/lib/supabase/server';
-import { createAdminSupabaseClient } from '@/lib/supabase/admin';
+import { auth } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
 import { EmailService } from '@/lib/services/email/EmailService';
 import { getProjectRecipients } from '@/lib/services/notifications/getProjectRecipients';
 import {
@@ -23,10 +23,8 @@ const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://oscarknabe.de';
  */
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createServerSupabaseClient();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-
-    if (authError || !user) {
+    const session = await auth();
+    if (!session?.user) {
       return NextResponse.json(
         { error: 'Nicht authentifiziert' },
         { status: 401 }
@@ -37,33 +35,27 @@ export async function GET(request: NextRequest) {
     const projectId = searchParams.get('project_id');
     const status = searchParams.get('status');
 
-    let query = supabase
-      .from('invoices')
-      .select(`
-        *,
-        project:pm_projects(id, name, client_id)
-      `)
-      .order('created_at', { ascending: false });
+    const invoices = await prisma.invoices.findMany({
+      where: {
+        ...(projectId ? { project_id: projectId } : {}),
+        ...(status ? { status } : {}),
+      },
+      include: {
+        pm_projects: {
+          select: { id: true, name: true, client_id: true },
+        },
+      },
+      orderBy: { created_at: 'desc' },
+    });
 
-    if (projectId) {
-      query = query.eq('project_id', projectId);
-    }
+    // Transform to match expected format
+    const transformedInvoices = invoices.map(inv => ({
+      ...inv,
+      project: inv.pm_projects,
+      pm_projects: undefined,
+    }));
 
-    if (status) {
-      query = query.eq('status', status);
-    }
-
-    const { data: invoices, error } = await query;
-
-    if (error) {
-      console.error('[Invoices API] Query error:', error);
-      return NextResponse.json(
-        { error: 'Fehler beim Laden der Rechnungen' },
-        { status: 500 }
-      );
-    }
-
-    return NextResponse.json({ invoices });
+    return NextResponse.json({ invoices: transformedInvoices });
   } catch (error) {
     console.error('[Invoices API] Error:', error);
     return NextResponse.json(
@@ -79,25 +71,29 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createServerSupabaseClient();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-
-    if (authError || !user) {
+    const session = await auth();
+    if (!session?.user) {
       return NextResponse.json(
         { error: 'Nicht authentifiziert' },
         { status: 401 }
       );
     }
 
-    // Rolle pruefen
-    const adminSupabase = createAdminSupabaseClient();
-    const { data: profile } = await adminSupabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
+    const userId = (session.user as { id?: string }).id;
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'User ID nicht gefunden' },
+        { status: 401 }
+      );
+    }
 
-    if (!profile || !['manager', 'admin'].includes(profile.role)) {
+    // Rolle pruefen
+    const profile = await prisma.profiles.findUnique({
+      where: { id: userId },
+      select: { role: true },
+    });
+
+    if (!profile || !['manager', 'admin'].includes(profile.role || '')) {
       return NextResponse.json(
         { error: 'Keine Berechtigung - nur Manager/Admin' },
         { status: 403 }
@@ -132,13 +128,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Projekt laden fuer Projektname und Lexoffice-Kontakt
-    const { data: project, error: projectError } = await adminSupabase
-      .from('pm_projects')
-      .select('id, name, client_id, organization_id')
-      .eq('id', project_id)
-      .single();
+    const project = await prisma.pm_projects.findUnique({
+      where: { id: project_id },
+      select: { id: true, name: true, client_id: true, organization_id: true },
+    });
 
-    if (projectError || !project) {
+    if (!project) {
       return NextResponse.json(
         { error: 'Projekt nicht gefunden' },
         { status: 404 }
@@ -159,46 +154,34 @@ export async function POST(request: NextRequest) {
     }
 
     // Rechnung erstellen
-    const invoiceData = {
-      invoice_number,
-      title: title.trim(),
-      description: description?.trim() || null,
-      amount: calculatedAmount,
-      tax_amount: calculatedTaxAmount,
-      total_amount: calculatedTotalAmount,
-      currency: currency || 'EUR',
-      status: status || 'draft',
-      project_id,
-      issue_date: issue_date || new Date().toISOString().split('T')[0],
-      due_date: due_date || null,
-      line_items: typedLineItems || null,
-      created_by: user.id,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    };
-
-    const { data: invoice, error: insertError } = await adminSupabase
-      .from('invoices')
-      .insert(invoiceData)
-      .select()
-      .single();
-
-    if (insertError) {
-      console.error('[Invoices API] Insert error:', insertError);
-      return NextResponse.json(
-        { error: 'Fehler beim Erstellen der Rechnung' },
-        { status: 500 }
-      );
-    }
+    const invoice = await prisma.invoices.create({
+      data: {
+        invoice_number,
+        title: title.trim(),
+        description: description?.trim() || null,
+        amount: calculatedAmount,
+        tax_amount: calculatedTaxAmount,
+        total_amount: calculatedTotalAmount,
+        currency: currency || 'EUR',
+        status: status || 'draft',
+        project_id,
+        issue_date: issue_date ? new Date(issue_date) : new Date(),
+        due_date: due_date ? new Date(due_date) : null,
+        line_items: typedLineItems as unknown as object || null,
+        created_by: userId,
+      },
+    });
 
     // Activity Log
-    await adminSupabase.from('activity_log').insert({
-      project_id,
-      user_id: user.id,
-      action: 'invoice_created',
-      entity_type: 'invoice',
-      entity_id: invoice.id,
-      details: { invoice_number, title: title.trim(), total_amount: invoiceData.total_amount },
+    await prisma.activity_log.create({
+      data: {
+        project_id,
+        user_id: userId,
+        action: 'invoice_created',
+        entity_type: 'invoice',
+        entity_id: invoice.id,
+        details: { invoice_number, title: title.trim(), total_amount: calculatedTotalAmount } as object,
+      },
     });
 
     // Lexoffice Sync wenn aktiviert und line_items vorhanden
@@ -207,11 +190,10 @@ export async function POST(request: NextRequest) {
     let pdfUrl: string | null = null;
 
     if (sync_to_lexoffice && typedLineItems && typedLineItems.length > 0) {
-      const { data: settings } = await adminSupabase
-        .from('system_settings')
-        .select('value')
-        .eq('key', 'lexoffice')
-        .single();
+      const settings = await prisma.system_settings.findUnique({
+        where: { key: 'lexoffice' },
+        select: { value: true },
+      });
 
       const lexofficeSettings = settings?.value as {
         is_enabled: boolean;
@@ -224,27 +206,23 @@ export async function POST(request: NextRequest) {
           let contactId: string | null = null;
 
           if (project.client_id) {
-            const { data: contactMapping } = await adminSupabase
-              .from('lexoffice_contacts')
-              .select('lexoffice_contact_id')
-              .eq('profile_id', project.client_id)
-              .single();
-
+            const contactMapping = await prisma.lexoffice_contacts.findFirst({
+              where: { profile_id: project.client_id },
+              select: { lexoffice_contact_id: true },
+            });
             contactId = contactMapping?.lexoffice_contact_id || null;
           } else if (project.organization_id) {
-            const { data: contactMapping } = await adminSupabase
-              .from('lexoffice_contacts')
-              .select('lexoffice_contact_id')
-              .eq('organization_id', project.organization_id)
-              .single();
-
+            const contactMapping = await prisma.lexoffice_contacts.findFirst({
+              where: { organization_id: project.organization_id },
+              select: { lexoffice_contact_id: true },
+            });
             contactId = contactMapping?.lexoffice_contact_id || null;
           }
 
           if (contactId) {
             const lexoffice = createLexofficeClient(lexofficeSettings.api_key);
             const lexofficeData = mapToLexofficeInvoice({
-              invoice: invoice as Invoice,
+              invoice: invoice as unknown as Invoice,
               lexofficeContactId: contactId,
               lineItems: typedLineItems,
             });
@@ -252,51 +230,31 @@ export async function POST(request: NextRequest) {
             const response = await lexoffice.createInvoice(lexofficeData, finalize_in_lexoffice);
             lexofficeId = response.id;
 
-            // PDF abrufen wenn finalisiert
-            if (finalize_in_lexoffice && lexofficeId) {
-              try {
-                const pdfBuffer = await lexoffice.getInvoicePdf(lexofficeId);
-
-                const pdfFileName = `invoices/${invoice_number}.pdf`;
-                const { error: uploadError } = await adminSupabase.storage
-                  .from('documents')
-                  .upload(pdfFileName, pdfBuffer, {
-                    contentType: 'application/pdf',
-                    upsert: true,
-                  });
-
-                if (!uploadError) {
-                  const { data: urlData } = adminSupabase.storage
-                    .from('documents')
-                    .getPublicUrl(pdfFileName);
-
-                  pdfUrl = urlData.publicUrl;
-                }
-              } catch (pdfError) {
-                console.error('[Invoices API] PDF fetch error:', pdfError);
-              }
-            }
+            // PDF abrufen wenn finalisiert - Phase 6 Storage Migration
+            // TODO: PDF Upload zu lokalem Storage statt Supabase Storage
 
             // Invoice mit Lexoffice ID updaten
-            await adminSupabase
-              .from('invoices')
-              .update({
+            await prisma.invoices.update({
+              where: { id: invoice.id },
+              data: {
                 lexoffice_id: lexofficeId,
                 lexoffice_status: finalize_in_lexoffice ? 'open' : 'draft',
                 pdf_url: pdfUrl,
-                synced_at: new Date().toISOString(),
-              })
-              .eq('id', invoice.id);
+                synced_at: new Date(),
+              },
+            });
 
             // Sync Log
-            await adminSupabase.from('lexoffice_sync_log').insert({
-              entity_type: 'invoice',
-              entity_id: invoice.id,
-              lexoffice_id: lexofficeId,
-              action: finalize_in_lexoffice ? 'finalize' : 'create',
-              status: 'success',
-              request_data: lexofficeData,
-              response_data: response,
+            await prisma.lexoffice_sync_log.create({
+              data: {
+                entity_type: 'invoice',
+                entity_id: invoice.id,
+                lexoffice_id: lexofficeId,
+                action: finalize_in_lexoffice ? 'finalize' : 'create',
+                status: 'success',
+                request_data: lexofficeData as object,
+                response_data: response as object,
+              },
             });
           } else {
             lexofficeError = 'Kein Lexoffice-Kontakt fuer dieses Projekt gefunden';
@@ -304,12 +262,14 @@ export async function POST(request: NextRequest) {
         } catch (error) {
           if (error instanceof LexofficeApiError) {
             lexofficeError = error.message;
-            await adminSupabase.from('lexoffice_sync_log').insert({
-              entity_type: 'invoice',
-              entity_id: invoice.id,
-              action: 'create',
-              status: 'failed',
-              error_message: error.message,
+            await prisma.lexoffice_sync_log.create({
+              data: {
+                entity_type: 'invoice',
+                entity_id: invoice.id,
+                action: 'create',
+                status: 'failed',
+                error_message: error.message,
+              },
             });
           } else {
             lexofficeError = 'Unbekannter Lexoffice-Fehler';
@@ -327,12 +287,12 @@ export async function POST(request: NextRequest) {
       // Formatierung des Betrags
       const formattedAmount = new Intl.NumberFormat('de-DE', {
         style: 'currency',
-        currency: invoiceData.currency,
-      }).format(invoiceData.total_amount);
+        currency: currency || 'EUR',
+      }).format(calculatedTotalAmount);
 
       // Formatierung des Faelligkeitsdatums
-      const formattedDueDate = invoiceData.due_date
-        ? new Date(invoiceData.due_date).toLocaleDateString('de-DE', {
+      const formattedDueDate = due_date
+        ? new Date(due_date).toLocaleDateString('de-DE', {
             day: '2-digit',
             month: '2-digit',
             year: 'numeric',

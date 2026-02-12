@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import {
@@ -17,7 +17,6 @@ import {
   FolderKanban,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { createClient } from '@/lib/supabase/client';
 import type { Invoice, InvoiceStatus } from '@/types/dashboard';
 
 const statusColors: Record<InvoiceStatus, { bg: string; text: string; border: string; icon: React.ElementType }> = {
@@ -42,10 +41,8 @@ type InvoiceWithRelations = Invoice & {
 
 export default function InvoiceDetailPage() {
   const params = useParams();
-  const router = useRouter();
   const invoiceId = params.id as string;
   const { user, loading: authLoading } = useAuth();
-  const supabase = createClient();
 
   const [invoice, setInvoice] = useState<InvoiceWithRelations | null>(null);
   const [loading, setLoading] = useState(true);
@@ -55,31 +52,12 @@ export default function InvoiceDetailPage() {
       if (!user || authLoading) return;
 
       try {
-        // First get user's projects
-        const { data: projects } = await supabase
-          .from('pm_projects')
-          .select('id')
-          .eq('client_id', user.id);
-
-        if (!projects || projects.length === 0) {
-          setLoading(false);
-          return;
+        const response = await fetch(`/api/invoices/${invoiceId}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch invoice');
         }
-
-        const projectIds = projects.map((p: { id: string }) => p.id);
-
-        const { data, error } = await supabase
-          .from('invoices')
-          .select(`
-            *,
-            project:pm_projects(id, name, client_id)
-          `)
-          .eq('id', invoiceId)
-          .in('project_id', projectIds)
-          .single();
-
-        if (error) throw error;
-        setInvoice(data);
+        const data = await response.json();
+        setInvoice(data.invoice);
       } catch (error) {
         console.error('Error fetching invoice:', error);
       } finally {
@@ -88,7 +66,7 @@ export default function InvoiceDetailPage() {
     };
 
     fetchInvoice();
-  }, [user, authLoading, invoiceId, supabase]);
+  }, [user, authLoading, invoiceId]);
 
   const formatCurrency = (amount: number, currency: string = 'EUR') => {
     return new Intl.NumberFormat('de-DE', {

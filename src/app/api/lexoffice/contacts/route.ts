@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@/lib/supabase/server';
-import { createAdminSupabaseClient } from '@/lib/supabase/admin';
+import { auth } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
 import {
   createLexofficeClient,
   mapToLexofficeContact,
@@ -12,46 +12,51 @@ import type { Profile, Organization } from '@/types/dashboard';
  * GET /api/lexoffice/contacts
  * Ruft alle gemappten Lexoffice-Kontakte ab
  */
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    const supabase = await createServerSupabaseClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
+    const session = await auth();
+    if (!session?.user) {
       return NextResponse.json({ error: 'Nicht authentifiziert' }, { status: 401 });
     }
 
-    // Rolle pruefen
-    const adminSupabase = createAdminSupabaseClient();
-    const { data: profile } = await adminSupabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
+    const userId = (session.user as { id?: string }).id;
+    if (!userId) {
+      return NextResponse.json({ error: 'User ID nicht gefunden' }, { status: 401 });
+    }
 
-    if (!profile || !['manager', 'admin'].includes(profile.role)) {
+    // Rolle pruefen
+    const profile = await prisma.profiles.findUnique({
+      where: { id: userId },
+      select: { role: true },
+    });
+
+    if (!profile || !['manager', 'admin'].includes(profile.role || '')) {
       return NextResponse.json({ error: 'Keine Berechtigung' }, { status: 403 });
     }
 
     // Lexoffice Contacts laden
-    const { data: contacts, error } = await adminSupabase
-      .from('lexoffice_contacts')
-      .select(`
-        *,
-        profile:profiles(id, full_name, email, company),
-        organization:organizations(id, name)
-      `)
-      .order('created_at', { ascending: false });
+    const contacts = await prisma.lexoffice_contacts.findMany({
+      include: {
+        profiles: {
+          select: { id: true, full_name: true, email: true, company: true },
+        },
+        organizations: {
+          select: { id: true, name: true },
+        },
+      },
+      orderBy: { created_at: 'desc' },
+    });
 
-    if (error) {
-      console.error('[Lexoffice Contacts] Load error:', error);
-      return NextResponse.json({ error: 'Fehler beim Laden' }, { status: 500 });
-    }
+    // Transform to match expected format
+    const transformedContacts = contacts.map(c => ({
+      ...c,
+      profile: c.profiles,
+      organization: c.organizations,
+      profiles: undefined,
+      organizations: undefined,
+    }));
 
-    return NextResponse.json({ contacts });
+    return NextResponse.json({ contacts: transformedContacts });
   } catch (error) {
     console.error('[Lexoffice Contacts] Error:', error);
     return NextResponse.json({ error: 'Interner Serverfehler' }, { status: 500 });
@@ -69,34 +74,31 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createServerSupabaseClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
+    const session = await auth();
+    if (!session?.user) {
       return NextResponse.json({ error: 'Nicht authentifiziert' }, { status: 401 });
     }
 
-    // Rolle pruefen
-    const adminSupabase = createAdminSupabaseClient();
-    const { data: profile } = await adminSupabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
+    const userId = (session.user as { id?: string }).id;
+    if (!userId) {
+      return NextResponse.json({ error: 'User ID nicht gefunden' }, { status: 401 });
+    }
 
-    if (!profile || !['manager', 'admin'].includes(profile.role)) {
+    // Rolle pruefen
+    const profile = await prisma.profiles.findUnique({
+      where: { id: userId },
+      select: { role: true },
+    });
+
+    if (!profile || !['manager', 'admin'].includes(profile.role || '')) {
       return NextResponse.json({ error: 'Keine Berechtigung' }, { status: 403 });
     }
 
     // Lexoffice Settings pruefen
-    const { data: settings } = await adminSupabase
-      .from('system_settings')
-      .select('value')
-      .eq('key', 'lexoffice')
-      .single();
+    const settings = await prisma.system_settings.findUnique({
+      where: { key: 'lexoffice' },
+      select: { value: true },
+    });
 
     const lexofficeSettings = settings?.value as {
       is_enabled: boolean;
@@ -122,15 +124,9 @@ export async function POST(request: NextRequest) {
 
     // Pruefen ob bereits ein Mapping existiert
     if (!force_create) {
-      const { data: existingMapping } = await adminSupabase
-        .from('lexoffice_contacts')
-        .select('*')
-        .or(
-          profile_id
-            ? `profile_id.eq.${profile_id}`
-            : `organization_id.eq.${organization_id}`
-        )
-        .single();
+      const existingMapping = await prisma.lexoffice_contacts.findFirst({
+        where: profile_id ? { profile_id } : { organization_id },
+      });
 
       if (existingMapping) {
         return NextResponse.json({
@@ -148,32 +144,28 @@ export async function POST(request: NextRequest) {
     } = {};
 
     if (profile_id) {
-      const { data: profileData, error: profileError } = await adminSupabase
-        .from('profiles')
-        .select('*')
-        .eq('id', profile_id)
-        .single();
+      const profileData = await prisma.profiles.findUnique({
+        where: { id: profile_id },
+      });
 
-      if (profileError || !profileData) {
+      if (!profileData) {
         return NextResponse.json({ error: 'Profile nicht gefunden' }, { status: 404 });
       }
-      contactData.profile = profileData as Profile;
+      contactData.profile = profileData as unknown as Profile;
     }
 
     if (organization_id) {
-      const { data: orgData, error: orgError } = await adminSupabase
-        .from('organizations')
-        .select('*')
-        .eq('id', organization_id)
-        .single();
+      const orgData = await prisma.organizations.findUnique({
+        where: { id: organization_id },
+      });
 
-      if (orgError || !orgData) {
+      if (!orgData) {
         return NextResponse.json(
           { error: 'Organisation nicht gefunden' },
           { status: 404 }
         );
       }
-      contactData.organization = orgData as Organization;
+      contactData.organization = orgData as unknown as Organization;
     }
 
     // Lexoffice Client erstellen
@@ -188,13 +180,15 @@ export async function POST(request: NextRequest) {
     } catch (error) {
       if (error instanceof LexofficeApiError) {
         // Log sync error
-        await adminSupabase.from('lexoffice_sync_log').insert({
-          entity_type: 'contact',
-          entity_id: profile_id || organization_id,
-          action: 'create',
-          status: 'failed',
-          error_message: error.message,
-          request_data: lexofficeContactData,
+        await prisma.lexoffice_sync_log.create({
+          data: {
+            entity_type: 'contact',
+            entity_id: profile_id || organization_id,
+            action: 'create',
+            status: 'failed',
+            error_message: error.message,
+            request_data: lexofficeContactData as object,
+          },
         });
 
         return NextResponse.json(
@@ -209,37 +203,25 @@ export async function POST(request: NextRequest) {
     }
 
     // Mapping speichern
-    const { data: mapping, error: mappingError } = await adminSupabase
-      .from('lexoffice_contacts')
-      .insert({
+    const mapping = await prisma.lexoffice_contacts.create({
+      data: {
         profile_id: profile_id || null,
         organization_id: organization_id || null,
         lexoffice_contact_id: lexofficeResponse.id,
-      })
-      .select()
-      .single();
-
-    if (mappingError) {
-      console.error('[Lexoffice Contacts] Mapping error:', mappingError);
-      // Kontakt wurde erstellt, aber Mapping fehlgeschlagen
-      return NextResponse.json(
-        {
-          error: 'Kontakt erstellt, aber Mapping fehlgeschlagen',
-          lexoffice_id: lexofficeResponse.id,
-        },
-        { status: 500 }
-      );
-    }
+      },
+    });
 
     // Log success
-    await adminSupabase.from('lexoffice_sync_log').insert({
-      entity_type: 'contact',
-      entity_id: profile_id || organization_id,
-      lexoffice_id: lexofficeResponse.id,
-      action: 'create',
-      status: 'success',
-      request_data: lexofficeContactData,
-      response_data: lexofficeResponse,
+    await prisma.lexoffice_sync_log.create({
+      data: {
+        entity_type: 'contact',
+        entity_id: profile_id || organization_id,
+        lexoffice_id: lexofficeResponse.id,
+        action: 'create',
+        status: 'success',
+        request_data: lexofficeContactData as object,
+        response_data: lexofficeResponse as object,
+      },
     });
 
     return NextResponse.json(
@@ -265,23 +247,21 @@ export async function POST(request: NextRequest) {
  */
 export async function DELETE(request: NextRequest) {
   try {
-    const supabase = await createServerSupabaseClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
+    const session = await auth();
+    if (!session?.user) {
       return NextResponse.json({ error: 'Nicht authentifiziert' }, { status: 401 });
     }
 
+    const userId = (session.user as { id?: string }).id;
+    if (!userId) {
+      return NextResponse.json({ error: 'User ID nicht gefunden' }, { status: 401 });
+    }
+
     // Rolle pruefen - nur Admin
-    const adminSupabase = createAdminSupabaseClient();
-    const { data: profile } = await adminSupabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
+    const profile = await prisma.profiles.findUnique({
+      where: { id: userId },
+      select: { role: true },
+    });
 
     if (!profile || profile.role !== 'admin') {
       return NextResponse.json({ error: 'Nur Admins koennen Mappings loeschen' }, { status: 403 });
@@ -294,15 +274,9 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'mapping_id erforderlich' }, { status: 400 });
     }
 
-    const { error } = await adminSupabase
-      .from('lexoffice_contacts')
-      .delete()
-      .eq('id', mapping_id);
-
-    if (error) {
-      console.error('[Lexoffice Contacts] Delete error:', error);
-      return NextResponse.json({ error: 'Fehler beim Loeschen' }, { status: 500 });
-    }
+    await prisma.lexoffice_contacts.delete({
+      where: { id: mapping_id },
+    });
 
     return NextResponse.json({ success: true });
   } catch (error) {

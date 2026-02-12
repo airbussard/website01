@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { prisma } from '@/lib/prisma';
 import { EmailService } from '@/lib/services/email/EmailService';
 import {
   contactNotificationTemplate,
@@ -73,30 +73,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // In Supabase speichern (inkl. Spam-Flag)
-    if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-      try {
-        const supabase = await createServerSupabaseClient();
-
-        const { error } = await supabase
-          .from('contact_requests')
-          .insert({
-            name,
-            email,
-            company,
-            subject,
-            message,
-            project_type: projectType,
-            is_spam: isSpam,
-            created_at: new Date().toISOString(),
-          });
-
-        if (error) {
-          console.error('Supabase error:', error);
-        }
-      } catch (supabaseError) {
-        console.error('Failed to connect to Supabase:', supabaseError);
-      }
+    // In Datenbank speichern (inkl. Spam-Flag)
+    try {
+      await prisma.contact_requests.create({
+        data: {
+          name,
+          email,
+          company,
+          subject,
+          message,
+          project_type: projectType,
+          is_spam: isSpam,
+        },
+      });
+    } catch (dbError) {
+      console.error('Database error:', dbError);
     }
 
     // Bei Spam: Keine E-Mail senden, aber Success zurueckgeben (Bot merkt nichts)

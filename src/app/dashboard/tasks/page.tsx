@@ -15,7 +15,6 @@ import {
   ChevronDown,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { createClient } from '@/lib/supabase/client';
 import type { Task, TaskStatus, Priority } from '@/types/dashboard';
 import KanbanBoard from '@/components/dashboard/KanbanBoard';
 
@@ -65,34 +64,28 @@ export default function TasksPage() {
     const fetchTasks = async () => {
       if (!user) return;
 
-      const supabase = createClient();
-
       try {
-        let query = supabase
-          .from('tasks')
-          .select('*, project:pm_projects(id, name)')
-          .order('position', { ascending: true });
-
-        // Filter by user role
-        if (!isManagerOrAdmin) {
-          query = query.eq('assignee_id', user.id);
-        }
-
-        // Filter by status
+        const params = new URLSearchParams();
         if (statusFilter !== 'all') {
-          query = query.eq('status', statusFilter);
+          params.set('status', statusFilter);
         }
 
-        // Search
+        const response = await fetch(`/api/tasks?${params.toString()}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch tasks');
+        }
+
+        const data = await response.json();
+
+        // Filter by search query client-side
+        let filteredTasks = data.tasks || [];
         if (searchQuery) {
-          query = query.ilike('title', `%${searchQuery}%`);
+          filteredTasks = filteredTasks.filter((task: Task) =>
+            task.title.toLowerCase().includes(searchQuery.toLowerCase())
+          );
         }
 
-        const { data, error } = await query;
-
-        if (error) throw error;
-
-        setTasks(data || []);
+        setTasks(filteredTasks);
       } catch (error) {
         console.error('Error fetching tasks:', error);
       } finally {
@@ -101,18 +94,19 @@ export default function TasksPage() {
     };
 
     fetchTasks();
-  }, [user, isManagerOrAdmin, statusFilter, searchQuery]);
+  }, [user, statusFilter, searchQuery]);
 
   const handleTaskUpdate = async (taskId: string, newStatus: TaskStatus) => {
-    const supabase = createClient();
-
     try {
-      const { error } = await supabase
-        .from('tasks')
-        .update({ status: newStatus, updated_at: new Date().toISOString() })
-        .eq('id', taskId);
+      const response = await fetch(`/api/tasks/${taskId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus }),
+      });
 
-      if (error) throw error;
+      if (!response.ok) {
+        throw new Error('Failed to update task');
+      }
 
       // Update local state
       setTasks(tasks.map(task =>
